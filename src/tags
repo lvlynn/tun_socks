@@ -1,0 +1,233 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BUFFER_SIZE	hev-socks5-session.c	29;"	d	file:
+HEV_LOGGER_DEBUG	hev-logger.h	/^    HEV_LOGGER_DEBUG,$/;"	e	enum:__anon10
+HEV_LOGGER_ERROR	hev-logger.h	/^    HEV_LOGGER_ERROR,$/;"	e	enum:__anon10
+HEV_LOGGER_INFO	hev-logger.h	/^    HEV_LOGGER_INFO,$/;"	e	enum:__anon10
+HEV_LOGGER_UNSET	hev-logger.h	/^    HEV_LOGGER_UNSET,$/;"	e	enum:__anon10
+HEV_LOGGER_WARN	hev-logger.h	/^    HEV_LOGGER_WARN,$/;"	e	enum:__anon10
+HevCircularQueue	hev-circular-queue.h	/^typedef struct _HevCircularQueue HevCircularQueue;$/;"	t	typeref:struct:_HevCircularQueue
+HevLoggerLevel	hev-logger.h	/^} HevLoggerLevel;$/;"	t	typeref:enum:__anon10
+HevSocks5Session	hev-socks5-session.h	/^typedef struct _HevSocks5Session HevSocks5Session;$/;"	t	typeref:struct:_HevSocks5Session
+HevSocks5SessionBase	hev-socks5-session.h	/^typedef struct _HevSocks5SessionBase HevSocks5SessionBase;$/;"	t	typeref:struct:_HevSocks5SessionBase
+HevSocks5SessionCloseNotify	hev-socks5-session.h	/^typedef void (*HevSocks5SessionCloseNotify) (HevSocks5Session *self);$/;"	t
+HevTunnelLinux	hev-tunnel-linux.h	/^typedef struct _HevTunnelLinux HevTunnelLinux;$/;"	t	typeref:struct:_HevTunnelLinux
+JNI_OnLoad	hev-jni.c	/^JNI_OnLoad (JavaVM *vm, void *reserved)$/;"	f
+LOG_D	hev-logger.h	13;"	d
+LOG_E	hev-logger.h	16;"	d
+LOG_I	hev-logger.h	14;"	d
+LOG_ON	hev-logger.h	18;"	d
+LOG_ON_D	hev-logger.h	19;"	d
+LOG_ON_E	hev-logger.h	22;"	d
+LOG_ON_I	hev-logger.h	20;"	d
+LOG_ON_W	hev-logger.h	21;"	d
+LOG_W	hev-logger.h	15;"	d
+MAJOR_VERSION	hev-config-const.h	13;"	d
+MICRO_VERSION	hev-config-const.h	15;"	d
+MINOR_VERSION	hev-config-const.h	14;"	d
+N_ELEMENTS	hev-jni.c	31;"	d	file:
+PKGNAME	hev-jni.c	25;"	d	file:
+PRINT_MACRO	hev-tunnel-linux.c	37;"	d	file:
+PRINT_MACRO_HELPER	hev-tunnel-linux.c	36;"	d	file:
+QUEUE_SIZE	hev-socks5-session.c	28;"	d	file:
+SESSION_HP	hev-socks5-session.c	26;"	d	file:
+STEP_CLOSE_SESSION	hev-socks5-session.c	/^    STEP_CLOSE_SESSION,$/;"	e	enum:__anon1	file:
+STEP_DO_CONNECT	hev-socks5-session.c	/^    STEP_DO_CONNECT,$/;"	e	enum:__anon1	file:
+STEP_DO_FWD_DNS	hev-socks5-session.c	/^    STEP_DO_FWD_DNS,$/;"	e	enum:__anon1	file:
+STEP_DO_SPLICE	hev-socks5-session.c	/^    STEP_DO_SPLICE,$/;"	e	enum:__anon1	file:
+STEP_NULL	hev-socks5-session.c	/^    STEP_NULL,$/;"	e	enum:__anon1	file:
+STEP_READ_RESPONSE	hev-socks5-session.c	/^    STEP_READ_RESPONSE,$/;"	e	enum:__anon1	file:
+STEP_WRITE_REQUEST	hev-socks5-session.c	/^    STEP_WRITE_REQUEST,$/;"	e	enum:__anon1	file:
+STR	hev-jni.c	29;"	d	file:
+STR_ARG	hev-jni.c	30;"	d	file:
+Socks5AuthHeader	hev-socks5-session.c	/^typedef struct _Socks5AuthHeader Socks5AuthHeader;$/;"	t	typeref:struct:_Socks5AuthHeader	file:
+Socks5ReqResHeader	hev-socks5-session.c	/^typedef struct _Socks5ReqResHeader Socks5ReqResHeader;$/;"	t	typeref:struct:_Socks5ReqResHeader	file:
+TASK_STACK_SIZE	hev-socks5-session.c	27;"	d	file:
+_HevCircularQueue	hev-circular-queue.c	/^struct _HevCircularQueue$/;"	s	file:
+_HevSocks5Session	hev-socks5-session.c	/^struct _HevSocks5Session$/;"	s	file:
+_HevSocks5SessionBase	hev-socks5-session.h	/^struct _HevSocks5SessionBase$/;"	s
+_HevTunnelLinux	hev-tunnel-linux.c	/^struct _HevTunnelLinux$/;"	s	file:
+_Socks5AuthHeader	hev-socks5-session.c	/^struct _Socks5AuthHeader$/;"	s	file:
+_Socks5ReqResHeader	hev-socks5-session.c	/^struct _Socks5ReqResHeader$/;"	s	file:
+__HEV_CIRCULAR_QUEUE_H__	hev-circular-queue.h	11;"	d
+__HEV_CONFIG_CONST_H__	hev-config-const.h	11;"	d
+__HEV_CONFIG_H__	hev-config.h	11;"	d
+__HEV_JNI_H__	hev-jni.h	11;"	d
+__HEV_LOGGER_H__	hev-logger.h	11;"	d
+__HEV_MAIN_H__	hev-main.h	11;"	d
+__HEV_SOCKS5_SESSION_H__	hev-socks5-session.h	11;"	d
+__HEV_SOCKS5_TUNNEL_H__	hev-socks5-tunnel.h	11;"	d
+__HEV_TUNNEL_LINUX_H__	hev-tunnel-linux.h	11;"	d
+__UCLIBC_HAS_IPV6__	hev-tunnel-linux.c	20;"	d	file:
+__UCLIBC_STRICT_HEADERS__	hev-tunnel-linux.c	21;"	d	file:
+addr	hev-socks5-session.c	/^            uint32_t addr;$/;"	m	struct:_Socks5ReqResHeader::__anon6::__anon7	file:
+addr	hev-socks5-session.c	/^            uint8_t addr[16];$/;"	m	struct:_Socks5ReqResHeader::__anon6::__anon8	file:
+addr	hev-socks5-session.c	/^            uint8_t addr[256 + 2];$/;"	m	struct:_Socks5ReqResHeader::__anon6::__anon9	file:
+addr	hev-socks5-session.c	/^        ip_addr_t addr;$/;"	m	struct:_HevSocks5Session::__anon3	file:
+address_to_sockaddr	hev-config.c	/^address_to_sockaddr (const char *address, unsigned short port,$/;"	f	file:
+atype	hev-socks5-session.c	/^    uint8_t atype;$/;"	m	struct:_Socks5ReqResHeader	file:
+base	hev-socks5-session.c	/^    HevSocks5SessionBase base;$/;"	m	struct:_HevSocks5Session	file:
+cmd	hev-socks5-session.c	/^        uint8_t cmd;$/;"	m	union:_Socks5ReqResHeader::__anon5	file:
+current_jni_env	hev-jni.c	/^static pthread_key_t current_jni_env;$/;"	v	file:
+data	hev-circular-queue.c	/^    void *data[0];$/;"	m	struct:_HevCircularQueue	file:
+detach_current_thread	hev-jni.c	/^detach_current_thread (void *env)$/;"	f	file:
+domain	hev-socks5-session.c	/^        } domain;$/;"	m	union:_Socks5ReqResHeader::__anon6	typeref:struct:_Socks5ReqResHeader::__anon6::__anon9	file:
+event_fds	hev-socks5-tunnel.c	/^static int event_fds[2];$/;"	v	file:
+event_task_entry	hev-socks5-tunnel.c	/^event_task_entry (void *data)$/;"	f	file:
+fd	hev-logger.c	/^static int fd = -1;$/;"	v	file:
+fd	hev-tunnel-linux.c	/^    int fd;$/;"	m	struct:_HevTunnelLinux	file:
+gateway_init	hev-socks5-tunnel.c	/^gateway_init (void)$/;"	f	file:
+hev_circular_queue_get_max_size	hev-circular-queue.c	/^hev_circular_queue_get_max_size (HevCircularQueue *self)$/;"	f
+hev_circular_queue_get_use_size	hev-circular-queue.c	/^hev_circular_queue_get_use_size (HevCircularQueue *self)$/;"	f
+hev_circular_queue_new	hev-circular-queue.c	/^hev_circular_queue_new (size_t max_size)$/;"	f
+hev_circular_queue_peek	hev-circular-queue.c	/^hev_circular_queue_peek (HevCircularQueue *self)$/;"	f
+hev_circular_queue_pop	hev-circular-queue.c	/^hev_circular_queue_pop (HevCircularQueue *self)$/;"	f
+hev_circular_queue_push	hev-circular-queue.c	/^hev_circular_queue_push (HevCircularQueue *self, void *data)$/;"	f
+hev_circular_queue_ref	hev-circular-queue.c	/^hev_circular_queue_ref (HevCircularQueue *self)$/;"	f
+hev_circular_queue_unref	hev-circular-queue.c	/^hev_circular_queue_unref (HevCircularQueue *self)$/;"	f
+hev_config_fini	hev-config.c	/^hev_config_fini (void)$/;"	f
+hev_config_get_misc_limit_nofile	hev-config.c	/^hev_config_get_misc_limit_nofile (void)$/;"	f
+hev_config_get_misc_log_file	hev-config.c	/^hev_config_get_misc_log_file (void)$/;"	f
+hev_config_get_misc_log_level	hev-config.c	/^hev_config_get_misc_log_level (void)$/;"	f
+hev_config_get_misc_pid_file	hev-config.c	/^hev_config_get_misc_pid_file (void)$/;"	f
+hev_config_get_socks5_address	hev-config.c	/^hev_config_get_socks5_address (socklen_t *addr_len)$/;"	f
+hev_config_get_tunnel_dns_port	hev-config.c	/^hev_config_get_tunnel_dns_port (void)$/;"	f
+hev_config_get_tunnel_ipv4_address	hev-config.c	/^hev_config_get_tunnel_ipv4_address (void)$/;"	f
+hev_config_get_tunnel_ipv4_gateway	hev-config.c	/^hev_config_get_tunnel_ipv4_gateway (void)$/;"	f
+hev_config_get_tunnel_ipv4_prefix	hev-config.c	/^hev_config_get_tunnel_ipv4_prefix (void)$/;"	f
+hev_config_get_tunnel_ipv6_address	hev-config.c	/^hev_config_get_tunnel_ipv6_address (void)$/;"	f
+hev_config_get_tunnel_ipv6_gateway	hev-config.c	/^hev_config_get_tunnel_ipv6_gateway (void)$/;"	f
+hev_config_get_tunnel_ipv6_prefix	hev-config.c	/^hev_config_get_tunnel_ipv6_prefix (void)$/;"	f
+hev_config_get_tunnel_mtu	hev-config.c	/^hev_config_get_tunnel_mtu (void)$/;"	f
+hev_config_get_tunnel_name	hev-config.c	/^hev_config_get_tunnel_name (void)$/;"	f
+hev_config_init	hev-config.c	/^hev_config_init (const char *config_path)$/;"	f
+hev_config_parse_doc	hev-config.c	/^hev_config_parse_doc (yaml_document_t *doc)$/;"	f	file:
+hev_config_parse_misc	hev-config.c	/^hev_config_parse_misc (yaml_document_t *doc, yaml_node_t *base)$/;"	f	file:
+hev_config_parse_socks5	hev-config.c	/^hev_config_parse_socks5 (yaml_document_t *doc, yaml_node_t *base)$/;"	f	file:
+hev_config_parse_tunnel	hev-config.c	/^hev_config_parse_tunnel (yaml_document_t *doc, yaml_node_t *base)$/;"	f	file:
+hev_config_parse_tunnel_dns	hev-config.c	/^hev_config_parse_tunnel_dns (yaml_document_t *doc, yaml_node_t *base)$/;"	f	file:
+hev_config_parse_tunnel_ipv4	hev-config.c	/^hev_config_parse_tunnel_ipv4 (yaml_document_t *doc, yaml_node_t *base)$/;"	f	file:
+hev_config_parse_tunnel_ipv6	hev-config.c	/^hev_config_parse_tunnel_ipv6 (yaml_document_t *doc, yaml_node_t *base)$/;"	f	file:
+hev_logger_enabled	hev-logger.c	/^hev_logger_enabled (HevLoggerLevel level)$/;"	f
+hev_logger_fini	hev-logger.c	/^hev_logger_fini (void)$/;"	f
+hev_logger_init	hev-logger.c	/^hev_logger_init (void)$/;"	f
+hev_logger_log	hev-logger.c	/^hev_logger_log (HevLoggerLevel level, const char *fmt, ...)$/;"	f
+hev_socks5_session_new	hev-socks5-session.c	/^hev_socks5_session_new (HevTaskMutex *mutex, HevSocks5SessionCloseNotify notify)$/;"	f	file:
+hev_socks5_session_new_dns	hev-socks5-session.c	/^hev_socks5_session_new_dns (struct udp_pcb *pcb, struct pbuf *p,$/;"	f
+hev_socks5_session_new_tcp	hev-socks5-session.c	/^hev_socks5_session_new_tcp (struct tcp_pcb *pcb, HevTaskMutex *mutex,$/;"	f
+hev_socks5_session_ref	hev-socks5-session.c	/^hev_socks5_session_ref (HevSocks5Session *self)$/;"	f
+hev_socks5_session_run	hev-socks5-session.c	/^hev_socks5_session_run (HevSocks5Session *self)$/;"	f
+hev_socks5_session_task_entry	hev-socks5-session.c	/^hev_socks5_session_task_entry (void *data)$/;"	f	file:
+hev_socks5_session_unref	hev-socks5-session.c	/^hev_socks5_session_unref (HevSocks5Session *self)$/;"	f
+hev_socks5_tunnel_fini	hev-socks5-tunnel.c	/^hev_socks5_tunnel_fini (void)$/;"	f
+hev_socks5_tunnel_init	hev-socks5-tunnel.c	/^hev_socks5_tunnel_init (int tunfd)$/;"	f
+hev_socks5_tunnel_run	hev-socks5-tunnel.c	/^hev_socks5_tunnel_run (void)$/;"	f
+hev_socks5_tunnel_stop	hev-socks5-tunnel.c	/^hev_socks5_tunnel_stop (void)$/;"	f
+hev_tunnel_linux_destroy	hev-tunnel-linux.c	/^hev_tunnel_linux_destroy (HevTunnelLinux *self)$/;"	f
+hev_tunnel_linux_get_fd	hev-tunnel-linux.c	/^hev_tunnel_linux_get_fd (HevTunnelLinux *self)$/;"	f
+hev_tunnel_linux_new	hev-tunnel-linux.c	/^hev_tunnel_linux_new (const char *name)$/;"	f
+hev_tunnel_linux_set_ipv4	hev-tunnel-linux.c	/^hev_tunnel_linux_set_ipv4 (HevTunnelLinux *self, const char *addr,$/;"	f
+hev_tunnel_linux_set_ipv6	hev-tunnel-linux.c	/^hev_tunnel_linux_set_ipv6 (HevTunnelLinux *self, const char *addr,$/;"	f
+hev_tunnel_linux_set_mtu	hev-tunnel-linux.c	/^hev_tunnel_linux_set_mtu (HevTunnelLinux *self, int mtu)$/;"	f
+hev_tunnel_linux_set_state	hev-tunnel-linux.c	/^hev_tunnel_linux_set_state (HevTunnelLinux *self, int state)$/;"	f
+hp	hev-socks5-session.h	/^    int hp;$/;"	m	struct:_HevSocks5SessionBase
+ipv4	hev-socks5-session.c	/^        } ipv4;$/;"	m	union:_Socks5ReqResHeader::__anon6	typeref:struct:_Socks5ReqResHeader::__anon6::__anon7	file:
+ipv6	hev-socks5-session.c	/^        } ipv6;$/;"	m	union:_Socks5ReqResHeader::__anon6	typeref:struct:_Socks5ReqResHeader::__anon6::__anon8	file:
+is_dns	hev-socks5-session.c	/^    uint8_t is_dns;$/;"	m	struct:_HevSocks5Session	file:
+java_vm	hev-jni.c	/^static JavaVM *java_vm;$/;"	v	file:
+len	hev-socks5-session.c	/^            uint8_t len;$/;"	m	struct:_Socks5ReqResHeader::__anon6::__anon9	file:
+limit_nofile	hev-config.c	/^static int limit_nofile = -2;$/;"	v	file:
+log_file	hev-config.c	/^static char log_file[1024];$/;"	v	file:
+log_level	hev-config.c	/^static char log_level[16];$/;"	v	file:
+lwip_fini	hev-main.c	/^lwip_fini (void)$/;"	f	file:
+lwip_io_task_entry	hev-socks5-tunnel.c	/^lwip_io_task_entry (void *data)$/;"	f	file:
+lwip_timer_task_entry	hev-socks5-tunnel.c	/^lwip_timer_task_entry (void *data)$/;"	f	file:
+main	hev-main.c	/^main (int argc, char *argv[])$/;"	f
+max_size	hev-circular-queue.c	/^    size_t max_size;$/;"	m	struct:_HevCircularQueue	file:
+method	hev-socks5-session.c	/^        uint8_t method;$/;"	m	union:_Socks5AuthHeader::__anon4	file:
+method_len	hev-socks5-session.c	/^        uint8_t method_len;$/;"	m	union:_Socks5AuthHeader::__anon4	file:
+methods	hev-socks5-session.c	/^    uint8_t methods[256];$/;"	m	struct:_Socks5AuthHeader	file:
+mutex	hev-socks5-session.c	/^    HevTaskMutex *mutex;$/;"	m	struct:_HevSocks5Session	file:
+mutex	hev-socks5-tunnel.c	/^static HevTaskMutex mutex;$/;"	v	file:
+name	hev-tunnel-linux.c	/^    char name[IFNAMSIZ];$/;"	m	struct:_HevTunnelLinux	file:
+native_methods	hev-jni.c	/^static JNINativeMethod native_methods[] = {$/;"	v	file:
+native_start_service	hev-jni.c	/^native_start_service (JNIEnv *env, jobject thiz, jstring config_path, jint port)$/;"	f	file:
+native_stop_service	hev-jni.c	/^native_stop_service (JNIEnv *env, jobject thiz)$/;"	f	file:
+netif	hev-socks5-tunnel.c	/^static struct netif netif;$/;"	v	typeref:struct:netif	file:
+netif_init_handler	hev-socks5-tunnel.c	/^netif_init_handler (struct netif *netif)$/;"	f	file:
+netif_output_handler	hev-socks5-tunnel.c	/^netif_output_handler (struct netif *netif, struct pbuf *p)$/;"	f	file:
+netif_output_v4_handler	hev-socks5-tunnel.c	/^netif_output_v4_handler (struct netif *netif, struct pbuf *p,$/;"	f	file:
+netif_output_v6_handler	hev-socks5-tunnel.c	/^netif_output_v6_handler (struct netif *netif, struct pbuf *p,$/;"	f	file:
+next	hev-socks5-session.h	/^    HevSocks5SessionBase *next;$/;"	m	struct:_HevSocks5SessionBase
+notify	hev-socks5-session.c	/^    HevSocks5SessionCloseNotify notify;$/;"	m	struct:_HevSocks5Session	file:
+pid_file	hev-config.c	/^static char pid_file[1024];$/;"	v	file:
+port	hev-socks5-session.c	/^            uint16_t port;$/;"	m	struct:_Socks5ReqResHeader::__anon6::__anon7	file:
+port	hev-socks5-session.c	/^            uint16_t port;$/;"	m	struct:_Socks5ReqResHeader::__anon6::__anon8	file:
+port	hev-socks5-session.c	/^        u16_t port;$/;"	m	struct:_HevSocks5Session::__anon3	file:
+prev	hev-socks5-session.h	/^    HevSocks5SessionBase *prev;$/;"	m	struct:_HevSocks5SessionBase
+query	hev-socks5-session.c	/^    struct pbuf *query;$/;"	m	struct:_HevSocks5Session	typeref:struct:_HevSocks5Session::pbuf	file:
+queue	hev-socks5-session.c	/^    HevCircularQueue *queue;$/;"	m	struct:_HevSocks5Session	file:
+quit	hev-main.c	/^quit (void)$/;"	f
+ref_count	hev-circular-queue.c	/^    unsigned int ref_count;$/;"	m	struct:_HevCircularQueue	file:
+ref_count	hev-socks5-session.c	/^    int ref_count;$/;"	m	struct:_HevSocks5Session	file:
+remote_fd	hev-socks5-session.c	/^    int remote_fd;$/;"	m	struct:_HevSocks5Session	file:
+rep	hev-socks5-session.c	/^        uint8_t rep;$/;"	m	union:_Socks5ReqResHeader::__anon5	file:
+req_level	hev-logger.c	/^static HevLoggerLevel req_level;$/;"	v	file:
+rp	hev-circular-queue.c	/^    size_t rp;$/;"	m	struct:_HevCircularQueue	file:
+rsv	hev-socks5-session.c	/^    uint8_t rsv;$/;"	m	struct:_Socks5ReqResHeader	file:
+run	hev-socks5-tunnel.c	/^static int run;$/;"	v	file:
+run_as_daemon	hev-main.c	/^run_as_daemon (const char *pid_file)$/;"	f	file:
+saddr	hev-socks5-session.c	/^    char saddr[64];$/;"	m	struct:_HevSocks5Session	file:
+session_close_handler	hev-socks5-tunnel.c	/^session_close_handler (HevSocks5Session *session)$/;"	f	file:
+session_list	hev-socks5-tunnel.c	/^static HevSocks5SessionBase *session_list;$/;"	v	file:
+session_manager_insert_session	hev-socks5-tunnel.c	/^session_manager_insert_session (HevSocks5Session *session)$/;"	f	file:
+session_manager_remove_session	hev-socks5-tunnel.c	/^session_manager_remove_session (HevSocks5Session *session)$/;"	f	file:
+session_manager_task_entry	hev-socks5-tunnel.c	/^session_manager_task_entry (void *data)$/;"	f	file:
+set_limit_nofile	hev-main.c	/^set_limit_nofile (int limit_nofile)$/;"	f	file:
+show_help	hev-main.c	/^show_help (const char *self_path)$/;"	f	file:
+sigint_handler	hev-socks5-tunnel.c	/^sigint_handler (int signum)$/;"	f	file:
+socks5_address	hev-config.c	/^static struct sockaddr_in6 socks5_address;$/;"	v	typeref:struct:sockaddr_in6	file:
+socks5_close_session	hev-socks5-session.c	/^socks5_close_session (HevSocks5Session *self)$/;"	f	file:
+socks5_do_connect	hev-socks5-session.c	/^socks5_do_connect (HevSocks5Session *self)$/;"	f	file:
+socks5_do_fwd_dns	hev-socks5-session.c	/^socks5_do_fwd_dns (HevSocks5Session *self)$/;"	f	file:
+socks5_do_splice	hev-socks5-session.c	/^socks5_do_splice (HevSocks5Session *self)$/;"	f	file:
+socks5_read_response	hev-socks5-session.c	/^socks5_read_response (HevSocks5Session *self)$/;"	f	file:
+socks5_session_task_io_yielder	hev-socks5-session.c	/^socks5_session_task_io_yielder (HevTaskYieldType type, void *data)$/;"	f	file:
+socks5_write_request	hev-socks5-session.c	/^socks5_write_request (HevSocks5Session *self)$/;"	f	file:
+task	hev-socks5-session.h	/^    HevTask *task;$/;"	m	struct:_HevSocks5SessionBase
+task_event	hev-socks5-tunnel.c	/^static HevTask *task_event;$/;"	v	file:
+task_io_yielder	hev-socks5-tunnel.c	/^task_io_yielder (HevTaskYieldType type, void *data)$/;"	f	file:
+task_lwip_io	hev-socks5-tunnel.c	/^static HevTask *task_lwip_io;$/;"	v	file:
+task_lwip_timer	hev-socks5-tunnel.c	/^static HevTask *task_lwip_timer;$/;"	v	file:
+task_session_manager	hev-socks5-tunnel.c	/^static HevTask *task_session_manager;$/;"	v	file:
+tcp	hev-socks5-session.c	/^        struct tcp_pcb *tcp;$/;"	m	union:_HevSocks5Session::__anon2	typeref:struct:_HevSocks5Session::__anon2::tcp_pcb	file:
+tcp	hev-socks5-tunnel.c	/^static struct tcp_pcb *tcp;$/;"	v	typeref:struct:tcp_pcb	file:
+tcp_accept_handler	hev-socks5-tunnel.c	/^tcp_accept_handler (void *arg, struct tcp_pcb *pcb, err_t err)$/;"	f	file:
+tcp_err_handler	hev-socks5-session.c	/^tcp_err_handler (void *arg, err_t err)$/;"	f	file:
+tcp_recv_handler	hev-socks5-session.c	/^tcp_recv_handler (void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)$/;"	f	file:
+tcp_sent_handler	hev-socks5-session.c	/^tcp_sent_handler (void *arg, struct tcp_pcb *pcb, u16_t len)$/;"	f	file:
+tcp_splice_b	hev-socks5-session.c	/^tcp_splice_b (HevSocks5Session *self, uint8_t *buffer)$/;"	f	file:
+tcp_splice_f	hev-socks5-session.c	/^tcp_splice_f (HevSocks5Session *self, u16_t *offset)$/;"	f	file:
+thread_handler	hev-jni.c	/^thread_handler (void *data)$/;"	f	file:
+tun_dns_port	hev-config.c	/^static unsigned int tun_dns_port = 53;$/;"	v	file:
+tun_fd	hev-socks5-tunnel.c	/^static int tun_fd;$/;"	v	file:
+tun_ipv4_address	hev-config.c	/^static char tun_ipv4_address[16];$/;"	v	file:
+tun_ipv4_gateway	hev-config.c	/^static char tun_ipv4_gateway[16];$/;"	v	file:
+tun_ipv4_prefix	hev-config.c	/^static unsigned int tun_ipv4_prefix;$/;"	v	file:
+tun_ipv6_address	hev-config.c	/^static char tun_ipv6_address[64];$/;"	v	file:
+tun_ipv6_gateway	hev-config.c	/^static char tun_ipv6_gateway[64];$/;"	v	file:
+tun_ipv6_prefix	hev-config.c	/^static unsigned int tun_ipv6_prefix;$/;"	v	file:
+tun_mtu	hev-config.c	/^static unsigned int tun_mtu = 8192;$/;"	v	file:
+tun_name	hev-config.c	/^static char tun_name[64];$/;"	v	file:
+tunnel_init	hev-socks5-tunnel.c	/^tunnel_init (void)$/;"	f	file:
+udp	hev-socks5-session.c	/^        struct udp_pcb *udp;$/;"	m	union:_HevSocks5Session::__anon2	typeref:struct:_HevSocks5Session::__anon2::udp_pcb	file:
+udp	hev-socks5-tunnel.c	/^static struct udp_pcb *udp;$/;"	v	typeref:struct:udp_pcb	file:
+udp_recv_handler	hev-socks5-tunnel.c	/^udp_recv_handler (void *arg, struct udp_pcb *pcb, struct pbuf *p,$/;"	f	file:
+use_size	hev-circular-queue.c	/^    size_t use_size;$/;"	m	struct:_HevCircularQueue	file:
+ver	hev-socks5-session.c	/^    uint8_t ver;$/;"	m	struct:_Socks5AuthHeader	file:
+ver	hev-socks5-session.c	/^    uint8_t ver;$/;"	m	struct:_Socks5ReqResHeader	file:
+work_thread	hev-jni.c	/^static pthread_t work_thread;$/;"	v	file:

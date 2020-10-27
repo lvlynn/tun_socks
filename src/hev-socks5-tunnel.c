@@ -179,6 +179,7 @@ hev_socks5_tunnel_fini (void)
 int
 hev_socks5_tunnel_run (void)
 {
+    //ref_count加1
     task_event = hev_task_ref (task_event);
     hev_task_run (task_event, event_task_entry, NULL);
     task_lwip_io = hev_task_ref (task_lwip_io);

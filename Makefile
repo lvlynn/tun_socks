@@ -2,11 +2,17 @@
 
 PROJECT=hev-socks5-tunnel
 
-CROSS_PREFIX :=
+#CROSS_PREFIX := mipsel-buildroot-linux-uclibc-
+#CROSS_PREFIX := arm-openwrt-linux-
+CROSS_PREFIX := aarch64-openwrt-linux-
 PP=$(CROSS_PREFIX)cpp
 CC=$(CROSS_PREFIX)gcc
 STRIP=$(CROSS_PREFIX)strip
-CCFLAGS=-O3 -pipe -Wall -Werror $(CFLAGS) \
+
+
+#CCFLAGS=-O3 -pipe -Wall -Werror $(CFLAGS) \
+
+CCFLAGS=-O3 -pipe -Wall  $(CFLAGS) \
 		-I$(THIRDPARTDIR)/yaml/include \
 		-I$(THIRDPARTDIR)/lwip/include \
 		-I$(THIRDPARTDIR)/lwip/include/ports/unix \
@@ -60,7 +66,7 @@ endif
 all : $(TARGET)
 
 tp-build : $(THIRDPARTS)
-	@$(foreach dir,$^,$(MAKE) --no-print-directory -C $(dir);)
+	@$(foreach dir,$^,$(MAKE) --no-print-directory -C $(dir) CROSS_PREFIX="${CROSS_PREFIX}";)
 
 tp-clean : $(THIRDPARTS)
 	@$(foreach dir,$^,$(MAKE) --no-print-directory -C $(dir) clean;)

@@ -7,6 +7,8 @@
  ============================================================================
  */
 
+
+
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
@@ -14,8 +16,13 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+
+#undef __UCLIBC_HAS_IPV6__
+#define __UCLIBC_STRICT_HEADERS__ 1 
+
 #include <arpa/inet.h>
 #include <netinet/in.h>
+
 #include <linux/ipv6.h>
 #include <linux/if.h>
 #include <linux/if_tun.h>
@@ -25,6 +32,14 @@
 #include <hev-memory-allocator.h>
 
 #include "hev-tunnel-linux.h"
+
+#define   PRINT_MACRO_HELPER(x)   #x 
+ #define   PRINT_MACRO(x)   #x"="PRINT_MACRO_HELPER(x)
+
+//__UCLIBC_HAS_IPV6__ || !defined __UCLIBC_STRICT_HEADERS__
+#pragma message("-----------------------test--------------------------------")
+#pragma message(PRINT_MACRO(__UCLIBC_HAS_IPV6__))
+#pragma message(PRINT_MACRO(__UCLIBC_STRICT_HEADERS__))
 
 struct _HevTunnelLinux
 {
