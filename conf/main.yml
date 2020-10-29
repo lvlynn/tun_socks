@@ -2,7 +2,7 @@
 
 tunnel:
   # Interface name
-  name: tun0
+  name: hev0
   # Interface MTU
   mtu: 8192
   # IPv4 address
@@ -21,16 +21,16 @@ tunnel:
 
 socks5:
   # Socks5 server port
-  port: 10080
+  port: 1080
   # Socks5 server address (ipv4/ipv6)
-  address: 106.54.128.28
+  address: 172.16.254.157
 
 misc:
    # null, stdout, stderr or file-path
   log-file: /tmp/tun.log
    # debug, info, warn or error
-  log-level: warn
+  log-level: debug
    # If present, run as a daemon with this pid file
-  pid-file: /run/hev-socks5-tunnel.pid
+  pid-file: /tmp/hev-socks5-tunnel.pid
    # If present, set rlimit nofile; else use default value
   limit-nofile: 1024

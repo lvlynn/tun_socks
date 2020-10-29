@@ -27,7 +27,7 @@ unsigned int hev_config_get_tunnel_ipv6_prefix (void);
 unsigned int hev_config_get_tunnel_dns_port (void);
 
 
-#include <sys/types.h>
+#include <stdint.h>
 //struct sockaddr *hev_config_get_socks5_address (socklen_t *addr_len);
 struct sockaddr *hev_config_get_socks5_address ( uint32_t *addr_len);
 

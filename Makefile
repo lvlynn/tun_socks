@@ -4,7 +4,7 @@ PROJECT=hev-socks5-tunnel
 
 #CROSS_PREFIX := mipsel-buildroot-linux-uclibc-
 #CROSS_PREFIX := arm-openwrt-linux-
-CROSS_PREFIX := aarch64-openwrt-linux-
+#CROSS_PREFIX := aarch64-openwrt-linux-
 PP=$(CROSS_PREFIX)cpp
 CC=$(CROSS_PREFIX)gcc
 STRIP=$(CROSS_PREFIX)strip
