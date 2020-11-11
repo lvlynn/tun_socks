@@ -1,0 +1,107 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ICMP_PKG	ip.h	/^    ICMP_PKG,$/;"	e	enum:__anon1
+IP4_8	ip.c	17;"	d	file:
+IP4_STR	ip.c	18;"	d	file:
+IP_CHK	ip.h	16;"	d
+IP_PKG	ip.h	/^    IP_PKG = 1,$/;"	e	enum:__anon1
+PKG_TYPE	ip.h	/^}PKG_TYPE;$/;"	v	typeref:enum:__anon1
+TCPOLEN_EXP_FASTOPEN_BASE	tcp.h	36;"	d
+TCPOLEN_FASTOPEN_BASE	tcp.h	35;"	d
+TCPOLEN_MD5SIG	tcp.h	34;"	d
+TCPOLEN_MD5SIG_ALIGNED	tcp.h	45;"	d
+TCPOLEN_MSS	tcp.h	30;"	d
+TCPOLEN_MSS_ALIGNED	tcp.h	46;"	d
+TCPOLEN_SACKPERM_ALIGNED	tcp.h	41;"	d
+TCPOLEN_SACK_BASE	tcp.h	42;"	d
+TCPOLEN_SACK_BASE_ALIGNED	tcp.h	43;"	d
+TCPOLEN_SACK_PERBLOCK	tcp.h	44;"	d
+TCPOLEN_SACK_PERM	tcp.h	32;"	d
+TCPOLEN_TIMESTAMP	tcp.h	33;"	d
+TCPOLEN_TSTAMP_ALIGNED	tcp.h	39;"	d
+TCPOLEN_WINDOW	tcp.h	31;"	d
+TCPOLEN_WSCALE_ALIGNED	tcp.h	40;"	d
+TCPOPT_EOL	tcp.h	12;"	d
+TCPOPT_EXP	tcp.h	20;"	d
+TCPOPT_FASTOPEN	tcp.h	19;"	d
+TCPOPT_FASTOPEN_MAGIC	tcp.h	24;"	d
+TCPOPT_MD5SIG	tcp.h	18;"	d
+TCPOPT_MSS	tcp.h	13;"	d
+TCPOPT_NOP	tcp.h	11;"	d
+TCPOPT_SACK	tcp.h	16;"	d
+TCPOPT_SACK_PERM	tcp.h	15;"	d
+TCPOPT_TIMESTAMP	tcp.h	17;"	d
+TCPOPT_WINDOW	tcp.h	14;"	d
+TCP_CHK	ip.h	17;"	d
+TCP_PKG	ip.h	/^    TCP_PKG,$/;"	e	enum:__anon1
+TCP_PKG_LEN	ip.h	27;"	d
+UDP_PKG	ip.h	/^    UDP_PKG,$/;"	e	enum:__anon1
+UDP_PKG_LEN	ip.h	28;"	d
+_CONNECTION_H_	connection.h	2;"	d
+_LOG_H_	log.h	2;"	d
+_NT_TCP_H_	tcp.h	2;"	d
+__MYTCPIP_H__	ip.h	2;"	d
+_debug	log.h	/^static void _debug( const char *f,   char *fmt, ... )$/;"	f
+ack_seq	tcp.h	/^    uint32_t ack_seq ;$/;"	m	struct:tcp_info_s
+chk	ip.c	/^unsigned long chk( const unsigned  short * data, int size )$/;"	f
+chksum	ip.c	/^unsigned short chksum( const char *data, int size, int type )$/;"	f
+connection_s	connection.h	/^struct connection_s {$/;"	s
+create_pkg	ip.c	/^int create_pkg( nt_conn_t *conn, char *pkg )$/;"	f
+daddr	ip.h	/^    unsigned int daddr;$/;"	m	struct:__anon2
+debug	log.h	36;"	d
+handle_tcp	tcp.c	/^int handle_tcp( char *data, int tunfd )$/;"	f
+hdr_len	tcp.h	/^    int16_t hdr_len ; \/\/tcp 头部长度，包含option$/;"	m	struct:tcp_info_s
+ih	connection.h	/^    struct iphdr *ih;$/;"	m	struct:nt_skb_s	typeref:struct:nt_skb_s::iphdr
+ip	tcp.h	/^            uint32_t ip;$/;"	m	struct:tcp_pcb_s::__anon4::__anon5
+ip	tcp.h	/^            uint32_t ip;$/;"	m	struct:tcp_pcb_s::__anon7::__anon8
+ip	tcp.h	/^            uint8_t ip[16];$/;"	m	struct:tcp_pcb_s::__anon4::__anon6
+ip	tcp.h	/^            uint8_t ip[16];$/;"	m	struct:tcp_pcb_s::__anon7::__anon9
+ip_chk	ip.c	/^static unsigned short ip_chk( const unsigned short *data, int size )$/;"	f	file:
+ip_create	ip.c	/^int ip_create( nt_conn_t *conn )$/;"	f
+ip_input	ip.c	/^int ip_input( const char *data ){$/;"	f
+ip_version	connection.h	/^    uint8_t ip_version;  \/\/ipv4 or ipv6$/;"	m	struct:nt_skb_s
+iphdr_len	connection.h	/^    uint8_t iphdr_len;  \/\/ipv4 or ipv6$/;"	m	struct:nt_skb_s
+ipv4_dst	tcp.h	/^        } ipv4_dst;$/;"	m	union:tcp_pcb_s::__anon7	typeref:struct:tcp_pcb_s::__anon7::__anon8
+ipv4_input	ip.c	/^int ipv4_input( nt_conn_t *conn ){$/;"	f
+ipv4_src	tcp.h	/^        }  ipv4_src;$/;"	m	union:tcp_pcb_s::__anon4	typeref:struct:tcp_pcb_s::__anon4::__anon5
+ipv6_dst	tcp.h	/^        } ipv6_dst;$/;"	m	union:tcp_pcb_s::__anon7	typeref:struct:tcp_pcb_s::__anon7::__anon9
+ipv6_src	tcp.h	/^        } ipv6_src;$/;"	m	union:tcp_pcb_s::__anon4	typeref:struct:tcp_pcb_s::__anon4::__anon6
+mbz	ip.h	/^    unsigned char mbz; \/\/mbz = 0;$/;"	m	struct:__anon2
+ndt	connection.h	/^    nt_skb_t *ndt;$/;"	m	struct:connection_s
+nt_conn_t	connection.h	/^typedef struct connection_s nt_conn_t;$/;"	t	typeref:struct:connection_s
+nt_skb_s	connection.h	/^struct nt_skb_s {$/;"	s
+nt_skb_t	connection.h	/^typedef struct nt_skb_s nt_skb_t;$/;"	t	typeref:struct:nt_skb_s
+nt_tcp_info_t	tcp.h	/^typedef struct tcp_info_s nt_tcp_info_t; $/;"	t	typeref:struct:tcp_info_s
+nt_tpcb_t	tcp.h	/^typedef struct tcp_pcb_s nt_tpcb_t; $/;"	t	typeref:struct:tcp_pcb_s
+odt	connection.h	/^    nt_skb_t *odt;   \/\/ 存seq跟ack信息$/;"	m	struct:connection_s
+payload	tcp.h	/^    char *payload; \/\/载荷$/;"	m	struct:tcp_info_s
+payload_len	tcp.h	/^    int16_t payload_len; \/\/载荷长度$/;"	m	struct:tcp_info_s
+pcb	connection.h	/^    nt_tpcb_t *pcb;$/;"	m	struct:connection_s
+pkg	connection.h	/^    char *pkg ; \/\/用来存放回应包$/;"	m	struct:nt_skb_s
+port	tcp.h	/^            uint16_t port;$/;"	m	struct:tcp_pcb_s::__anon4::__anon5
+port	tcp.h	/^            uint16_t port;$/;"	m	struct:tcp_pcb_s::__anon4::__anon6
+port	tcp.h	/^            uint16_t port;$/;"	m	struct:tcp_pcb_s::__anon7::__anon8
+port	tcp.h	/^            uint16_t port;$/;"	m	struct:tcp_pcb_s::__anon7::__anon9
+print_pkg	ip.c	/^void print_pkg( char *data )$/;"	f
+protocol	connection.h	/^    uint8_t protocol; \/\/协议类型$/;"	m	struct:nt_skb_s
+pshead	ip.h	/^}pshead;$/;"	t	typeref:struct:__anon2
+ptcl	ip.h	/^    unsigned char ptcl;\/\/proto num; tcp = 6;$/;"	m	struct:__anon2
+saddr	ip.h	/^    unsigned int saddr;$/;"	m	struct:__anon2
+seq	tcp.h	/^    uint32_t seq ;$/;"	m	struct:tcp_info_s
+skb	connection.h	/^    char *skb ;  \/\/接收的数据包$/;"	m	struct:nt_skb_s
+skb_len	connection.h	/^    uint8_t skb_len;$/;"	m	struct:nt_skb_s
+tcp_chk	ip.c	/^static unsigned short tcp_chk( const unsigned short *data, int size )$/;"	f	file:
+tcp_create	tcp.c	/^void tcp_create( const char *data, char *pkg )$/;"	f
+tcp_info	connection.h	/^        nt_tcp_info_t  tcp_info;$/;"	m	union:nt_skb_s::__anon3
+tcp_info_s	tcp.h	/^struct tcp_info_s{$/;"	s
+tcp_input	tcp.c	/^int tcp_input(nt_conn_t *conn){$/;"	f
+tcp_parse_option	tcp.c	/^void tcp_parse_option( char *data )$/;"	f
+tcp_pcb_s	tcp.h	/^struct tcp_pcb_s {$/;"	s
+tcpl	ip.h	/^    unsigned short tcpl; \/\/tcp头部及头层皮载荷长度; 为网络字节; htons(int);$/;"	m	struct:__anon2
+th	tcp.h	/^    struct tcphdr *th;    $/;"	m	struct:tcp_info_s	typeref:struct:tcp_info_s::tcphdr
+type	connection.h	/^    uint8_t type;$/;"	m	struct:nt_skb_s
+udp_create	ip.c	/^static void udp_create( const char *data, char *pkg )$/;"	f	file:
