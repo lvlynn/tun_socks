@@ -8,6 +8,26 @@
 #include "tcp.h"
 
 
+
+
+struct{
+    int type;  //数据包类型 ， 1，发起连接  2. 转发payload
+    int domain; //ipv4 /ipv6
+
+    char user[32] ; //用户账号
+    char password[32]; //用户密码
+    uint32_t server_ip;  //代理ip
+    uint16_t server_port; //代理端口
+
+    uint32_t sip;   //源端口
+    uint16_t sport; //源ip
+    uint32_t dip;   //目的端口
+    uint16_t dport; //目的ip
+}
+
+
+
+
 /*
  *   Kind | Length | Name           | RFC     | 描述
  *   0    | 1      | EOL            | RFC0793 | 结束TCP选项列表
@@ -282,15 +302,14 @@ int direct_to_server( nt_conn_t *conn ){
     debug("+++++++++++++++end+++++++++++++");
 }
 
-int tcp_input(nt_conn_t *conn){
 
+int tcp_input(nt_conn_t *conn){
     debug( "packet is tcp" );
 
     nt_skb_t *ndt = conn->ndt;
     struct iphdr *ih = ( struct iphdr * )ndt->skb;
 
     int tcp_len = ndt->skb_len - ndt->iphdr_len;
-
 
     //int rfd = socket(AF_INET, SOCK_STREAM,0);
     //int rfd = socket(AF_INET, SOCK_RAW,IPPROTO_TCP);
@@ -302,7 +321,10 @@ int tcp_input(nt_conn_t *conn){
     if( ndt->protocol == 4 ){
         conn->pcb->ipv4_src.port = th->source ; 
         conn->pcb->ipv4_dst.port = th->dest ; 
+    } else {
+        return 0;
     }
+
 	/* [2020-11-10 14:30:25]  tcp_input  port=1919
 	   [2020-11-10 14:30:25]  tcp_input  port=1919
 	   [2020-11-10 14:30:25]  tcp_input  port=47392
@@ -334,6 +356,8 @@ int tcp_input(nt_conn_t *conn){
             ndt->type = TCP_SYN_ACK;
             tcp_parse_option( ndt->skb );
             handle_tcp( conn, tun );
+
+            //发送认证包
         }
 
         //syn ack
@@ -382,7 +406,9 @@ int tcp_input(nt_conn_t *conn){
         unsigned char *playload = ndt->skb + ndt->iphdr_len + ndt->tcp_info->hdr_len;
         debug( "buf = %s", playload );
         ndt->tcp_info->payload = playload;
+
         direct_to_server( conn );
+        //发送payload
     }
 
 }
