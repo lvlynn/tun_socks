@@ -1,8 +1,20 @@
 
 
 
-all:
-	$(CC) libnet/ip.c libnet/tcp.c tun.c -o bin/tun -g -I./libnet
+
+default:    build
+
+#all:
+#	$(CC) libnet/ip.c libnet/tcp.c tun.c -o bin/tun -g -I./libnet
 
 clean:
-	rm -rf bin/tun *.o
+	rm -rf bin/nt 
+	rm -rf objs/config/*.o
+	rm -rf objs/src/core/*.o
+	rm -rf objs/src/event/*.o
+	rm -rf objs/src/event/modules/*.o
+	rm -rf objs/src/os/unix/*.o
+
+
+build:
+	$(MAKE) -f  objs/Makefile
