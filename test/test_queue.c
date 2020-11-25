@@ -48,7 +48,7 @@ int main()
 
     }
 
-//    nt_queue_sort( &QueHead, compare_node );
+    nt_queue_sort( &QueHead, compare_node );
 
     printf( "\n" );
     for( q = nt_queue_head( &QueHead ); q != nt_queue_sentinel( &QueHead ); q = nt_queue_next( q ) ) {

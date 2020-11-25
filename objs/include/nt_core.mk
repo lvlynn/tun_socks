@@ -10,6 +10,7 @@ NT_CORE_INC= src/core/nt.h \
 NT_CORE_OBJ=objs/src/core/nt_log.o \
 			objs/src/core/nt_time.o \
 			objs/src/core/nt_connection.o \
-			objs/src/core/nt_cycle.o 
+			objs/src/core/nt_cycle.o \
+			objs/src/core/nt_queue.o 
 
 
