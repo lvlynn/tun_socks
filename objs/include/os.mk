@@ -6,6 +6,20 @@ objs/src/os/unix/nt_posix_init.o: $(CORE_DEPS) \
 		-o objs/src/os/unix/nt_posix_init.o \
 		src/os/unix/nt_posix_init.c
 
+objs/src/os/unix/nt_files.o: $(CORE_DEPS) \
+	src/os/unix/nt_files.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/os/unix/nt_files.o \
+		src/os/unix/nt_files.c
+
+
+objs/src/os/unix/nt_alloc.o: $(CORE_DEPS) \
+	src/os/unix/nt_alloc.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/os/unix/nt_alloc.o \
+		src/os/unix/nt_alloc.c
+
+
 objs/src/os/unix/nt_socket.o: $(CORE_DEPS) \
 	src/os/unix/nt_socket.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \

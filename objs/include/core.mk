@@ -37,3 +37,15 @@ objs/src/core/nt_queue.o:  $(CORE_DEPS) \
 		-o objs/src/core/nt_queue.o \
 		src/core/nt_queue.c
 
+objs/src/core/nt_palloc.o:  $(CORE_DEPS) \
+	src/core/nt_palloc.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_palloc.o \
+		src/core/nt_palloc.c
+
+objs/src/core/nt_buf.o:  $(CORE_DEPS) \
+	src/core/nt_buf.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_buf.o \
+		src/core/nt_buf.c
+

@@ -3,6 +3,7 @@
 #include <nt_core.h>
 
 
+volatile nt_time_t     *nt_cached_time;                                                                                         
 volatile nt_str_t       nt_cached_err_log_time;
 volatile nt_str_t       nt_cached_http_time;
 volatile nt_str_t       nt_cached_http_log_time;

@@ -13,5 +13,7 @@ nt_os_io_t nt_os_io = {
 nt_int_t
 nt_os_init(nt_log_t *log){
 
+    //获取页数
+    nt_pagesize = getpagesize();
     return NT_OK;
 }

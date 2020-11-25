@@ -16,8 +16,40 @@ typedef intptr_t        nt_int_t;
 typedef uintptr_t       nt_uint_t;
 typedef intptr_t        nt_flag_t;
 
+
+
+#define NT_INT32_LEN   (sizeof("-2147483648") - 1)
+#define NT_INT64_LEN   (sizeof("-9223372036854775808") - 1)
+
+#if (NT_PTR_SIZE == 4)
+#define NT_INT_T_LEN   NT_INT32_LEN
+#define NT_MAX_INT_T_VALUE  2147483647
+
+#else
+#define NT_INT_T_LEN   NT_INT64_LEN
+#define NT_MAX_INT_T_VALUE  9223372036854775807
+#endif
+
+
+#ifndef NT_ALIGNMENT
+#define NT_ALIGNMENT   sizeof(unsigned long)    /* platform word */
+#endif
+
+#define nt_align(d, a)     (((d) + (a - 1)) & ~(a - 1))
+#define nt_align_ptr(p, a)                                                   \
+    (u_char *) (((uintptr_t) (p) + ((uintptr_t) a - 1)) & ~((uintptr_t) a - 1))
+
+
+#define nt_abort       abort
+
+
+/* TODO: platform specific: array[NT_INVALID_ARRAY_INDEX] must cause SIGSEGV */
+  #define NT_INVALID_ARRAY_INDEX 0x80000000
+
+
 /* TODO: auto_conf: nt_inline   inline __inline __inline__ */
 #ifndef nt_inline
+
 #define nt_inline      inline
 #endif
 
