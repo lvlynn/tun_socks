@@ -6,9 +6,9 @@ struct nt_cycle_s {
 
     void                  ****conf_ctx;  //配置
 
-    ngx_module_t            **modules;
-    ngx_uint_t                modules_n;
-    ngx_uint_t                modules_used;    /* unsigned  modules_used:1; */
+    nt_module_t            **modules;
+    nt_uint_t                modules_n;
+    nt_uint_t                modules_used;    /* unsigned  modules_used:1; */
     //   nt_process_event;
 };
 #endif

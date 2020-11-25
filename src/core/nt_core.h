@@ -37,6 +37,7 @@ typedef void ( *nt_event_handler_pt )( nt_event_t *ev );
 //core
 #include <nt_log.h>
 #include <nt_files.h>
+#include <nt_cycle.h>
 
 #include <nt_string.h>
 #include <nt_module.h>

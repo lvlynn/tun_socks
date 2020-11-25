@@ -20,7 +20,18 @@ nt_event_init( nt_cycle_t *cycle )
     //这里使用select模型
     module = &nt_select_module;  
 
+    nt_event_module_t  *event_module = module->ctx;
+//    nt_event_module_t *ctx = ( nt_event_module_t * )(module->index->ctx);
 
+
+    //调用select的init函数
+    event_module->actions.init( cycle );
+
+    //完成回调地址关联
+    //nt_event_actions = event_module->actions;
+
+//    测试
+    //nt_done_events( cycle );
     //设置初始值
 }
 

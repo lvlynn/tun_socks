@@ -2,7 +2,7 @@
 
 
 
-default:    build
+default:    build do_test
 
 #all:
 #	$(CC) libnet/ip.c libnet/tcp.c tun.c -o bin/tun -g -I./libnet
@@ -18,3 +18,6 @@ clean:
 
 build:
 	$(MAKE) -f  objs/Makefile
+
+do_test:
+	$(MAKE) -f test/Makefile

@@ -23,5 +23,11 @@ objs/src/core/nt_connection.o:  $(CORE_DEPS) \
 	src/core/nt_connection.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
 		-o objs/src/core/nt_connection.o \
-		src/core/nt_connection.c\
+		src/core/nt_connection.c
+
+objs/src/core/nt_cycle.o:  $(CORE_DEPS) \
+	src/core/nt_cycle.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_cycle.o \
+		src/core/nt_cycle.c
 

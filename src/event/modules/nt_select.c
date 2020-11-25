@@ -20,8 +20,8 @@ static fd_set         master_write_fd_set;
 static fd_set         work_read_fd_set;
 static fd_set         work_write_fd_set;
 
-static nt_int_t      max_fd;
-static nt_str_t           select_name = nt_string("select");
+static nt_int_t     max_fd;
+static nt_str_t     select_name = nt_string("select");
 
 static nt_event_module_t  nt_select_module_ctx = {
     &select_name,
@@ -78,7 +78,7 @@ static nt_int_t nt_select_init( nt_cycle_t *cycle )
 
 static void nt_select_done( nt_cycle_t *cycle )
 {
-
+    printf( "%s\n" , __func__);
 }
 
 
@@ -101,6 +101,7 @@ static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_uint_t flags )
 {
 
     int                ready, nready;
+    ngx_err_t          err;
 
     struct timeval     tv, *tp;
 
@@ -110,10 +111,30 @@ static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_uint_t flags )
     tp = &tv;
     ready = select( max_fd + 1, &work_read_fd_set, &work_write_fd_set, NULL, tp );
 
+
+    err = (ready == -1) ? ngx_errno : 0;
+    if( err ){
+        if (err == NGX_EINTR) {
+
+        }
+
+        if (err == NGX_EBADF) {
+            //ngx_select_repair_fd_sets(cycle);
+        }
+        return NGX_ERROR;
+    }
+
+    if (ready == 0) {
+
+        return NGX_ERROR;
+    }
+
+
+    return NGX_OK;
 }
 
 
-
+//select模块的配置初始化
 static char *nt_select_init_conf(nt_cycle_t *cycle, void *conf){
 
 

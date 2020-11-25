@@ -1,8 +1,4 @@
 
-/*
- * Copyright (C) Igor Sysoev
- * Copyright (C) Nginx, Inc.
- */
 
 
 #ifndef _NT_SOCKET_H_

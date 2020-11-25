@@ -4,122 +4,628 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ADDON_DEPS	objs/Makefile	/^ADDON_DEPS = $(CORE_DEPS) $/;"	m
+ALL_INCS	objs/Makefile	/^ALL_INCS = -I src\/core \\$/;"	m
+CFLAGS	objs/Makefile	/^CFLAGS =  -pipe  -O -W -Wall -Wpointer-arith -Wno-unused-parameter -Wno-int-conversion -g$/;"	m
+CORE_DEPS	objs/Makefile	/^CORE_DEPS = src\/core\/nt.h \\$/;"	m
+CORE_INCS	objs/Makefile	/^CORE_INCS = -I src\/core \\$/;"	m
+CORE_OBJ	objs/Makefile	/^CORE_OBJ = 	objs\/src\/core\/nt.o \\$/;"	m
+EPOLLRDHUP	src/event/nt_event.h	173;"	d
 ICMP	tun.c	20;"	d	file:
-ICMP_PKG	libnet/ip.h	/^    ICMP_PKG,$/;"	e	enum:__anon1
+ICMP_PKG	libnet/ip.h	/^    ICMP_PKG,$/;"	e	enum:__anon7
 IGMP	tun.c	21;"	d	file:
 IGRP	tun.c	24;"	d	file:
-IP4_8	libnet/ip.c	17;"	d	file:
-IP4_STR	libnet/ip.c	18;"	d	file:
+IP4_8	libnet/common.h	4;"	d
+IP4_STR	libnet/common.h	5;"	d
 IP_CHK	libnet/ip.h	16;"	d
-IP_PKG	libnet/ip.h	/^    IP_PKG = 1,$/;"	e	enum:__anon1
+IP_PKG	libnet/ip.h	/^    IP_PKG = 1,$/;"	e	enum:__anon7
+LINK	objs/Makefile	/^LINK =  $(CC)$/;"	m
+NT_ABORT	src/core/nt_core.h	20;"	d
+NT_AGAIN	src/core/nt_core.h	16;"	d
+NT_BUSY	src/core/nt_core.h	17;"	d
+NT_CLEAR_EVENT	src/event/nt_event.h	13;"	d
+NT_CLEAR_EVENT	src/event/nt_event.h	183;"	d
+NT_CLOSE_EVENT	src/event/nt_event.h	153;"	d
+NT_DECLINED	src/core/nt_core.h	19;"	d
+NT_DISABLE_EVENT	src/event/nt_event.h	159;"	d
+NT_DONE	src/core/nt_core.h	18;"	d
+NT_EACCES	src/os/unix/nt_errno.h	17;"	d
+NT_EADDRINUSE	src/os/unix/nt_errno.h	32;"	d
+NT_EAGAIN	src/os/unix/nt_errno.h	55;"	d
+NT_EAGAIN	src/os/unix/nt_errno.h	57;"	d
+NT_EBADF	src/os/unix/nt_errno.h	48;"	d
+NT_EBUSY	src/os/unix/nt_errno.h	18;"	d
+NT_ECANCELED	src/os/unix/nt_errno.h	44;"	d
+NT_ECHILD	src/os/unix/nt_errno.h	15;"	d
+NT_ECONNABORTED	src/os/unix/nt_errno.h	33;"	d
+NT_ECONNREFUSED	src/os/unix/nt_errno.h	37;"	d
+NT_ECONNRESET	src/os/unix/nt_errno.h	34;"	d
+NT_EEXIST	src/os/unix/nt_errno.h	19;"	d
+NT_EEXIST_FILE	src/os/unix/nt_errno.h	20;"	d
+NT_EHOSTDOWN	src/os/unix/nt_errno.h	41;"	d
+NT_EHOSTUNREACH	src/os/unix/nt_errno.h	42;"	d
+NT_EILSEQ	src/os/unix/nt_errno.h	45;"	d
+NT_EINPROGRESS	src/os/unix/nt_errno.h	29;"	d
+NT_EINTR	src/os/unix/nt_errno.h	14;"	d
+NT_EINVAL	src/os/unix/nt_errno.h	24;"	d
+NT_EISDIR	src/os/unix/nt_errno.h	23;"	d
+NT_ELOOP	src/os/unix/nt_errno.h	47;"	d
+NT_EMFILE	src/os/unix/nt_errno.h	26;"	d
+NT_EMLINK	src/os/unix/nt_errno.h	51;"	d
+NT_ENAMETOOLONG	src/os/unix/nt_errno.h	38;"	d
+NT_ENETDOWN	src/os/unix/nt_errno.h	39;"	d
+NT_ENETUNREACH	src/os/unix/nt_errno.h	40;"	d
+NT_ENFILE	src/os/unix/nt_errno.h	25;"	d
+NT_ENOENT	src/os/unix/nt_errno.h	11;"	d
+NT_ENOMEM	src/os/unix/nt_errno.h	16;"	d
+NT_ENOMOREFILES	src/os/unix/nt_errno.h	46;"	d
+NT_ENOPATH	src/os/unix/nt_errno.h	12;"	d
+NT_ENOPROTOOPT	src/os/unix/nt_errno.h	30;"	d
+NT_ENOSPC	src/os/unix/nt_errno.h	27;"	d
+NT_ENOSYS	src/os/unix/nt_errno.h	43;"	d
+NT_ENOTCONN	src/os/unix/nt_errno.h	35;"	d
+NT_ENOTDIR	src/os/unix/nt_errno.h	22;"	d
+NT_EOPNOTSUPP	src/os/unix/nt_errno.h	31;"	d
+NT_EPERM	src/os/unix/nt_errno.h	10;"	d
+NT_EPIPE	src/os/unix/nt_errno.h	28;"	d
+NT_ERROR	src/core/nt_core.h	15;"	d
+NT_ESRCH	src/os/unix/nt_errno.h	13;"	d
+NT_ETIMEDOUT	src/os/unix/nt_errno.h	36;"	d
+NT_EVENT_CONF	src/event/nt_event.h	116;"	d
+NT_EVENT_MODULE	src/event/nt_event.h	115;"	d
+NT_EXCLUSIVE_EVENT	src/event/nt_event.h	190;"	d
+NT_EXCLUSIVE_EVENT	src/event/nt_event.h	20;"	d
+NT_EXDEV	src/os/unix/nt_errno.h	21;"	d
+NT_FLUSH_EVENT	src/event/nt_event.h	164;"	d
+NT_HAVE_INHERITED_NONBLOCK	src/os/unix/nt_linux_config.h	119;"	d
+NT_HAVE_OS_SPECIFIC_INIT	src/os/unix/nt_linux_config.h	123;"	d
+NT_HAVE_SELECT	config/nt_auto_config.h	6;"	d
+NT_HAVE_SO_SNDLOWAT	src/os/unix/nt_linux_config.h	114;"	d
+NT_IOCP_ACCEPT	src/event/nt_event.h	44;"	d
+NT_IOCP_CONNECT	src/event/nt_event.h	46;"	d
+NT_IOCP_IO	src/event/nt_event.h	45;"	d
+NT_LEVEL_EVENT	src/event/nt_event.h	12;"	d
+NT_LEVEL_EVENT	src/event/nt_event.h	182;"	d
+NT_LEVEL_EVENT	src/event/nt_event.h	198;"	d
+NT_LEVEL_EVENT	src/event/nt_event.h	207;"	d
+NT_LEVEL_EVENT	src/event/nt_event.h	28;"	d
+NT_LEVEL_EVENT	src/event/nt_event.h	37;"	d
+NT_LISTEN_BACKLOG	src/os/unix/nt_linux_config.h	109;"	d
+NT_LOG_ALERT	src/core/nt_log.h	9;"	d
+NT_LOG_CRIT	src/core/nt_log.h	10;"	d
+NT_LOG_DEBUG	src/core/nt_log.h	15;"	d
+NT_LOG_DEBUG_ALLOC	src/core/nt_log.h	19;"	d
+NT_LOG_DEBUG_CORE	src/core/nt_log.h	18;"	d
+NT_LOG_DEBUG_EVENT	src/core/nt_log.h	21;"	d
+NT_LOG_DEBUG_HTTP	src/core/nt_log.h	22;"	d
+NT_LOG_DEBUG_MAIL	src/core/nt_log.h	23;"	d
+NT_LOG_DEBUG_MUTEX	src/core/nt_log.h	20;"	d
+NT_LOG_DEBUG_STREAM	src/core/nt_log.h	24;"	d
+NT_LOG_EMERG	src/core/nt_log.h	8;"	d
+NT_LOG_ERR	src/core/nt_log.h	11;"	d
+NT_LOG_INFO	src/core/nt_log.h	14;"	d
+NT_LOG_NOTICE	src/core/nt_log.h	13;"	d
+NT_LOG_STDERR	src/core/nt_log.h	7;"	d
+NT_LOG_WARN	src/core/nt_log.h	12;"	d
+NT_LOWAT_EVENT	src/event/nt_event.h	168;"	d
+NT_MODULE_SIGNATURE	src/core/nt_module.h	188;"	d
+NT_MODULE_SIGNATURE_0	src/core/nt_module.h	10;"	d
+NT_MODULE_SIGNATURE_1	src/core/nt_module.h	16;"	d
+NT_MODULE_SIGNATURE_1	src/core/nt_module.h	18;"	d
+NT_MODULE_SIGNATURE_10	src/core/nt_module.h	64;"	d
+NT_MODULE_SIGNATURE_11	src/core/nt_module.h	67;"	d
+NT_MODULE_SIGNATURE_11	src/core/nt_module.h	69;"	d
+NT_MODULE_SIGNATURE_12	src/core/nt_module.h	72;"	d
+NT_MODULE_SIGNATURE_13	src/core/nt_module.h	75;"	d
+NT_MODULE_SIGNATURE_13	src/core/nt_module.h	77;"	d
+NT_MODULE_SIGNATURE_14	src/core/nt_module.h	81;"	d
+NT_MODULE_SIGNATURE_14	src/core/nt_module.h	83;"	d
+NT_MODULE_SIGNATURE_15	src/core/nt_module.h	87;"	d
+NT_MODULE_SIGNATURE_15	src/core/nt_module.h	89;"	d
+NT_MODULE_SIGNATURE_16	src/core/nt_module.h	93;"	d
+NT_MODULE_SIGNATURE_16	src/core/nt_module.h	95;"	d
+NT_MODULE_SIGNATURE_17	src/core/nt_module.h	98;"	d
+NT_MODULE_SIGNATURE_18	src/core/nt_module.h	99;"	d
+NT_MODULE_SIGNATURE_19	src/core/nt_module.h	101;"	d
+NT_MODULE_SIGNATURE_19	src/core/nt_module.h	103;"	d
+NT_MODULE_SIGNATURE_2	src/core/nt_module.h	22;"	d
+NT_MODULE_SIGNATURE_2	src/core/nt_module.h	24;"	d
+NT_MODULE_SIGNATURE_20	src/core/nt_module.h	107;"	d
+NT_MODULE_SIGNATURE_20	src/core/nt_module.h	109;"	d
+NT_MODULE_SIGNATURE_21	src/core/nt_module.h	113;"	d
+NT_MODULE_SIGNATURE_21	src/core/nt_module.h	115;"	d
+NT_MODULE_SIGNATURE_22	src/core/nt_module.h	119;"	d
+NT_MODULE_SIGNATURE_22	src/core/nt_module.h	121;"	d
+NT_MODULE_SIGNATURE_23	src/core/nt_module.h	125;"	d
+NT_MODULE_SIGNATURE_23	src/core/nt_module.h	127;"	d
+NT_MODULE_SIGNATURE_24	src/core/nt_module.h	131;"	d
+NT_MODULE_SIGNATURE_24	src/core/nt_module.h	133;"	d
+NT_MODULE_SIGNATURE_25	src/core/nt_module.h	136;"	d
+NT_MODULE_SIGNATURE_26	src/core/nt_module.h	139;"	d
+NT_MODULE_SIGNATURE_26	src/core/nt_module.h	141;"	d
+NT_MODULE_SIGNATURE_27	src/core/nt_module.h	144;"	d
+NT_MODULE_SIGNATURE_28	src/core/nt_module.h	147;"	d
+NT_MODULE_SIGNATURE_28	src/core/nt_module.h	149;"	d
+NT_MODULE_SIGNATURE_29	src/core/nt_module.h	153;"	d
+NT_MODULE_SIGNATURE_29	src/core/nt_module.h	155;"	d
+NT_MODULE_SIGNATURE_3	src/core/nt_module.h	28;"	d
+NT_MODULE_SIGNATURE_3	src/core/nt_module.h	30;"	d
+NT_MODULE_SIGNATURE_30	src/core/nt_module.h	159;"	d
+NT_MODULE_SIGNATURE_30	src/core/nt_module.h	161;"	d
+NT_MODULE_SIGNATURE_31	src/core/nt_module.h	165;"	d
+NT_MODULE_SIGNATURE_31	src/core/nt_module.h	167;"	d
+NT_MODULE_SIGNATURE_32	src/core/nt_module.h	171;"	d
+NT_MODULE_SIGNATURE_32	src/core/nt_module.h	173;"	d
+NT_MODULE_SIGNATURE_33	src/core/nt_module.h	177;"	d
+NT_MODULE_SIGNATURE_33	src/core/nt_module.h	179;"	d
+NT_MODULE_SIGNATURE_34	src/core/nt_module.h	183;"	d
+NT_MODULE_SIGNATURE_34	src/core/nt_module.h	185;"	d
+NT_MODULE_SIGNATURE_4	src/core/nt_module.h	34;"	d
+NT_MODULE_SIGNATURE_4	src/core/nt_module.h	36;"	d
+NT_MODULE_SIGNATURE_5	src/core/nt_module.h	40;"	d
+NT_MODULE_SIGNATURE_5	src/core/nt_module.h	42;"	d
+NT_MODULE_SIGNATURE_6	src/core/nt_module.h	46;"	d
+NT_MODULE_SIGNATURE_6	src/core/nt_module.h	48;"	d
+NT_MODULE_SIGNATURE_7	src/core/nt_module.h	52;"	d
+NT_MODULE_SIGNATURE_7	src/core/nt_module.h	54;"	d
+NT_MODULE_SIGNATURE_8	src/core/nt_module.h	58;"	d
+NT_MODULE_SIGNATURE_8	src/core/nt_module.h	60;"	d
+NT_MODULE_SIGNATURE_9	src/core/nt_module.h	63;"	d
+NT_MODULE_UNSET_INDEX	src/core/nt_module.h	8;"	d
+NT_MODULE_V1	src/core/nt_module.h	204;"	d
+NT_MODULE_V1_PADDING	src/core/nt_module.h	208;"	d
+NT_OK	src/core/nt_core.h	14;"	d
+NT_ONESHOT_EVENT	src/event/nt_event.h	14;"	d
+NT_ONESHOT_EVENT	src/event/nt_event.h	184;"	d
+NT_ONESHOT_EVENT	src/event/nt_event.h	199;"	d
+NT_ONESHOT_EVENT	src/event/nt_event.h	208;"	d
+NT_ONESHOT_EVENT	src/event/nt_event.h	29;"	d
+NT_ONESHOT_EVENT	src/event/nt_event.h	38;"	d
+NT_POST_EVENTS	src/event/nt_event.h	213;"	d
+NT_PTR_SIZE	config/nt_auto_config.h	19;"	d
+NT_READ_EVENT	src/event/nt_event.h	179;"	d
+NT_READ_EVENT	src/event/nt_event.h	195;"	d
+NT_READ_EVENT	src/event/nt_event.h	204;"	d
+NT_READ_EVENT	src/event/nt_event.h	25;"	d
+NT_READ_EVENT	src/event/nt_event.h	34;"	d
+NT_READ_EVENT	src/event/nt_event.h	9;"	d
+NT_SENDFILE_LIMIT	src/os/unix/nt_linux_config.h	78;"	d
+NT_SIG_ATOMIC_T_SIZE	config/nt_auto_config.h	23;"	d
+NT_TIME_T_LEN	config/nt_auto_config.h	32;"	d
+NT_TIME_T_SIZE	config/nt_auto_config.h	27;"	d
+NT_UPDATE_TIME	src/event/nt_event.h	212;"	d
+NT_USE_EPOLL_EVENT	src/event/nt_event.h	139;"	d
+NT_USE_GREEDY_EVENT	src/event/nt_event.h	134;"	d
+NT_VERSION	src/core/nt.h	5;"	d
+NT_VNODE_EVENT	src/event/nt_event.h	169;"	d
+NT_WRITE_EVENT	src/event/nt_event.h	10;"	d
+NT_WRITE_EVENT	src/event/nt_event.h	180;"	d
+NT_WRITE_EVENT	src/event/nt_event.h	196;"	d
+NT_WRITE_EVENT	src/event/nt_event.h	205;"	d
+NT_WRITE_EVENT	src/event/nt_event.h	26;"	d
+NT_WRITE_EVENT	src/event/nt_event.h	35;"	d
+NT_WRITE_SHUTDOWN	src/os/unix/nt_socket.h	15;"	d
+NT_YIELD	src/core/nt_core.h	22;"	d
 OSPF	tun.c	25;"	d	file:
-PKG_TYPE	libnet/ip.h	/^}PKG_TYPE;$/;"	v	typeref:enum:__anon1
+PKG_TYPE	libnet/ip.h	/^}PKG_TYPE;$/;"	v	typeref:enum:__anon7
+PWD	objs/Makefile	/^PWD=$(shell pwd)$/;"	m
 TCP	tun.c	22;"	d	file:
-TCPOLEN_EXP_FASTOPEN_BASE	libnet/tcp.h	36;"	d
-TCPOLEN_FASTOPEN_BASE	libnet/tcp.h	35;"	d
-TCPOLEN_MD5SIG	libnet/tcp.h	34;"	d
-TCPOLEN_MD5SIG_ALIGNED	libnet/tcp.h	45;"	d
-TCPOLEN_MSS	libnet/tcp.h	30;"	d
-TCPOLEN_MSS_ALIGNED	libnet/tcp.h	46;"	d
-TCPOLEN_SACKPERM_ALIGNED	libnet/tcp.h	41;"	d
-TCPOLEN_SACK_BASE	libnet/tcp.h	42;"	d
-TCPOLEN_SACK_BASE_ALIGNED	libnet/tcp.h	43;"	d
-TCPOLEN_SACK_PERBLOCK	libnet/tcp.h	44;"	d
-TCPOLEN_SACK_PERM	libnet/tcp.h	32;"	d
-TCPOLEN_TIMESTAMP	libnet/tcp.h	33;"	d
-TCPOLEN_TSTAMP_ALIGNED	libnet/tcp.h	39;"	d
-TCPOLEN_WINDOW	libnet/tcp.h	31;"	d
-TCPOLEN_WSCALE_ALIGNED	libnet/tcp.h	40;"	d
-TCPOPT_EOL	libnet/tcp.h	12;"	d
-TCPOPT_EXP	libnet/tcp.h	20;"	d
-TCPOPT_FASTOPEN	libnet/tcp.h	19;"	d
-TCPOPT_FASTOPEN_MAGIC	libnet/tcp.h	24;"	d
-TCPOPT_MD5SIG	libnet/tcp.h	18;"	d
-TCPOPT_MSS	libnet/tcp.h	13;"	d
-TCPOPT_NOP	libnet/tcp.h	11;"	d
-TCPOPT_SACK	libnet/tcp.h	16;"	d
-TCPOPT_SACK_PERM	libnet/tcp.h	15;"	d
-TCPOPT_TIMESTAMP	libnet/tcp.h	17;"	d
-TCPOPT_WINDOW	libnet/tcp.h	14;"	d
+TCPOLEN_EXP_FASTOPEN_BASE	libnet/tcp.h	37;"	d
+TCPOLEN_FASTOPEN_BASE	libnet/tcp.h	36;"	d
+TCPOLEN_MD5SIG	libnet/tcp.h	35;"	d
+TCPOLEN_MD5SIG_ALIGNED	libnet/tcp.h	46;"	d
+TCPOLEN_MSS	libnet/tcp.h	31;"	d
+TCPOLEN_MSS_ALIGNED	libnet/tcp.h	47;"	d
+TCPOLEN_SACKPERM_ALIGNED	libnet/tcp.h	42;"	d
+TCPOLEN_SACK_BASE	libnet/tcp.h	43;"	d
+TCPOLEN_SACK_BASE_ALIGNED	libnet/tcp.h	44;"	d
+TCPOLEN_SACK_PERBLOCK	libnet/tcp.h	45;"	d
+TCPOLEN_SACK_PERM	libnet/tcp.h	33;"	d
+TCPOLEN_TIMESTAMP	libnet/tcp.h	34;"	d
+TCPOLEN_TSTAMP_ALIGNED	libnet/tcp.h	40;"	d
+TCPOLEN_WINDOW	libnet/tcp.h	32;"	d
+TCPOLEN_WSCALE_ALIGNED	libnet/tcp.h	41;"	d
+TCPOPT_EOL	libnet/tcp.h	13;"	d
+TCPOPT_EXP	libnet/tcp.h	21;"	d
+TCPOPT_FASTOPEN	libnet/tcp.h	20;"	d
+TCPOPT_FASTOPEN_MAGIC	libnet/tcp.h	25;"	d
+TCPOPT_MD5SIG	libnet/tcp.h	19;"	d
+TCPOPT_MSS	libnet/tcp.h	14;"	d
+TCPOPT_NOP	libnet/tcp.h	12;"	d
+TCPOPT_SACK	libnet/tcp.h	17;"	d
+TCPOPT_SACK_PERM	libnet/tcp.h	16;"	d
+TCPOPT_TIMESTAMP	libnet/tcp.h	18;"	d
+TCPOPT_WINDOW	libnet/tcp.h	15;"	d
 TCP_CHK	libnet/ip.h	17;"	d
-TCP_PKG	libnet/ip.h	/^    TCP_PKG,$/;"	e	enum:__anon1
+TCP_FIN_ACK	libnet/tcp.h	55;"	d
+TCP_PAYLOAD_ACK	libnet/tcp.h	52;"	d
+TCP_PKG	libnet/ip.h	/^    TCP_PKG,$/;"	e	enum:__anon7
 TCP_PKG_LEN	libnet/ip.h	27;"	d
+TCP_SEND_FIN_ACK	libnet/tcp.h	56;"	d
+TCP_SEND_PAYLOAD	libnet/tcp.h	53;"	d
+TCP_SEND_PAYLOAD_END	libnet/tcp.h	54;"	d
+TCP_SYN_ACK	libnet/tcp.h	51;"	d
 UDP	tun.c	23;"	d	file:
-UDP_PKG	libnet/ip.h	/^    UDP_PKG,$/;"	e	enum:__anon1
+UDP_PKG	libnet/ip.h	/^    UDP_PKG,$/;"	e	enum:__anon7
 UDP_PKG_LEN	libnet/ip.h	28;"	d
+_COMMON_H_	libnet/common.h	2;"	d
 _CONNECTION_H_	libnet/connection.h	2;"	d
+_FILE_OFFSET_BITS	src/os/unix/nt_linux_config.h	16;"	d
+_GNU_SOURCE	src/os/unix/nt_linux_config.h	13;"	d
 _LOG_H_	libnet/log.h	2;"	d
+_NT_AUTO_CONFIG_H_	config/nt_auto_config.h	2;"	d
+_NT_CONFIG_H_	src/core/nt_def.h	4;"	d
+_NT_CONF_H_	src/core/nt_conf.h	2;"	d
+_NT_CONNECTION_H_	src/core/nt_connection.h	2;"	d
+_NT_CORE_H_	src/core/nt_core.h	2;"	d
+_NT_CYCLE_H_	src/core/nt_cycle.h	2;"	d
+_NT_ERRNO_H_	src/os/unix/nt_errno.h	2;"	d
+_NT_EVENT_H_	src/event/nt_event.h	2;"	d
+_NT_FILES_H_	src/core/nt_files.h	2;"	d
+_NT_H_	src/core/nt.h	2;"	d
+_NT_LINUX_CONFIG_H_INCLUDED_	src/os/unix/nt_linux_config.h	9;"	d
+_NT_LOG_H_	src/core/nt_log.h	2;"	d
+_NT_MODULE_H_	src/core/nt_module.h	2;"	d
+_NT_OS_H_	src/os/unix/nt_os.h	2;"	d
+_NT_SOCKET_H_	src/os/unix/nt_socket.h	9;"	d
+_NT_STRING_H_	src/core/nt_string.h	2;"	d
 _NT_TCP_H_	libnet/tcp.h	2;"	d
+_NT_TIME_H_	src/os/unix/nt_time.h	2;"	d
 __MYTCPIP_H__	libnet/ip.h	2;"	d
 _debug	libnet/log.h	/^static void _debug( const char *f,   char *fmt, ... )$/;"	f
+ack_seq	libnet/connection.h	/^    uint32_t ack_seq ;  \/\/存主机字节序$/;"	m	struct:nt_last_s
 ack_seq	libnet/tcp.h	/^    uint32_t ack_seq ;$/;"	m	struct:tcp_info_s
+action	src/core/nt_log.h	/^    char                *action;$/;"	m	struct:nt_log_s
+actions	src/event/nt_event.h	/^    nt_event_actions_t     actions;$/;"	m	struct:__anon6
+active	src/event/nt_event.h	/^    unsigned         active: 1;$/;"	m	struct:nt_event_s
+add	src/event/nt_event.h	/^    nt_int_t ( *add )( nt_event_t *ev, nt_int_t event, nt_uint_t flags );$/;"	m	struct:__anon5
+add_async_conn	src/event/nt_event.h	/^    nt_int_t ( *add_async_conn )( nt_connection_t *c );$/;"	m	struct:__anon5
+add_conn	src/event/nt_event.h	/^    nt_int_t ( *add_conn )( nt_connection_t *c );$/;"	m	struct:__anon5
+addr_text	src/core/nt_connection.h	/^    nt_str_t           addr_text;$/;"	m	struct:nt_connection_s
 cal_chksum	tun.c	/^unsigned short cal_chksum( unsigned short * addr, int len )$/;"	f
 chk	libnet/ip.c	/^unsigned long chk( const unsigned  short * data, int size )$/;"	f
 chksum	libnet/ip.c	/^unsigned short chksum( const char *data, int size, int type )$/;"	f
+conf_ctx	src/core/nt_cycle.h	/^    void                  ****conf_ctx;  \/\/配置$/;"	m	struct:nt_cycle_s
+connection	src/core/nt_log.h	/^    size_t    connection;$/;"	m	struct:nt_log_s
 connection_s	libnet/connection.h	/^struct connection_s {$/;"	s
-create_pkg	libnet/ip.c	/^int create_pkg( const char *data, char *pkg )$/;"	f
-daddr	libnet/ip.h	/^    unsigned int daddr;$/;"	m	struct:__anon2
+create_conf	src/event/nt_event.h	/^    void                 *( *create_conf )( nt_cycle_t *cycle );$/;"	m	struct:__anon6
+create_pkg	libnet/ip.c	/^int create_pkg( nt_conn_t *conn )$/;"	f
+ctx	src/core/nt_module.h	/^    void                 *ctx;$/;"	m	struct:nt_module_s
+ctx_index	src/core/nt_module.h	/^    nt_uint_t            ctx_index;$/;"	m	struct:nt_module_s
+daddr	libnet/ip.h	/^    unsigned int daddr;$/;"	m	struct:__anon8
+data	src/core/nt_conf.h	/^    void                 *data;                                                                                         $/;"	m	struct:ngx_open_file_s
+data	src/core/nt_connection.h	/^    void               *data;$/;"	m	struct:nt_connection_s
+data	src/core/nt_log.h	/^    void                *data;$/;"	m	struct:nt_log_s
+data	src/core/nt_string.h	/^    u_char     *data;$/;"	m	struct:__anon1
+data	src/core/nt_string.h	/^    u_char     *data;$/;"	m	struct:__anon3
 data	tun.c	/^    unsigned char data[4096];$/;"	m	struct:tun_data	file:
 debug	libnet/log.h	36;"	d
-handle_tcp	libnet/tcp.c	/^int handle_tcp( char *data, int tunfd )$/;"	f
+del	src/event/nt_event.h	/^    nt_int_t ( *del )( nt_event_t *ev, nt_int_t event, nt_uint_t flags );$/;"	m	struct:__anon5
+del_async_conn	src/event/nt_event.h	/^    nt_int_t ( *del_async_conn )( nt_connection_t *c, nt_uint_t flags );$/;"	m	struct:__anon5
+del_conn	src/event/nt_event.h	/^    nt_int_t ( *del_conn )( nt_connection_t *c, nt_uint_t flags );$/;"	m	struct:__anon5
+dip	libnet/tcp.c	/^    uint32_t dip;   \/\/目的端口$/;"	m	struct:__anon9	file:
+direct_to_server	libnet/tcp.c	/^int direct_to_server( nt_conn_t *conn ){$/;"	f
+disable	src/event/nt_event.h	/^    nt_int_t ( *disable )( nt_event_t *ev, nt_int_t event, nt_uint_t flags );$/;"	m	struct:__anon5
+disk_full_time	src/core/nt_log.h	/^    time_t               disk_full_time;$/;"	m	struct:nt_log_s
+domain	libnet/tcp.c	/^    int domain; \/\/ipv4 \/ipv6$/;"	m	struct:__anon9	file:
+done	src/event/nt_event.h	/^    void ( *done )( nt_cycle_t *cycle );$/;"	m	struct:__anon5
+dport	libnet/tcp.c	/^    uint16_t dport; \/\/目的ip$/;"	m	struct:__anon9	file:
+enable	src/event/nt_event.h	/^    nt_int_t ( *enable )( nt_event_t *ev, nt_int_t event, nt_uint_t flags );$/;"	m	struct:__anon5
+eof	src/event/nt_event.h	/^    unsigned         eof: 1; \/\/见nt_unix_recv$/;"	m	struct:nt_event_s
+error	src/event/nt_event.h	/^    unsigned         error: 1;$/;"	m	struct:nt_event_s
+escape	src/core/nt_string.h	/^    unsigned    escape: 1;$/;"	m	struct:__anon3
+exit_master	src/core/nt_module.h	/^    void ( *exit_master )( nt_cycle_t *cycle );$/;"	m	struct:nt_module_s
+exit_process	src/core/nt_module.h	/^    void ( *exit_process )( nt_cycle_t *cycle );$/;"	m	struct:nt_module_s
+exit_thread	src/core/nt_module.h	/^    void ( *exit_thread )( nt_cycle_t *cycle );$/;"	m	struct:nt_module_s
+fd	src/core/nt_conf.h	/^    ngx_fd_t              fd;$/;"	m	struct:ngx_open_file_s
+fd	src/core/nt_connection.h	/^    nt_socket_t        fd;$/;"	m	struct:nt_connection_s
+file	src/core/nt_log.h	/^    nt_open_file_t     *file;$/;"	m	struct:nt_log_s
+flags	src/os/unix/nt_os.h	/^    nt_uint_t         flags;$/;"	m	struct:__anon4
+flush	src/core/nt_conf.h	/^    void                (*flush)(ngx_open_file_t *file, ngx_log_t *log);$/;"	m	struct:ngx_open_file_s
+handle_tcp	libnet/tcp.c	/^int handle_tcp( nt_conn_t *conn, int tunfd )$/;"	f
+handler	src/core/nt_log.h	/^    nt_log_handler_pt   handler;$/;"	m	struct:nt_log_s
+handler	src/event/nt_event.h	/^    nt_event_handler_pt  handler;$/;"	m	struct:nt_event_s
 hdr_len	libnet/tcp.h	/^    int16_t hdr_len ; \/\/tcp 头部长度，包含option$/;"	m	struct:tcp_info_s
 ih	libnet/connection.h	/^    struct iphdr *ih;$/;"	m	struct:nt_skb_s	typeref:struct:nt_skb_s::iphdr
+index	src/core/nt_module.h	/^    nt_uint_t            index;$/;"	m	struct:nt_module_s
+init	src/event/nt_event.h	/^    nt_int_t ( *init )( nt_cycle_t *cycle );$/;"	m	struct:__anon5
+init_conf	src/event/nt_event.h	/^    char                 *( *init_conf )( nt_cycle_t *cycle, void *conf );$/;"	m	struct:__anon6
+init_master	src/core/nt_module.h	/^    nt_int_t ( *init_master )( nt_log_t *log );$/;"	m	struct:nt_module_s
+init_module	src/core/nt_module.h	/^    nt_int_t ( *init_module )( nt_cycle_t *cycle );$/;"	m	struct:nt_module_s
+init_process	src/core/nt_module.h	/^    nt_int_t ( *init_process )( nt_cycle_t *cycle );$/;"	m	struct:nt_module_s
+init_thread	src/core/nt_module.h	/^    nt_int_t ( *init_thread )( nt_cycle_t *cycle );$/;"	m	struct:nt_module_s
 interface_up	tun.c	/^int interface_up( char *interface_name )$/;"	f
-ip	libnet/tcp.h	/^            uint32_t ip;$/;"	m	struct:tcp_pcb_s::__anon4::__anon5
-ip	libnet/tcp.h	/^            uint32_t ip;$/;"	m	struct:tcp_pcb_s::__anon7::__anon8
-ip	libnet/tcp.h	/^            uint8_t ip[16];$/;"	m	struct:tcp_pcb_s::__anon4::__anon6
-ip	libnet/tcp.h	/^            uint8_t ip[16];$/;"	m	struct:tcp_pcb_s::__anon7::__anon9
+ip	libnet/tcp.h	/^            uint32_t ip;$/;"	m	struct:tcp_pcb_s::__anon10::__anon11
+ip	libnet/tcp.h	/^            uint32_t ip;$/;"	m	struct:tcp_pcb_s::__anon13::__anon14
+ip	libnet/tcp.h	/^            uint8_t ip[16];$/;"	m	struct:tcp_pcb_s::__anon10::__anon12
+ip	libnet/tcp.h	/^            uint8_t ip[16];$/;"	m	struct:tcp_pcb_s::__anon13::__anon15
 ip	tun.c	/^    struct ip *ip;$/;"	m	struct:tun_data	typeref:struct:tun_data::ip	file:
 ip_chk	libnet/ip.c	/^static unsigned short ip_chk( const unsigned short *data, int size )$/;"	f	file:
-ip_create	libnet/ip.c	/^struct iphdr * ip_create( const char *data, char *pkg )$/;"	f
-ip_input	libnet/ip.c	/^int ip_input( const char *data ){$/;"	f
+ip_create	libnet/ip.c	/^int ip_create( nt_conn_t *conn )$/;"	f
+ip_input	libnet/ip.c	/^int ip_input( const char *data )$/;"	f
 ip_version	libnet/connection.h	/^    uint8_t ip_version;  \/\/ipv4 or ipv6$/;"	m	struct:nt_skb_s
 ipcheck	tun.c	/^short ipcheck( unsigned short * buf, int size )$/;"	f
 iphdr_len	libnet/connection.h	/^    uint8_t iphdr_len;  \/\/ipv4 or ipv6$/;"	m	struct:nt_skb_s
-ipv4_dst	libnet/tcp.h	/^        } ipv4_dst;$/;"	m	union:tcp_pcb_s::__anon7	typeref:struct:tcp_pcb_s::__anon7::__anon8
-ipv4_input	libnet/ip.c	/^int ipv4_input( nt_conn_t *conn ){$/;"	f
-ipv4_src	libnet/tcp.h	/^        }  ipv4_src;$/;"	m	union:tcp_pcb_s::__anon4	typeref:struct:tcp_pcb_s::__anon4::__anon5
-ipv6_dst	libnet/tcp.h	/^        } ipv6_dst;$/;"	m	union:tcp_pcb_s::__anon7	typeref:struct:tcp_pcb_s::__anon7::__anon9
-ipv6_src	libnet/tcp.h	/^        } ipv6_src;$/;"	m	union:tcp_pcb_s::__anon4	typeref:struct:tcp_pcb_s::__anon4::__anon6
+ipv4_dst	libnet/tcp.h	/^        } ipv4_dst;$/;"	m	union:tcp_pcb_s::__anon13	typeref:struct:tcp_pcb_s::__anon13::__anon14
+ipv4_input	libnet/ip.c	/^int ipv4_input( nt_conn_t *conn )$/;"	f
+ipv4_src	libnet/tcp.h	/^        }  ipv4_src;$/;"	m	union:tcp_pcb_s::__anon10	typeref:struct:tcp_pcb_s::__anon10::__anon11
+ipv6_dst	libnet/tcp.h	/^        } ipv6_dst;$/;"	m	union:tcp_pcb_s::__anon13	typeref:struct:tcp_pcb_s::__anon13::__anon15
+ipv6_src	libnet/tcp.h	/^        } ipv6_src;$/;"	m	union:tcp_pcb_s::__anon10	typeref:struct:tcp_pcb_s::__anon10::__anon12
+key	src/core/nt_string.h	/^    nt_str_t   key;$/;"	m	struct:__anon2
+len	src/core/nt_string.h	/^    size_t      len;$/;"	m	struct:__anon1
+len	src/core/nt_string.h	/^    unsigned    len: 28;$/;"	m	struct:__anon3
+log	src/core/nt_connection.h	/^    nt_log_t           log;$/;"	m	struct:nt_connection_s
+log_level	src/core/nt_log.h	/^    nt_uint_t           log_level;$/;"	m	struct:nt_log_s
+main	src/core/nt.c	/^int main()$/;"	f
 main	tun.c	/^int main()$/;"	f
-mbz	libnet/ip.h	/^    unsigned char mbz; \/\/mbz = 0;$/;"	m	struct:__anon2
+master_read_fd_set	src/event/modules/nt_select.c	/^static fd_set         master_read_fd_set;$/;"	v	file:
+master_write_fd_set	src/event/modules/nt_select.c	/^static fd_set         master_write_fd_set;$/;"	v	file:
+max_fd	src/event/modules/nt_select.c	/^static nt_int_t      max_fd;$/;"	v	file:
+mbz	libnet/ip.h	/^    unsigned char mbz; \/\/mbz = 0;$/;"	m	struct:__anon8
+modules	src/core/nt_cycle.h	/^    ngx_module_t            **modules;$/;"	m	struct:nt_cycle_s
+modules_n	src/core/nt_cycle.h	/^    ngx_uint_t                modules_n;$/;"	m	struct:nt_cycle_s
+modules_used	src/core/nt_cycle.h	/^    ngx_uint_t                modules_used;    \/* unsigned  modules_used:1; *\/$/;"	m	struct:nt_cycle_s
+name	src/core/nt_conf.h	/^    ngx_str_t             name;$/;"	m	struct:ngx_open_file_s
+name	src/core/nt_module.h	/^    char                 *name;$/;"	m	struct:nt_module_s
+name	src/event/nt_event.h	/^    nt_str_t              *name;$/;"	m	struct:__anon6
 ndt	libnet/connection.h	/^    nt_skb_t *ndt;$/;"	m	struct:connection_s
-nt_conn_t	libnet/connection.h	/^typedef struct connection_s nt_conn_t;$/;"	t	typeref:struct:connection_s
+next	src/core/nt_log.h	/^    nt_log_t           *next;$/;"	m	struct:nt_log_s
+ngx_fd_t	src/core/nt_files.h	/^ typedef int                      ngx_fd_t;$/;"	t
+ngx_open_file_s	src/core/nt_conf.h	/^struct ngx_open_file_s {$/;"	s
+no_cacheable	src/core/nt_string.h	/^    unsigned    no_cacheable: 1;$/;"	m	struct:__anon3
+not_found	src/core/nt_string.h	/^    unsigned    not_found: 1;$/;"	m	struct:__anon3
+notify	src/event/nt_event.h	/^    nt_int_t ( *notify )( nt_event_handler_pt handler );$/;"	m	struct:__anon5
+nt_add_conn	src/event/nt_event.h	101;"	d
+nt_add_event	src/event/nt_event.h	99;"	d
+nt_aiocb_t	src/os/unix/nt_linux_config.h	/^typedef struct iocb  nt_aiocb_t;$/;"	t	typeref:struct:iocb
+nt_base64_decoded_length	src/core/nt_string.h	191;"	d
+nt_base64_encoded_length	src/core/nt_string.h	190;"	d
+nt_blocking	src/os/unix/nt_socket.c	/^nt_blocking(nt_socket_t s)$/;"	f
+nt_blocking	src/os/unix/nt_socket.h	36;"	d
+nt_blocking_n	src/os/unix/nt_socket.h	29;"	d
+nt_blocking_n	src/os/unix/nt_socket.h	37;"	d
+nt_cdecl	src/core/nt_def.h	10;"	d
+nt_close_socket	src/os/unix/nt_socket.h	60;"	d
+nt_close_socket_n	src/os/unix/nt_socket.h	61;"	d
+nt_conn_t	libnet/common.h	/^typedef struct connection_s nt_conn_t;$/;"	t	typeref:struct:connection_s
+nt_connection_s	src/core/nt_connection.h	/^struct nt_connection_s {$/;"	s
+nt_connection_t	src/core/nt_core.h	/^typedef struct nt_connection_s      nt_connection_t;$/;"	t	typeref:struct:nt_connection_s
+nt_copy	src/core/nt_string.h	/^nt_copy( u_char *dst, u_char *src, size_t len )$/;"	f
+nt_copy	src/core/nt_string.h	138;"	d
+nt_cpymem	src/core/nt_string.h	103;"	d
+nt_cpymem	src/core/nt_string.h	93;"	d
+nt_cycle_s	src/core/nt_cycle.h	/^struct nt_cycle_s {$/;"	s
+nt_cycle_t	src/core/nt_core.h	/^typedef struct nt_cycle_s           nt_cycle_t;$/;"	t	typeref:struct:nt_cycle_s
+nt_debug_init	src/os/unix/nt_linux_config.h	124;"	d
+nt_del_conn	src/event/nt_event.h	102;"	d
+nt_del_event	src/event/nt_event.h	100;"	d
+nt_done_events	src/event/nt_event.h	97;"	d
+nt_err_t	src/os/unix/nt_errno.h	/^typedef int               nt_err_t;$/;"	t
+nt_errno	src/os/unix/nt_errno.h	61;"	d
+nt_event_actions	src/event/nt_event.c	/^nt_event_actions_t   nt_event_actions;$/;"	v
+nt_event_actions_t	src/event/nt_event.h	/^} nt_event_actions_t;$/;"	t	typeref:struct:__anon5
+nt_event_flags	src/event/nt_event.c	/^nt_uint_t            nt_event_flags;$/;"	v
+nt_event_get_conf	src/event/nt_event.h	218;"	d
+nt_event_handler_pt	src/core/nt_core.h	/^typedef void (*nt_event_handler_pt)(nt_event_t *ev);$/;"	t
+nt_event_init	src/event/nt_event.c	/^nt_event_init( nt_cycle_t *cycle )$/;"	f
+nt_event_module_t	src/event/nt_event.h	/^} nt_event_module_t;$/;"	t	typeref:struct:__anon6
+nt_event_process	src/event/nt_event.c	/^nt_event_process( nt_cycle_t *cycle )$/;"	f
+nt_event_s	src/event/nt_event.h	/^struct nt_event_s {$/;"	s
+nt_event_t	src/core/nt_core.h	/^typedef struct nt_event_s           nt_event_t;$/;"	t	typeref:struct:nt_event_s
+nt_flag_t	src/core/nt_def.h	/^typedef intptr_t        nt_flag_t;$/;"	t
+nt_get_conf	src/core/nt_conf.h	5;"	d
+nt_handle_read_event	src/event/nt_event.c	/^nt_handle_read_event( nt_event_t *rev, nt_uint_t flags )$/;"	f
+nt_handle_write_event	src/event/nt_event.c	/^nt_handle_write_event( nt_event_t *wev, nt_uint_t flags )$/;"	f
+nt_inline	src/core/nt_def.h	21;"	d
+nt_int_t	src/core/nt_def.h	/^typedef intptr_t        nt_int_t;                                                                                             $/;"	t
+nt_io	src/core/nt_connection.c	/^nt_os_io_t  nt_io;$/;"	v
+nt_keyval_t	src/core/nt_string.h	/^} nt_keyval_t;$/;"	t	typeref:struct:__anon2
+nt_last_s	libnet/connection.h	/^struct nt_last_s{$/;"	s
+nt_last_t	libnet/common.h	/^typedef struct nt_last_s nt_last_t;$/;"	t	typeref:struct:nt_last_s
+nt_libc_cdecl	src/core/nt_def.h	11;"	d
+nt_log_debug0	src/core/nt_log.h	100;"	d
+nt_log_debug0	src/core/nt_log.h	144;"	d
+nt_log_debug0	src/core/nt_log.h	64;"	d
+nt_log_debug1	src/core/nt_log.h	104;"	d
+nt_log_debug1	src/core/nt_log.h	145;"	d
+nt_log_debug1	src/core/nt_log.h	67;"	d
+nt_log_debug2	src/core/nt_log.h	108;"	d
+nt_log_debug2	src/core/nt_log.h	146;"	d
+nt_log_debug2	src/core/nt_log.h	70;"	d
+nt_log_debug3	src/core/nt_log.h	112;"	d
+nt_log_debug3	src/core/nt_log.h	147;"	d
+nt_log_debug3	src/core/nt_log.h	73;"	d
+nt_log_debug4	src/core/nt_log.h	116;"	d
+nt_log_debug4	src/core/nt_log.h	148;"	d
+nt_log_debug4	src/core/nt_log.h	76;"	d
+nt_log_debug5	src/core/nt_log.h	120;"	d
+nt_log_debug5	src/core/nt_log.h	149;"	d
+nt_log_debug5	src/core/nt_log.h	79;"	d
+nt_log_debug6	src/core/nt_log.h	124;"	d
+nt_log_debug6	src/core/nt_log.h	150;"	d
+nt_log_debug6	src/core/nt_log.h	82;"	d
+nt_log_debug7	src/core/nt_log.h	129;"	d
+nt_log_debug7	src/core/nt_log.h	151;"	d
+nt_log_debug7	src/core/nt_log.h	87;"	d
+nt_log_debug8	src/core/nt_log.h	135;"	d
+nt_log_debug8	src/core/nt_log.h	153;"	d
+nt_log_debug8	src/core/nt_log.h	92;"	d
+nt_log_handler_pt	src/core/nt_log.h	/^typedef u_char *( *nt_log_handler_pt )( nt_log_t *log, u_char *buf, size_t len );$/;"	t
+nt_log_s	src/core/nt_log.h	/^struct nt_log_s {$/;"	s
+nt_log_t	src/core/nt_core.h	/^typedef struct nt_log_s           nt_log_t;$/;"	t	typeref:struct:nt_log_s
+nt_log_writer_pt	src/core/nt_log.h	/^typedef void ( *nt_log_writer_pt )( nt_log_t *log, nt_uint_t level,$/;"	t
+nt_memcmp	src/core/nt_string.h	148;"	d
+nt_memcpy	src/core/nt_string.h	102;"	d
+nt_memmove	src/core/nt_string.h	143;"	d
+nt_memset	src/core/nt_string.h	85;"	d
+nt_memzero	src/core/nt_string.h	84;"	d
+nt_module_names	config/nt_modules.c	/^char *nt_module_names[] = {$/;"	v
+nt_module_s	src/core/nt_module.h	/^struct nt_module_s {$/;"	s
+nt_module_t	src/core/nt_core.h	/^typedef struct nt_module_s          nt_module_t;$/;"	t	typeref:struct:nt_module_s
+nt_modules	config/nt_modules.c	/^nt_module_t *nt_modules[] = {$/;"	v
+nt_movemem	src/core/nt_string.h	144;"	d
+nt_nonblocking	src/os/unix/nt_socket.c	/^nt_nonblocking(nt_socket_t s)$/;"	f
+nt_nonblocking	src/os/unix/nt_socket.h	33;"	d
+nt_nonblocking_n	src/os/unix/nt_socket.h	28;"	d
+nt_nonblocking_n	src/os/unix/nt_socket.h	34;"	d
+nt_null_string	src/core/nt_string.h	34;"	d
+nt_open_file_t	src/core/nt_core.h	/^typedef struct nt_open_file_s       nt_open_file_t;$/;"	t	typeref:struct:nt_open_file_s
+nt_os_init	src/os/unix/nt_posix_init.c	/^nt_os_init(nt_log_t *log){$/;"	f
+nt_os_io	src/os/unix/nt_posix_init.c	/^nt_os_io_t nt_os_io = { $/;"	v
+nt_os_io_t	src/os/unix/nt_os.h	/^} nt_os_io_t;$/;"	t	typeref:struct:__anon4
+nt_process_events	src/event/nt_event.h	96;"	d
+nt_recv	src/event/nt_event.h	106;"	d
+nt_recv_chain	src/event/nt_event.h	107;"	d
+nt_recv_pt	src/os/unix/nt_os.h	/^typedef ssize_t ( *nt_recv_pt )( nt_connection_t *c, u_char *buf, size_t size );$/;"	t
+nt_select_add_event	src/event/modules/nt_select.c	/^static nt_int_t nt_select_add_event( nt_event_t *ev, nt_int_t event, nt_uint_t flags )$/;"	f	file:
+nt_select_del_event	src/event/modules/nt_select.c	/^static nt_int_t nt_select_del_event( nt_event_t *ev, nt_int_t event, nt_uint_t flags )$/;"	f	file:
+nt_select_done	src/event/modules/nt_select.c	/^static void nt_select_done( nt_cycle_t *cycle )$/;"	f	file:
+nt_select_init	src/event/modules/nt_select.c	/^static nt_int_t nt_select_init( nt_cycle_t *cycle )$/;"	f	file:
+nt_select_init_conf	src/event/modules/nt_select.c	/^static char *nt_select_init_conf(nt_cycle_t *cycle, void *conf){$/;"	f	file:
+nt_select_module	src/event/modules/nt_select.c	/^nt_module_t  nt_select_module = {$/;"	v
+nt_select_module_ctx	src/event/modules/nt_select.c	/^static nt_event_module_t  nt_select_module_ctx = {$/;"	v	file:
+nt_select_process_events	src/event/modules/nt_select.c	/^static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_uint_t flags )$/;"	f	file:
+nt_send	src/event/nt_event.h	109;"	d
+nt_send_chain	src/event/nt_event.h	110;"	d
+nt_send_pt	src/os/unix/nt_os.h	/^typedef ssize_t ( *nt_send_pt )( nt_connection_t *c, u_char *buf, size_t size );$/;"	t
+nt_set_errno	src/os/unix/nt_errno.h	63;"	d
+nt_set_socket_errno	src/os/unix/nt_errno.h	64;"	d
+nt_shutdown_socket	src/os/unix/nt_socket.h	57;"	d
+nt_shutdown_socket_n	src/os/unix/nt_socket.h	58;"	d
 nt_skb_s	libnet/connection.h	/^struct nt_skb_s {$/;"	s
-nt_skb_t	libnet/connection.h	/^typedef struct nt_skb_s nt_skb_t;$/;"	t	typeref:struct:nt_skb_s
-nt_tcp_info_t	libnet/tcp.h	/^typedef struct tcp_info_s nt_tcp_info_t; $/;"	t	typeref:struct:tcp_info_s
-nt_tpcb_t	libnet/tcp.h	/^typedef struct tcp_pcb_s nt_tpcb_t; $/;"	t	typeref:struct:tcp_pcb_s
-odt	libnet/connection.h	/^    nt_skb_t *odt;   \/\/ 存seq跟ack信息$/;"	m	struct:connection_s
+nt_skb_t	libnet/common.h	/^typedef struct nt_skb_s nt_skb_t;$/;"	t	typeref:struct:nt_skb_s
+nt_socket	src/os/unix/nt_socket.h	19;"	d
+nt_socket_errno	src/os/unix/nt_errno.h	62;"	d
+nt_socket_n	src/os/unix/nt_socket.h	20;"	d
+nt_socket_t	src/os/unix/nt_socket.h	/^typedef int  nt_socket_t;$/;"	t
+nt_str_null	src/core/nt_string.h	37;"	d
+nt_str_set	src/core/nt_string.h	35;"	d
+nt_str_t	src/core/nt_string.h	/^} nt_str_t;$/;"	t	typeref:struct:__anon1
+nt_strchr	src/core/nt_string.h	57;"	d
+nt_strcmp	src/core/nt_string.h	50;"	d
+nt_string	src/core/nt_string.h	33;"	d
+nt_strlchr	src/core/nt_string.h	/^ nt_strlchr( u_char *p, u_char *last, u_char c )$/;"	f
+nt_strlen	src/core/nt_string.h	53;"	d
+nt_strncmp	src/core/nt_string.h	46;"	d
+nt_strstr	src/core/nt_string.h	52;"	d
+nt_tcp_info_t	libnet/common.h	/^typedef struct tcp_info_s nt_tcp_info_t; $/;"	t	typeref:struct:tcp_info_s
+nt_tcp_nopush	src/os/unix/nt_socket.c	/^nt_tcp_nopush(nt_socket_t s)$/;"	f
+nt_tcp_nopush_n	src/os/unix/nt_socket.h	46;"	d
+nt_tcp_nopush_n	src/os/unix/nt_socket.h	51;"	d
+nt_tcp_push	src/os/unix/nt_socket.c	/^nt_tcp_push(nt_socket_t s)$/;"	f
+nt_tcp_push_n	src/os/unix/nt_socket.h	47;"	d
+nt_tcp_push_n	src/os/unix/nt_socket.h	52;"	d
+nt_tm_gmtoff	src/os/unix/nt_time.h	38;"	d
+nt_tm_hour	src/os/unix/nt_time.h	21;"	d
+nt_tm_hour_t	src/os/unix/nt_time.h	30;"	d
+nt_tm_isdst	src/os/unix/nt_time.h	26;"	d
+nt_tm_mday	src/os/unix/nt_time.h	22;"	d
+nt_tm_mday_t	src/os/unix/nt_time.h	31;"	d
+nt_tm_min	src/os/unix/nt_time.h	20;"	d
+nt_tm_min_t	src/os/unix/nt_time.h	29;"	d
+nt_tm_mon	src/os/unix/nt_time.h	23;"	d
+nt_tm_mon_t	src/os/unix/nt_time.h	32;"	d
+nt_tm_sec	src/os/unix/nt_time.h	19;"	d
+nt_tm_sec_t	src/os/unix/nt_time.h	28;"	d
+nt_tm_t	src/os/unix/nt_time.h	/^typedef struct tm             nt_tm_t;$/;"	t	typeref:struct:tm
+nt_tm_wday	src/os/unix/nt_time.h	25;"	d
+nt_tm_wday_t	src/os/unix/nt_time.h	34;"	d
+nt_tm_year	src/os/unix/nt_time.h	24;"	d
+nt_tm_year_t	src/os/unix/nt_time.h	33;"	d
+nt_tm_zone	src/os/unix/nt_time.h	39;"	d
+nt_tolower	src/core/nt_string.h	40;"	d
+nt_toupper	src/core/nt_string.h	41;"	d
+nt_tpcb_t	libnet/common.h	/^typedef struct tcp_pcb_s nt_tpcb_t; $/;"	t	typeref:struct:tcp_pcb_s
+nt_udp_recv	src/event/nt_event.h	108;"	d
+nt_udp_send	src/event/nt_event.h	111;"	d
+nt_udp_send_chain	src/event/nt_event.h	112;"	d
+nt_udp_unix_recv	src/os/unix/nt_udp_recv.c	/^nt_udp_unix_recv(nt_connection_t *c, u_char *buf, size_t size)$/;"	f
+nt_udp_unix_send	src/os/unix/nt_udp_send.c	/^nt_udp_unix_send(nt_connection_t *c, u_char *buf, size_t size)$/;"	f
+nt_uint_t	src/core/nt_def.h	/^typedef uintptr_t       nt_uint_t;$/;"	t
+nt_unix_recv	src/os/unix/nt_recv.c	/^nt_unix_recv(nt_connection_t *c, u_char *buf, size_t size)$/;"	f
+nt_unix_send	src/os/unix/nt_send.c	/^nt_unix_send(nt_connection_t *c, u_char *buf, size_t size)$/;"	f
+nt_usec_int_t	src/os/unix/nt_time.h	/^    typedef nt_rbtree_key_int_t  nt_usec_int_t;$/;"	t
+nt_usec_t	src/os/unix/nt_time.h	/^    typedef nt_rbtree_key_t      nt_usec_t;$/;"	t
+nt_value	src/core/nt_string.h	204;"	d
+nt_value_helper	src/core/nt_string.h	203;"	d
+nt_variable_value_t	src/core/nt_string.h	/^} nt_variable_value_t;$/;"	t	typeref:struct:__anon3
+nt_version	src/core/nt.h	4;"	d
+nt_vsnprintf	src/core/nt_string.h	158;"	d
+odt	libnet/connection.h	/^    nt_last_t *odt;   \/\/ 存seq跟ack信息$/;"	m	struct:connection_s
+password	libnet/tcp.c	/^    char password[32]; \/\/用户密码$/;"	m	struct:__anon9	file:
 payload	libnet/tcp.h	/^    char *payload; \/\/载荷$/;"	m	struct:tcp_info_s
+payload_len	libnet/connection.h	/^    uint16_t payload_len; \/\/上一个数据包的长度$/;"	m	struct:nt_last_s
 payload_len	libnet/tcp.h	/^    int16_t payload_len; \/\/载荷长度$/;"	m	struct:tcp_info_s
-pcb	libnet/connection.h	/^    nt_tpcb_t *pcb;$/;"	m	struct:connection_s
-port	libnet/tcp.h	/^            uint16_t port;$/;"	m	struct:tcp_pcb_s::__anon4::__anon5
-port	libnet/tcp.h	/^            uint16_t port;$/;"	m	struct:tcp_pcb_s::__anon4::__anon6
-port	libnet/tcp.h	/^            uint16_t port;$/;"	m	struct:tcp_pcb_s::__anon7::__anon8
-port	libnet/tcp.h	/^            uint16_t port;$/;"	m	struct:tcp_pcb_s::__anon7::__anon9
+pcb	libnet/connection.h	/^        nt_tpcb_t *pcb;$/;"	m	union:connection_s::__anon17
+pkg	libnet/connection.h	/^    char *pkg ; \/\/用来存放回应包$/;"	m	struct:nt_skb_s
+pkg_len	libnet/connection.h	/^    uint16_t pkg_len ;$/;"	m	struct:nt_skb_s
+port	libnet/tcp.h	/^            uint16_t port;$/;"	m	struct:tcp_pcb_s::__anon10::__anon11
+port	libnet/tcp.h	/^            uint16_t port;$/;"	m	struct:tcp_pcb_s::__anon10::__anon12
+port	libnet/tcp.h	/^            uint16_t port;$/;"	m	struct:tcp_pcb_s::__anon13::__anon14
+port	libnet/tcp.h	/^            uint16_t port;$/;"	m	struct:tcp_pcb_s::__anon13::__anon15
 print_pkg	libnet/ip.c	/^void print_pkg( char *data )$/;"	f
+process_events	src/event/nt_event.h	/^    nt_int_t ( *process_events )( nt_cycle_t *cycle,$/;"	m	struct:__anon5
 protocol	libnet/connection.h	/^    uint8_t protocol; \/\/协议类型$/;"	m	struct:nt_skb_s
-pshead	libnet/ip.h	/^}pshead;$/;"	t	typeref:struct:__anon2
-ptcl	libnet/ip.h	/^    unsigned char ptcl;\/\/proto num; tcp = 6;$/;"	m	struct:__anon2
+pshead	libnet/ip.h	/^}pshead;$/;"	t	typeref:struct:__anon8
+ptcl	libnet/ip.h	/^    unsigned char ptcl;\/\/proto num; tcp = 6;$/;"	m	struct:__anon8
+read	src/core/nt_connection.h	/^    nt_event_t        *read;$/;"	m	struct:nt_connection_s
+ready	src/event/nt_event.h	/^    unsigned         ready: 1;$/;"	m	struct:nt_event_s
+recv	src/core/nt_connection.h	/^    nt_recv_pt         recv;$/;"	m	struct:nt_connection_s
+recv	src/os/unix/nt_os.h	/^    nt_recv_pt        recv;$/;"	m	struct:__anon4
 route_add	tun.c	/^int route_add( char *interface_name )$/;"	f
-saddr	libnet/ip.h	/^    unsigned int saddr;$/;"	m	struct:__anon2
+saddr	libnet/ip.h	/^    unsigned int saddr;$/;"	m	struct:__anon8
+select_name	src/event/modules/nt_select.c	/^static nt_str_t           select_name = nt_string("select");$/;"	v	file:
+send	src/core/nt_connection.h	/^    nt_send_pt         send;$/;"	m	struct:nt_connection_s
+send	src/os/unix/nt_os.h	/^    nt_send_pt        send;$/;"	m	struct:__anon4
+sent	src/core/nt_connection.h	/^    off_t               sent;$/;"	m	struct:nt_connection_s
+seq	libnet/connection.h	/^    uint32_t seq ;   \/\/存主机字节序$/;"	m	struct:nt_last_s
 seq	libnet/tcp.h	/^    uint32_t seq ;$/;"	m	struct:tcp_info_s
+server_ip	libnet/tcp.c	/^    uint32_t server_ip;  \/\/代理ip$/;"	m	struct:__anon9	file:
+server_port	libnet/tcp.c	/^    uint16_t server_port; \/\/代理端口$/;"	m	struct:__anon9	file:
 set_ipaddr	tun.c	/^int set_ipaddr( char * interface_name, char *ip )$/;"	f
+signature	src/core/nt_module.h	/^    const char           *signature;$/;"	m	struct:nt_module_s
+sip	libnet/tcp.c	/^    uint32_t sip;   \/\/源端口$/;"	m	struct:__anon9	file:
 skb	libnet/connection.h	/^    char *skb ;  \/\/接收的数据包$/;"	m	struct:nt_skb_s
 skb_len	libnet/connection.h	/^    uint8_t skb_len;$/;"	m	struct:nt_skb_s
+sockaddr	src/core/nt_connection.h	/^    struct sockaddr    *sockaddr;$/;"	m	struct:nt_connection_s	typeref:struct:nt_connection_s::sockaddr
+socklen	src/core/nt_connection.h	/^    socklen_t           socklen;$/;"	m	struct:nt_connection_s
+spare0	src/core/nt_module.h	/^    nt_uint_t            spare0;$/;"	m	struct:nt_module_s
+spare1	src/core/nt_module.h	/^    nt_uint_t            spare1;$/;"	m	struct:nt_module_s
+spare_hook0	src/core/nt_module.h	/^    uintptr_t             spare_hook0;$/;"	m	struct:nt_module_s
+spare_hook1	src/core/nt_module.h	/^    uintptr_t             spare_hook1;$/;"	m	struct:nt_module_s
+spare_hook2	src/core/nt_module.h	/^    uintptr_t             spare_hook2;$/;"	m	struct:nt_module_s
+spare_hook3	src/core/nt_module.h	/^    uintptr_t             spare_hook3;$/;"	m	struct:nt_module_s
+spare_hook4	src/core/nt_module.h	/^    uintptr_t             spare_hook4;$/;"	m	struct:nt_module_s
+spare_hook5	src/core/nt_module.h	/^    uintptr_t             spare_hook5;$/;"	m	struct:nt_module_s
+spare_hook6	src/core/nt_module.h	/^    uintptr_t             spare_hook6;$/;"	m	struct:nt_module_s
+spare_hook7	src/core/nt_module.h	/^    uintptr_t             spare_hook7;$/;"	m	struct:nt_module_s
+sport	libnet/tcp.c	/^    uint16_t sport; \/\/源ip$/;"	m	struct:__anon9	file:
 t_data	tun.c	/^} t_data;$/;"	t	typeref:struct:tun_data	file:
 tcp_chk	libnet/ip.c	/^static unsigned short tcp_chk( const unsigned short *data, int size )$/;"	f	file:
-tcp_create	libnet/tcp.c	/^void tcp_create( const char *data, char *pkg )$/;"	f
-tcp_info	libnet/connection.h	/^        nt_tcp_info_t  tcp_info;$/;"	m	union:nt_skb_s::__anon3
+tcp_create	libnet/tcp.c	/^void tcp_create( nt_conn_t *conn )$/;"	f
+tcp_info	libnet/connection.h	/^        nt_tcp_info_t  *tcp_info;$/;"	m	union:nt_skb_s::__anon16
 tcp_info_s	libnet/tcp.h	/^struct tcp_info_s{$/;"	s
 tcp_input	libnet/tcp.c	/^int tcp_input(nt_conn_t *conn){$/;"	f
 tcp_parse_option	libnet/tcp.c	/^void tcp_parse_option( char *data )$/;"	f
 tcp_pcb_s	libnet/tcp.h	/^struct tcp_pcb_s {$/;"	s
-tcpl	libnet/ip.h	/^    unsigned short tcpl; \/\/tcp头部及头层皮载荷长度; 为网络字节; htons(int);$/;"	m	struct:__anon2
-th	libnet/tcp.h	/^    struct tcphdr *th;    $/;"	m	struct:tcp_info_s	typeref:struct:tcp_info_s::tcphdr
+tcpl	libnet/ip.h	/^    unsigned short tcpl; \/\/tcp头部及头层皮载荷长度; 为网络字节; htons(int);$/;"	m	struct:__anon8
 tl_proto	tun.c	/^    void * tl_proto;$/;"	m	struct:tun_data	file:
 tun	tun.c	/^int tun;$/;"	v
 tun_create	tun.c	/^int tun_create( char *dev, int flags )$/;"	f
 tun_data	tun.c	/^typedef struct tun_data {$/;"	s	file:
 type	libnet/connection.h	/^    uint8_t type;$/;"	m	struct:nt_skb_s
+type	libnet/tcp.c	/^    int type;  \/\/数据包类型 ， 1，发起连接  2. 转发payload$/;"	m	struct:__anon9	file:
+type	src/core/nt_module.h	/^    nt_uint_t            type;$/;"	m	struct:nt_module_s
 udp_create	libnet/ip.c	/^static void udp_create( const char *data, char *pkg )$/;"	f	file:
+udp_recv	src/os/unix/nt_os.h	/^    nt_recv_pt        udp_recv;$/;"	m	struct:__anon4
+udp_send	src/os/unix/nt_os.h	/^    nt_send_pt        udp_send;$/;"	m	struct:__anon4
+user	libnet/tcp.c	/^    char user[32] ; \/\/用户账号$/;"	m	struct:__anon9	file:
+valid	src/core/nt_string.h	/^    unsigned    valid: 1;$/;"	m	struct:__anon3
+value	src/core/nt_string.h	/^    nt_str_t   value;$/;"	m	struct:__anon2
+version	src/core/nt_module.h	/^    nt_uint_t            version;$/;"	m	struct:nt_module_s
+wdata	src/core/nt_log.h	/^    void                *wdata;$/;"	m	struct:nt_log_s
+work_read_fd_set	src/event/modules/nt_select.c	/^static fd_set         work_read_fd_set;$/;"	v	file:
+work_write_fd_set	src/event/modules/nt_select.c	/^static fd_set         work_write_fd_set;$/;"	v	file:
+write	src/core/nt_connection.h	/^    nt_event_t        *write;$/;"	m	struct:nt_connection_s
+write	src/event/nt_event.h	/^    unsigned         write: 1;$/;"	m	struct:nt_event_s
+writer	src/core/nt_log.h	/^    nt_log_writer_pt    writer;$/;"	m	struct:nt_log_s
