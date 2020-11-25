@@ -32,6 +32,9 @@ struct nt_connection_s {
     socklen_t           socklen;
     nt_str_t           addr_text;
 
+    //队列
+    nt_queue_t         queue;
+
     unsigned            log_error:3;     /* nt_connection_log_error_e */
 
 };

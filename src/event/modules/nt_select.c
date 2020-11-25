@@ -101,7 +101,7 @@ static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_uint_t flags )
 {
 
     int                ready, nready;
-    ngx_err_t          err;
+    nt_err_t          err;
 
     struct timeval     tv, *tp;
 
@@ -112,25 +112,25 @@ static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_uint_t flags )
     ready = select( max_fd + 1, &work_read_fd_set, &work_write_fd_set, NULL, tp );
 
 
-    err = (ready == -1) ? ngx_errno : 0;
+    err = (ready == -1) ? nt_errno : 0;
     if( err ){
-        if (err == NGX_EINTR) {
+        if (err == NT_EINTR) {
 
         }
 
-        if (err == NGX_EBADF) {
-            //ngx_select_repair_fd_sets(cycle);
+        if (err == NT_EBADF) {
+            //nt_select_repair_fd_sets(cycle);
         }
-        return NGX_ERROR;
+        return NT_ERROR;
     }
 
     if (ready == 0) {
 
-        return NGX_ERROR;
+        return NT_ERROR;
     }
 
 
-    return NGX_OK;
+    return NT_OK;
 }
 
 

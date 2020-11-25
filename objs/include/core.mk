@@ -31,3 +31,9 @@ objs/src/core/nt_cycle.o:  $(CORE_DEPS) \
 		-o objs/src/core/nt_cycle.o \
 		src/core/nt_cycle.c
 
+objs/src/core/nt_queue.o:  $(CORE_DEPS) \
+	src/core/nt_queue.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_queue.o \
+		src/core/nt_queue.c
+
