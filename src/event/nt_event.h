@@ -46,9 +46,14 @@
     #define NT_IOCP_CONNECT     2
 #endif
 
-
+#define NT_INVALID_INDEX  0xd0d0d0d0
 
 struct nt_event_s {
+
+    /*  事件相关的对象。通常data都是指向nt_connection_t连接对象,见nt_get_connection。
+     *  开启文件异步I/O时，它可能会指向nt_event_aio_t(nt_file_aio_init)结构体
+     *  */
+    void            *data;
 
     //标志位，为1时表示事件是可写的。通常情况下，它表示对应的TCP连接目前状态是可写的，也就是连接处于可以发送网络包的状态
     unsigned         write: 1;
@@ -58,12 +63,36 @@ struct nt_event_s {
 
     unsigned         ready: 1;
 
+    unsigned         accept: 1;
+
     //标志位，为1时表示当前处理的字符流已经结束  例如内核缓冲区没有数据，你去读，则会返回0
     unsigned         eof: 1; //见nt_unix_recv
     //标志位，为1时表示事件在处理过程中出现错误
     unsigned         error: 1;
 
+	//删除post队列的时候需要检查
+    //表示延迟处理该事件，见ngx_epoll_process_events -> ngx_post_event  标记是否在延迟队列里面
+    unsigned         posted: 1;
+
+    //标志位，为1时表示当前事件已经关闭，epoll模块没有使用它
+    unsigned         closed: 1; //ngx_close_connection中置1
+
+    /*  epoll未使用
+     *  select的事件序号
+     * */
+    nt_uint_t       index;
+
+    //可用于记录error_log日志的nt_log_t对象
+    nt_log_t       *log; //可以记录日志的nt_log_t对象 其实就是nt_listening_t中获取的log //赋值见nt_event_accept
+
+
     nt_event_handler_pt  handler;
+
+    /* the posted queue */
+    /*post事件将会构成一个队列再统一处理，这个队列以next和prev作为链表指针，以此构成一个简易的双向链表，其中next指向后一个>  事件的地址，
+     *       prev指向前一个事件的地址
+     *              */
+    nt_queue_t      queue;
 };
 
 

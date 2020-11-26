@@ -6,6 +6,19 @@ objs/src/os/unix/nt_posix_init.o: $(CORE_DEPS) \
 		-o objs/src/os/unix/nt_posix_init.o \
 		src/os/unix/nt_posix_init.c
 
+objs/src/os/unix/nt_errno.o: $(CORE_DEPS) \
+	src/os/unix/nt_errno.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/os/unix/nt_errno.o \
+		src/os/unix/nt_errno.c
+
+objs/src/os/unix/nt_times.o: $(CORE_DEPS) \
+	src/os/unix/nt_times.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/os/unix/nt_times.o \
+		src/os/unix/nt_times.c
+
+
 objs/src/os/unix/nt_files.o: $(CORE_DEPS) \
 	src/os/unix/nt_files.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \

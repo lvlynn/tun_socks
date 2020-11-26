@@ -9,7 +9,11 @@ struct nt_cycle_s {
     nt_module_t            **modules;
     nt_uint_t                modules_n;
     nt_uint_t                modules_used;    /* unsigned  modules_used:1; */
+
+    nt_cycle_t *log;
     //   nt_process_event;
 };
+
+extern volatile nt_cycle_t  *nt_cycle;
 #endif
 

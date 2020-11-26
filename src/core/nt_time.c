@@ -1,5 +1,4 @@
 
-#include <nt_def.h>
 #include <nt_core.h>
 
 

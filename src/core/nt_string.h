@@ -58,7 +58,7 @@ size_t nt_strnlen( u_char *p, size_t n );
 
 
 static nt_inline u_char *
- nt_strlchr( u_char *p, u_char *last, u_char c )
+nt_strlchr( u_char *p, u_char *last, u_char c )
 {
     while( p < last ) {
 
@@ -153,7 +153,7 @@ u_char *nt_cpystrn( u_char *dst, u_char *src, size_t n );
 u_char * nt_cdecl nt_sprintf( u_char *buf, const char *fmt, ... );
 u_char * nt_cdecl nt_snprintf( u_char *buf, size_t max, const char *fmt, ... );
 u_char * nt_cdecl nt_slprintf( u_char *buf, u_char *last, const char *fmt,
-                                 ... );
+                               ... );
 u_char *nt_vslprintf( u_char *buf, u_char *last, const char *fmt, va_list args );
 #define nt_vsnprintf(buf, max, fmt, args)                                   \
     nt_vslprintf(buf, buf + (max), fmt, args)
@@ -199,8 +199,43 @@ uint32_t nt_utf8_decode( u_char **p, size_t n );
 size_t nt_utf8_length( u_char *p, size_t n );
 u_char *nt_utf8_cpystrn( u_char *dst, u_char *src, size_t n, size_t len );
 
+#define NT_ESCAPE_URI            0
+#define NT_ESCAPE_ARGS           1
+#define NT_ESCAPE_URI_COMPONENT  2
+#define NT_ESCAPE_HTML           3
+#define NT_ESCAPE_REFRESH        4
+#define NT_ESCAPE_MEMCACHED      5
+#define NT_ESCAPE_MAIL_AUTH      6
+
+#define NT_UNESCAPE_URI       1
+#define NT_UNESCAPE_REDIRECT  2
+
+uintptr_t nt_escape_uri( u_char *dst, u_char *src, size_t size,
+                         nt_uint_t type );
+void nt_unescape_uri( u_char **dst, u_char **src, size_t size, nt_uint_t type );
+uintptr_t nt_escape_html( u_char *dst, u_char *src, size_t size );
+uintptr_t nt_escape_json( u_char *dst, u_char *src, size_t size );
+
+
+typedef struct {
+    nt_rbtree_node_t         node;
+    nt_str_t                 str;
+
+} nt_str_node_t;
+
+
+void nt_str_rbtree_insert_value( nt_rbtree_node_t *temp,
+                                 nt_rbtree_node_t *node, nt_rbtree_node_t *sentinel );
+nt_str_node_t *nt_str_rbtree_lookup( nt_rbtree_t *rbtree, nt_str_t *name,
+                                     uint32_t hash );
+
+
+void nt_sort( void *base, size_t n, size_t size,
+              nt_int_t ( *cmp )( const void *, const void * ) );
+#define nt_qsort             qsort
+
 
 #define nt_value_helper(n)   #n
- #define nt_value(n)          nt_value_helper(n)
+#define nt_value(n)          nt_value_helper(n)
 
 #endif

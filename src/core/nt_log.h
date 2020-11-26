@@ -216,5 +216,46 @@ if ((log)->log_level & level)                                             \
 
 #endif
 
+/*********************************/
+
+nt_log_t *nt_log_init( u_char *prefix );
+void nt_cdecl nt_log_abort( nt_err_t err, const char *fmt, ... );
+void nt_cdecl nt_log_stderr( nt_err_t err, const char *fmt, ... );
+u_char *nt_log_errno( u_char *buf, u_char *last, nt_err_t err );
+nt_int_t nt_log_open_default( nt_cycle_t *cycle );
+nt_int_t nt_log_redirect_stderr( nt_cycle_t *cycle );
+nt_log_t *nt_log_get_file_log( nt_log_t *head );
+//char *nt_log_set_log( nt_conf_t *cf, nt_log_t **head );
+
+
+/*
+ *    * nt_write_stderr() cannot be implemented as macro, since
+ *       * MSVC does not allow to use #ifdef inside macro parameters.
+ *          *
+ *             * nt_write_fd() is used instead of nt_write_console(), since
+ *                * CharToOemBuff() inside nt_write_console() cannot be used with
+ *                   * read only buffer as destination and CharToOemBuff() is not needed
+ *                      * for nt_write_stderr() anyway.
+ *                         */
+static nt_inline void
+nt_write_stderr( char *text )
+{
+    ( void ) nt_write_fd( nt_stderr, text, nt_strlen( text ) );
+
+}
+
+
+static nt_inline void
+nt_write_stdout( char *text )
+{
+    ( void ) nt_write_fd( nt_stdout, text, nt_strlen( text ) );
+
+}
+
+
+extern nt_module_t  nt_errlog_module;
+extern nt_uint_t    nt_use_stderr;
+
+
 
 #endif

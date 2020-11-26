@@ -1,6 +1,41 @@
 #ifndef _NT_PROCESS_H_
 #define _NT_PROCESS_H_
 
+#include <nt_core.h>
+
+typedef pid_t       nt_pid_t;
+
+#define NT_INVALID_PID  -1
+
+typedef void ( *nt_spawn_proc_pt )( nt_cycle_t *cycle, void *data );
+
+typedef struct {
+    nt_pid_t           pid;
+    int                 status;
+    nt_socket_t        channel[2];
+
+    nt_spawn_proc_pt   proc;
+    void               *data;
+    char               *name;
+
+    unsigned            respawn: 1;
+    unsigned            just_spawn: 1;
+    unsigned            detached: 1;
+    unsigned            exiting: 1;
+    unsigned            exited: 1;
+
+} nt_process_t;
+
+
+typedef struct {
+    char         *path;
+    char         *name;
+    char *const  *argv;
+    char *const  *envp;
+
+} nt_exec_ctx_t;
+
+
 
 #define NT_MAX_PROCESSES         1024
 

@@ -1,7 +1,6 @@
 #ifndef _NT_ERRNO_H_
 #define _NT_ERRNO_H_
 
-#include <nt_def.h>
 #include <nt_core.h>
 
 typedef int               nt_err_t;
@@ -48,13 +47,13 @@ typedef int               nt_err_t;
 #define NT_EBADF         EBADF
 
 #if (NT_HAVE_OPENAT)
-#define NT_EMLINK        EMLINK
+    #define NT_EMLINK        EMLINK
 #endif
 
 #if (__hpux__)
-#define NT_EAGAIN        EWOULDBLOCK
+    #define NT_EAGAIN        EWOULDBLOCK
 #else
-#define NT_EAGAIN        EAGAIN
+    #define NT_EAGAIN        EAGAIN
 #endif
 
 
@@ -63,5 +62,8 @@ typedef int               nt_err_t;
 #define nt_set_errno(err)         errno = err
 #define nt_set_socket_errno(err)  errno = err
 
+
+u_char *nt_strerror(nt_err_t err, u_char *errstr, size_t size);
+nt_int_t nt_strerror_init(void);
 
 #endif

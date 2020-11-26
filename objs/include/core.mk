@@ -49,3 +49,15 @@ objs/src/core/nt_buf.o:  $(CORE_DEPS) \
 		-o objs/src/core/nt_buf.o \
 		src/core/nt_buf.c
 
+objs/src/core/nt_string.o:  $(CORE_DEPS) \
+	src/core/nt_string.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_string.o \
+		src/core/nt_string.c
+
+objs/src/core/nt_rbtree.o:  $(CORE_DEPS) \
+	src/core/nt_rbtree.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_rbtree.o \
+		src/core/nt_rbtree.c
+
