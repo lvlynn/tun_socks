@@ -9,17 +9,24 @@
 /*
  *       封装nginx自己的时间缓存
  *             减少gettimeofday系统调用，从而提高效率
- *                   nginx更新缓存时间主要是通过nt_timer_resolution时间频率发送信号SIGALRM处理，从而达到更新缓存时间的目的  
+ *                   nginx更新缓存时间主要是通过nt_timer_resolution时间频率发送信号SIGALRM处理，从而达到更新缓存时间的目的
  *                     */
 
-struct nt_time_s{
+struct nt_time_s {
     time_t      sec;
     nt_uint_t  msec;
-#if (T_NT_RET_CACHE)
+    #if (T_NT_RET_CACHE)
     nt_uint_t  usec;
-#endif
+    #endif
     nt_int_t   gmtoff;
 } ;
+
+
+void nt_time_init( void );
+
+//缓存时间的更新函数
+void nt_time_update( void );
+
 
 #if (T_NT_RET_CACHE)
     extern volatile nt_tm_t    *nt_cached_tm;
