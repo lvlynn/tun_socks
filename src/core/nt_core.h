@@ -63,6 +63,7 @@ typedef void ( *nt_event_handler_pt )( nt_event_t *ev );
 #include <nt_time.h>
 
 #include <nt_event_posted.h>
+#include <nt_event_timer.h>
 
 
 #endif

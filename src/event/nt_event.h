@@ -68,14 +68,36 @@ struct nt_event_s {
     //标志位，为1时表示当前处理的字符流已经结束  例如内核缓冲区没有数据，你去读，则会返回0
     unsigned         eof: 1; //见nt_unix_recv
     //标志位，为1时表示事件在处理过程中出现错误
-    unsigned         error: 1;
+	unsigned         error: 1;
+
+	//标志位，为I时表示这个事件已经超时，用以提示事件的消费模块做超时处理
+	/*读客户端连接的数据，在nt_http_init_connection(nt_connection_t *c)中的nt_add_timer(rev, c->listening->post_ac  cept_timeout)把读事件添加到定时器中，如果超时则置1
+	  每次nt_unix_recv把内核数据读取完毕后，在重新启动add epoll，等待新的数据到来，同时会启动定时器nt_add_timer(rev  , c->listening->post_accept_timeout);
+	  如果在post_accept_timeout这么长事件内没有数据到来则超时，开始处理关闭TCP流程*/
+
+	/*  
+		读超时是指的读取对端数据的超时时间，写超时指的是当数据包很大的时候，write返回NT_AGAIN，则会添加write定时器，从而
+		判断是否超时，如果发往
+		对端数据长度小，则一般write直接返回成功，则不会添加write超时定时器，也就不会有write超时，写定时器参考函数nt_http  _upstream_send_request
+		*/
+	unsigned         timedout:1; //定时器超时标记，见nt_event_expire_timers                                         
+
+	//标志位，为1时表示这个事件存在于定时器中
+	unsigned         timer_set:1; //nt_event_add_timer nt_add_timer 中置1   nt_event_expire_timers置0
+
+	//标志位，delayed为1时表示需要延迟处理这个事件，它仅用于限速功能 
+	unsigned         delayed:1; //限速见nt_http_write_filter 
+
 
 	//删除post队列的时候需要检查
-    //表示延迟处理该事件，见ngx_epoll_process_events -> ngx_post_event  标记是否在延迟队列里面
+    //表示延迟处理该事件，见nt_epoll_process_events -> nt_post_event  标记是否在延迟队列里面
     unsigned         posted: 1;
 
     //标志位，为1时表示当前事件已经关闭，epoll模块没有使用它
-    unsigned         closed: 1; //ngx_close_connection中置1
+    unsigned         closed: 1; //nt_close_connection中置1
+
+	//计时器事件标志，指示在关闭工作人员时应忽略该事件。优雅的工作人员关闭被延迟，直到没有安排不可取消的计时器事件。
+	unsigned         cancelable:1;
 
     /*  epoll未使用
      *  select的事件序号
@@ -87,6 +109,9 @@ struct nt_event_s {
 
 
     nt_event_handler_pt  handler;
+
+	//定时器节点，用于定时器红黑树中
+     nt_rbtree_node_t   timer;  //见nt_event_timer_rbtree
 
     /* the posted queue */
     /*post事件将会构成一个队列再统一处理，这个队列以next和prev作为链表指针，以此构成一个简易的双向链表，其中next指向后一个>  事件的地址，
