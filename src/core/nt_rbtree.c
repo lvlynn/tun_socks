@@ -89,8 +89,8 @@ nt_rbtree_node_t *nt_rbtree_search( nt_rbtree_t *tree, nt_rbtree_key_t key )
 
     root = tree->root;
     sentinel = tree->sentinel;
-    if( tree == sentinel )
-        return ;
+    if( tree->root == sentinel )
+        return sentinel;
 
     int ret = 0;
     while( ( ret = tree->insert( RBTREE_SEARCH, root->key, key ) ) != 0 ) {
@@ -108,6 +108,58 @@ nt_rbtree_node_t *nt_rbtree_search( nt_rbtree_t *tree, nt_rbtree_key_t key )
 }
 
 
+
+
+
+/*
+ *    * 前序遍历"红黑树"
+ **/
+static void preorder( nt_rbtree_t *tree, nt_uint_t handle )
+{
+    typedef struct {
+        int port;
+        int test;
+        char ip[18];
+    } nt_test_t;
+    nt_rbtree_t rt = *tree;
+    nt_rbtree_node_t *node = tree->root;
+    nt_rbtree_node_t *sentinel = tree->sentinel;
+
+    if( node != sentinel ) {
+
+        /*
+            typedef void (*c) ( nt_rbtree_key_t key  );
+            c = ( *(void (**)(nt_rbtree_key_t))&handle );
+            c( node->key );
+
+            c  test = ( c  )&handle ;
+            test( node->key );
+
+           (*(c *)&handle)(node->key);
+        */
+
+        ( *( void ( ** )( nt_rbtree_key_t ) )&handle )( node->key );
+
+        rt.root = node->left;
+        preorder( &rt, handle );
+        rt.root = node->right;
+        preorder( &rt, handle );
+    }
+
+
+}
+
+//void ( nt_rbtree_dump_handle *)( nt_rbtree_key_t key );
+void  nt_rbtree_dump( nt_rbtree_t *tree, nt_uint_t handle )
+{
+    //  nt_rbtree_dump_handle = void *(nt_rbtree_key_t ) handle;
+    if( tree )
+        preorder( tree, handle );
+
+}
+
+
+
 int nt_rbtree_call_insert( nt_rbtree_t *tree, nt_rbtree_node_t *node )
 {
 
@@ -118,24 +170,18 @@ int nt_rbtree_call_insert( nt_rbtree_t *tree, nt_rbtree_node_t *node )
     nt_rbtree_node_t  **p;
 
     for( ;; ) {
-
-//        nt_test_t *tnode = ( nt_test_t * )node->key;
-//        nt_test_t *ttemp = ( nt_test_t * )temp->key;
-
-        //         tree->insert( temp, node, sentinel );
         int ret = tree->insert( RBTREE_INSERT, temp->key, node->key );
         if( ret > 0 )
             p = &temp->left;
         else if( ret < 0 )
             p = &temp->right;
         else {
-            printf( "相同不添加\n" );
+//            printf( "相同不添加\n" );
             node->parent = sentinel;
             return  NT_ERROR;
         }
 
         //       p = (tnode->port < ttemp->port) ? &temp->left : &temp->right;
-
         if( *p == sentinel ) {
             break;
 
@@ -170,7 +216,8 @@ nt_rbtree_insert( nt_rbtree_t *tree, nt_rbtree_node_t *node )
         node->right = sentinel;
         nt_rbt_black( node );
         *root = node;
-
+        
+        tree->count += 1;
         return;
     }
 
@@ -178,6 +225,8 @@ nt_rbtree_insert( nt_rbtree_t *tree, nt_rbtree_node_t *node )
 //    tree->insert(root, node, sentinel);
     if( nt_rbtree_call_insert( tree, node ) == NT_ERROR )
         return ;
+
+    tree->count += 1;
 
     /* re-balance tree */
     //对树进行平衡处理,仅需要处理父结点为红色的情况
@@ -233,6 +282,20 @@ nt_rbtree_insert( nt_rbtree_t *tree, nt_rbtree_node_t *node )
     nt_rbt_black( *root );
 }
 
+int
+nt_rbtree_delete_key( nt_rbtree_t *tree,  nt_rbtree_key_t key )
+{
+    nt_rbtree_node_t *d;
+
+    d = nt_rbtree_search( tree, key );
+
+    if( d == tree->sentinel )
+        return -1;
+
+    nt_rbtree_delete( tree, d );
+
+    return 0;
+}
 
 
 void
@@ -270,6 +333,8 @@ nt_rbtree_delete( nt_rbtree_t *tree, nt_rbtree_node_t *node )
         }
     }
 
+
+    tree->count -= 1;
     //如果待删除结点为根结点，些时的情况是要么树中就一个根结点，要么存在一个红色的孩子
     //调整树的根结点指针，更改替换结点的颜色
     //如果要删除的是根节点，应该把跟节点变成哨兵节点

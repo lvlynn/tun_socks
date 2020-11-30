@@ -38,6 +38,8 @@ typedef struct nt_rbtree_s  nt_rbtree_t;
 #define RBTREE_SEARCH 0
 typedef int (*nt_rbtree_insert_pt) ( nt_flag_t flag,  nt_rbtree_key_t tree_key, nt_rbtree_key_t cur_key );
 nt_rbtree_node_t *nt_rbtree_search( nt_rbtree_t *tree, nt_rbtree_key_t key );
+ void  nt_rbtree_dump(nt_rbtree_t *tree, nt_uint_t handle); 
+int nt_rbtree_delete_key( nt_rbtree_t *tree,  nt_rbtree_key_t key );
 
 
 
@@ -46,13 +48,15 @@ struct nt_rbtree_s {
     nt_rbtree_node_t     *root;
     nt_rbtree_node_t     *sentinel;
     nt_rbtree_insert_pt   insert;
+    uint16_t             count; 
 };
 
 
 #define nt_rbtree_init(tree, s, i)                                           \
     nt_rbtree_sentinel_init(s);                                              \
-    (tree)->root = s;                                                         \
-    (tree)->sentinel = s;                                                     \
+    (tree)->root = s;                                                        \
+    (tree)->sentinel = s;                                                    \
+    (tree)->count = 0;                                                        \
     (tree)->insert = i
 
 
