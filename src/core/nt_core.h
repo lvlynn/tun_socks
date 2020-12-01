@@ -3,10 +3,12 @@
 #include <nt_def.h>
 
 typedef struct nt_module_s          nt_module_t;
+typedef struct nt_conf_s            nt_conf_t;
 typedef struct nt_cycle_s           nt_cycle_t;
 typedef struct nt_pool_s            nt_pool_t;
 typedef struct nt_chain_s           nt_chain_t;
 typedef struct nt_file_s            nt_file_t;
+typedef struct nt_command_s         nt_command_t;
 typedef struct nt_time_s            nt_time_t;
 typedef struct nt_log_s             nt_log_t;
 typedef struct nt_event_s           nt_event_t;
@@ -15,6 +17,7 @@ typedef struct nt_open_file_s       nt_open_file_t;
 // typedef struct pid_t            nt_pid_t;
 
 typedef void ( *nt_event_handler_pt )( nt_event_t *ev );
+typedef void ( *nt_connection_handler_pt )( nt_connection_t *c );
 
 #define  NT_OK          0
 #define  NT_ERROR      -1
@@ -33,10 +36,10 @@ typedef void ( *nt_event_handler_pt )( nt_event_t *ev );
 #define CRLF   "\r\n"
 
 
-  
+
 #define nt_abs(value)       (((value) >= 0) ? (value) : - (value))
 #define nt_max(val1, val2)  ((val1 < val2) ? (val2) : (val1))
-#define nt_min(val1, val2)  ((val1 > val2) ? (val2) : (val1))  
+#define nt_min(val1, val2)  ((val1 > val2) ? (val2) : (val1))
 
 
 //引入模块头文件
@@ -52,9 +55,11 @@ typedef void ( *nt_event_handler_pt )( nt_event_t *ev );
 #include <nt_palloc.h>
 #include <nt_buf.h>
 #include <nt_queue.h>
+#include <nt_array.h>
 #include <nt_process.h>
 
 #include <nt_file.h>
+ #include <nt_inet.h>
 #include <nt_cycle.h>
 
 #include <nt_module.h>

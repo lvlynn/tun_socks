@@ -7,6 +7,9 @@
 //程序全局变量
 volatile nt_cycle_t  *nt_cycle;
 
+nt_uint_t             nt_test_config;
+
+
  nt_cycle_t *
  nt_init_cycle(nt_cycle_t *old_cycle){
 

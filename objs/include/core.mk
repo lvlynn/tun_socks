@@ -19,6 +19,12 @@ objs/src/core/nt_log.o:  $(CORE_DEPS) \
 		-o objs/src/core/nt_log.o \
 		src/core/nt_log.c\
 
+objs/src/core/nt_inet.o:  $(CORE_DEPS) \
+	src/core/nt_inet.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_inet.o \
+		src/core/nt_inet.c
+
 objs/src/core/nt_connection.o:  $(CORE_DEPS) \
 	src/core/nt_connection.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
@@ -42,6 +48,13 @@ objs/src/core/nt_palloc.o:  $(CORE_DEPS) \
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
 		-o objs/src/core/nt_palloc.o \
 		src/core/nt_palloc.c
+
+objs/src/core/nt_array.o:  $(CORE_DEPS) \
+	src/core/nt_array.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_array.o \
+		src/core/nt_array.c
+
 
 objs/src/core/nt_buf.o:  $(CORE_DEPS) \
 	src/core/nt_buf.c

@@ -61,43 +61,76 @@ struct nt_event_s {
     // 标志位，为1时表示当前事件是活跃的 为0时表示事件是不活跃的
     unsigned         active: 1;
 
+
+    /*
+     *     标志位，为1时表示禁用事件，仅在kqueue或者rtsig事件驱动模块中有效，而对于epoll事件驱动模块则无意义，这里不再详述
+     **/
+    unsigned         disabled: 1;
+
+
     unsigned         ready: 1;
 
     unsigned         accept: 1;
 
+
+    /*
+            这个标志位用于区分当前事件是否是过期的，它仅仅是给事件驱动模块使用的，而事件消费模块可不用关心。为什么需要这个标志位呢？
+       当开始处理一批事件时，处理前面的事件可能会关闭一些连接，而这些连接有可能影响这批事件中还未处理到的后面的事件。这时，
+       可通过instance标志位来避免处理后面的已经过期的事件。将详细描述nt_epoll_module是如何使用instance标志位区分
+       过期事件的，这是一个巧妙的设计方法
+
+            instance标志位为什么可以判断事件是否过期？instance标志位的使用其实很简单，它利用了指针的最后一位一定
+       是0这一特性。既然最后一位始终都是0，那么不如用来表示instance。这样，在使用nt_epoll_add_event方法向epoll中添加事件时，就把epoll_event中
+       联合成员data的ptr成员指向nt_connection_t连接的地址，同时把最后一位置为这个事件的instance标志。而在nt_epoll_process_events方法中取出指向连接的
+       ptr地址时，先把最后一位instance取出来，再把ptr还原成正常的地址赋给nt_connection_t连接。这样，instance究竟放在何处的问题也就解决了。
+       那么，过期事件又是怎么回事呢？举个例子，假设epoll_wait -次返回3个事件，在第
+       1个事件的处理过程中，由于业务的需要，所以关闭了一个连接，而这个连接恰好对应第3个事件。这样的话，在处理到第3个事件时，这个事件就
+       已经是过期辜件了，一旦处理必然出错。既然如此，把关闭的这个连接的fd套接字置为一1能解决问题吗？答案是不能处理所有情况。
+       下面先来看看这种貌似不可能发生的场景到底是怎么发生的：假设第3个事件对应的nt_connection_t连接中的fd套接字原先是50，处理第1个事件
+       时把这个连接的套接字关闭了，同时置为一1，并且调用nt_free_connection将该连接归还给连接池。在nt_epoll_process_events方法的循环中开始处
+       理第2个事件，恰好第2个事件是建立新连接事件，调用nt_get_connection从连接池中取出的连接非常可能就是刚刚释放的第3个事件对应的连接。由于套
+       接字50刚刚被释放，Linux内核非常有可能把刚刚释放的套接字50又分配给新建立的连接。因此，在循环中处理第3个事件时，这个事件就是过期的了！它对应
+       的事件是关闭的连接，而不是新建立的连接。
+       如何解决这个问题？依靠instance标志位。当调用nt_get_connection从连接池中获取一个新连接时，instance标志位就会置反
+       */
+    /* used to detect the stale events in kqueue and epoll */
+    unsigned         instance: 1;
+
+
+
     //标志位，为1时表示当前处理的字符流已经结束  例如内核缓冲区没有数据，你去读，则会返回0
     unsigned         eof: 1; //见nt_unix_recv
     //标志位，为1时表示事件在处理过程中出现错误
-	unsigned         error: 1;
+    unsigned         error: 1;
 
-	//标志位，为I时表示这个事件已经超时，用以提示事件的消费模块做超时处理
-	/*读客户端连接的数据，在nt_http_init_connection(nt_connection_t *c)中的nt_add_timer(rev, c->listening->post_ac  cept_timeout)把读事件添加到定时器中，如果超时则置1
-	  每次nt_unix_recv把内核数据读取完毕后，在重新启动add epoll，等待新的数据到来，同时会启动定时器nt_add_timer(rev  , c->listening->post_accept_timeout);
-	  如果在post_accept_timeout这么长事件内没有数据到来则超时，开始处理关闭TCP流程*/
+    //标志位，为I时表示这个事件已经超时，用以提示事件的消费模块做超时处理
+    /*读客户端连接的数据，在nt_http_init_connection(nt_connection_t *c)中的nt_add_timer(rev, c->listening->post_ac  cept_timeout)把读事件添加到定时器中，如果超时则置1
+      每次nt_unix_recv把内核数据读取完毕后，在重新启动add epoll，等待新的数据到来，同时会启动定时器nt_add_timer(rev  , c->listening->post_accept_timeout);
+      如果在post_accept_timeout这么长事件内没有数据到来则超时，开始处理关闭TCP流程*/
 
-	/*  
-		读超时是指的读取对端数据的超时时间，写超时指的是当数据包很大的时候，write返回NT_AGAIN，则会添加write定时器，从而
-		判断是否超时，如果发往
-		对端数据长度小，则一般write直接返回成功，则不会添加write超时定时器，也就不会有write超时，写定时器参考函数nt_http  _upstream_send_request
-		*/
-	unsigned         timedout:1; //定时器超时标记，见nt_event_expire_timers                                         
+    /*
+        读超时是指的读取对端数据的超时时间，写超时指的是当数据包很大的时候，write返回NT_AGAIN，则会添加write定时器，从而
+        判断是否超时，如果发往
+        对端数据长度小，则一般write直接返回成功，则不会添加write超时定时器，也就不会有write超时，写定时器参考函数nt_http  _upstream_send_request
+        */
+    unsigned         timedout: 1; //定时器超时标记，见nt_event_expire_timers
 
-	//标志位，为1时表示这个事件存在于定时器中
-	unsigned         timer_set:1; //nt_event_add_timer nt_add_timer 中置1   nt_event_expire_timers置0
+    //标志位，为1时表示这个事件存在于定时器中
+    unsigned         timer_set: 1; //nt_event_add_timer nt_add_timer 中置1   nt_event_expire_timers置0
 
-	//标志位，delayed为1时表示需要延迟处理这个事件，它仅用于限速功能 
-	unsigned         delayed:1; //限速见nt_http_write_filter 
+    //标志位，delayed为1时表示需要延迟处理这个事件，它仅用于限速功能
+    unsigned         delayed: 1; //限速见nt_http_write_filter
 
 
-	//删除post队列的时候需要检查
+    //删除post队列的时候需要检查
     //表示延迟处理该事件，见nt_epoll_process_events -> nt_post_event  标记是否在延迟队列里面
     unsigned         posted: 1;
 
     //标志位，为1时表示当前事件已经关闭，epoll模块没有使用它
     unsigned         closed: 1; //nt_close_connection中置1
 
-	//计时器事件标志，指示在关闭工作人员时应忽略该事件。优雅的工作人员关闭被延迟，直到没有安排不可取消的计时器事件。
-	unsigned         cancelable:1;
+    //计时器事件标志，指示在关闭工作人员时应忽略该事件。优雅的工作人员关闭被延迟，直到没有安排不可取消的计时器事件。
+    unsigned         cancelable: 1;
 
     /*  epoll未使用
      *  select的事件序号
@@ -110,8 +143,8 @@ struct nt_event_s {
 
     nt_event_handler_pt  handler;
 
-	//定时器节点，用于定时器红黑树中
-     nt_rbtree_node_t   timer;  //见nt_event_timer_rbtree
+    //定时器节点，用于定时器红黑树中
+    nt_rbtree_node_t   timer;  //见nt_event_timer_rbtree
 
     /* the posted queue */
     /*post事件将会构成一个队列再统一处理，这个队列以next和prev作为链表指针，以此构成一个简易的双向链表，其中next指向后一个>  事件的地址，
@@ -155,6 +188,18 @@ extern nt_event_actions_t   nt_event_actions;
 #define nt_add_conn         nt_event_actions.add_conn
 #define nt_del_conn         nt_event_actions.del_conn
 
+#if (NT_SSL && NT_SSL_ASYNC)
+    #define nt_add_async_conn   nt_event_actions.add_async_conn
+    #define nt_del_async_conn   nt_event_actions.del_async_conn
+#endif
+
+#define nt_notify           nt_event_actions.notify
+
+#define nt_add_timer        nt_event_add_timer
+#define nt_del_timer        nt_event_del_timer
+
+
+
 extern nt_os_io_t  nt_io;
 
 #define nt_recv             nt_io.recv
@@ -183,14 +228,83 @@ typedef struct {
 
 
 /*
- *    * The event filter requires to do i/o operation until EAGAIN: epoll.
- *       */
+ * The event filter requires to read/write the whole data:
+ * select, poll, /dev/poll, kqueue, epoll.
+ */
+#define NT_USE_LEVEL_EVENT      0x00000001
+
+/*
+ * The event filter is deleted after a notification without an additional
+ * syscall: kqueue, epoll.
+ */
+#define NT_USE_ONESHOT_EVENT    0x00000002
+
+/*
+ * The event filter notifies only the changes and an initial level:
+ * kqueue, epoll.
+ */
+#define NT_USE_CLEAR_EVENT      0x00000004
+
+/*
+ * The event filter has kqueue features: the eof flag, errno,
+ * available data, etc.
+ */
+#define NT_USE_KQUEUE_EVENT     0x00000008
+
+/*
+ * The event filter supports low water mark: kqueue's NOTE_LOWAT.
+ * kqueue in FreeBSD 4.1-4.2 has no NOTE_LOWAT so we need a separate flag.
+ */
+#define NT_USE_LOWAT_EVENT      0x00000010
+
+/*
+ * The event filter requires to do i/o operation until EAGAIN: epoll.
+ */
 #define NT_USE_GREEDY_EVENT     0x00000020
 
 /*
- *    * The event filter is epoll.
- *       */
+ * The event filter is epoll.
+ */
 #define NT_USE_EPOLL_EVENT      0x00000040
+
+/*
+ * Obsolete.
+ */
+#define NT_USE_RTSIG_EVENT      0x00000080
+
+/*
+ * Obsolete.
+ */
+#define NT_USE_AIO_EVENT        0x00000100
+
+/*
+ * Need to add socket or handle only once: i/o completion port.
+ */
+#define NT_USE_IOCP_EVENT       0x00000200
+
+/*
+ * The event filter has no opaque data and requires file descriptors table:
+ * poll, /dev/poll.
+ */
+#define NT_USE_FD_EVENT         0x00000400
+
+/*
+ * The event module handles periodic or absolute timer event by itself:
+ * kqueue in FreeBSD 4.4, NetBSD 2.0, and MacOSX 10.4, Solaris 10's event ports.
+ */
+#define NT_USE_TIMER_EVENT      0x00000800
+
+/*
+ * All event filters on file descriptor are deleted after a notification:
+ * Solaris 10's event ports.
+ */
+#define NT_USE_EVENTPORT_EVENT  0x00001000
+
+/*
+ * The event filter support vnode notifications: kqueue.
+ */
+#define NT_USE_VNODE_EVENT      0x00002000
+
 
 
 
@@ -268,10 +382,13 @@ typedef struct {
 
 //声明
 extern nt_uint_t             nt_event_flags;
+extern nt_uint_t             nt_accept_mutex_held;
+extern nt_uint_t             nt_use_accept_mutex;
 //得到event模块对应的配置
 #define nt_event_get_conf(conf_ctx, module)                                  \
     (*(nt_get_conf(conf_ctx, nt_events_module))) [module.ctx_index]
 
 
+nt_int_t nt_event_process_init( nt_cycle_t *cycle );
 
 #endif
