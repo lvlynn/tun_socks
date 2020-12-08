@@ -7,24 +7,29 @@ PWD=$(shell pwd)
 
 
 menu=$(PWD)/acc/receiver
+out=$(PWD)/acc/receiver/build
 
-obj=$(menu)/tun.o \
-	$(menu)/rbtree.o \
-	$(menu)/receiver.o \
+obj=$(out)/tun.o \
+	$(out)/rbtree.o \
+	$(out)/receiver.o \
 
 ALL_INCS +=-I$(menu)
 
-do_test: $(obj)
+do_test: clean $(obj) 
+	$(CC)  $(CFLAGS) $(ALL_INCS) $(obj) -o  $(out)/receiver -g -L./bin  -lnt
 
 
 #	 $(CC)  $(CFLAGS) $(ALL_INCS)    $(PWD)/receiver.c  -o bin/rcv  -g -L./bin -lnt  
 
-$(menu)/tun.o:
-	$(CC)  $(CFLAGS) $(ALL_INCS)  -c  $(menu)/tun.c  -o $(menu)/build/tun.o  -g -L./bin -lnt
-$(menu)/rbtree.o:
-	$(CC)  $(CFLAGS) $(ALL_INCS)  -c  $(menu)/rbtree.c  -o $(menu)/build/rbtree.o  -g -L./bin -lnt
+clean:
+	rm -rf $(out)/*.o $(out)/receiver
 
-$(menu)/receiver.o:
-	$(CC)  $(CFLAGS) $(ALL_INCS)  -c    $(menu)/receiver.c  -o $(menu)/build/receiver.o  -g -L./bin -lnt
+$(out)/tun.o:
+	$(CC)  $(CFLAGS) $(ALL_INCS)  -c  $(menu)/tun.c  -o $(out)/tun.o  -g -L./bin -lnt
+$(out)/rbtree.o:
+	$(CC)  $(CFLAGS) $(ALL_INCS)  -c  $(menu)/rbtree.c  -o $(out)/rbtree.o  -g -L./bin -lnt
+
+$(out)/receiver.o:
+	$(CC)  $(CFLAGS) $(ALL_INCS)  -c    $(menu)/receiver.c  -o $(out)/receiver.o  -g -L./bin -lnt
 
 

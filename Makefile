@@ -2,7 +2,7 @@
 
 
 
-default:    build do_test do_receive
+default:    build do_test 
 
 #all:
 #	$(CC) libnet/ip.c libnet/tcp.c tun.c -o bin/tun -g -I./libnet

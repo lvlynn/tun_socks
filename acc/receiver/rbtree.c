@@ -1,8 +1,8 @@
 #include "rbtree.h"
 
-nt_rbtree_node_t *sentinel;
+nt_rbtree_node_t sentinel;
 
-int nt_rbtree_insert_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_rbtree_key_t cur_key )
+int nt_rbtree_insert_conn_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_rbtree_key_t cur_key )
 {
 
     if( flag == RBTREE_INSERT ) {
@@ -37,14 +37,15 @@ int nt_rbtree_insert_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_rbtree
 int rcv_conn_add( nt_rbtree_t *tree, nt_connection_t  *conn )
 {
 
+    int port;
     nt_rbtree_node_t *node;
 
     node = ( nt_rbtree_node_t * ) malloc( sizeof( nt_rbtree_node_t ) );
 
     node->key = port;
-    node->parent =  sentinel;
-    node->left =  sentinel;
-    node->right =  sentinel;
+    node->parent =  &sentinel;
+    node->left =  &sentinel;
+    node->right =  &sentinel;
    
     nt_rbtree_insert( &tree, node );
 
@@ -55,7 +56,7 @@ int rcv_conn_add( nt_rbtree_t *tree, nt_connection_t  *conn )
 //连接删除
 int rcv_conn_del( nt_rbtree_t *tree, nt_connection_t  *conn )
 {
-
-    nt_rbtree_delete_key( tree, ttree->port  );
+    int port ;
+    nt_rbtree_delete_key( tree, port  );
 }
 

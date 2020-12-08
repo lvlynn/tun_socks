@@ -17,6 +17,9 @@ void nt_event_no_accept(nt_event_t *ev){
     nt_listening_t   *ls;
     lc = ev->data;
     ls = lc->listening;
+    nt_log_debug2(NT_LOG_DEBUG_EVENT, ev->log, 0,
+                  "accept fd %d, ready: %d", lc->fd,  lc->read->ready);
+
 
 
     c->pool = nt_create_pool(ls->pool_size, ev->log);

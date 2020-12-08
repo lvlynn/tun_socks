@@ -6,13 +6,13 @@ LINK =  $(CC)
 PWD=$(shell pwd)
 
 
-include objs/include/nt.mk
+include $(PWD)/objs/include/nt.mk
 
-CORE_INCS = -I src/core \
-			-I src/event \
-			-I src/event/modules \
-			-I src/os/unix \
-			-I config 
+CORE_INCS = -I $(PWD)/src/core \
+			-I $(PWD)/src/event \
+			-I $(PWD)/src/event/modules \
+			-I $(PWD)/src/os/unix \
+			-I $(PWD)/config 
 
 ADDON_DEPS = $(CORE_DEPS) 
 

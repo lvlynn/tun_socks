@@ -176,6 +176,7 @@ struct nt_connection_s {
     struct sockaddr    *local_sockaddr;
     socklen_t           local_socklen;
 
+    //用于接收和缓存客户端发来的字符流
     nt_buf_t          *buffer;
 
     nt_queue_t         queue;

@@ -9,8 +9,8 @@ typedef struct {
 
 } nt_rev_connection_t;
 
-int nt_rbtree_insert_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_rbtree_key_t cur_key );
+int nt_rbtree_insert_conn_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_rbtree_key_t cur_key );
 
-extern nt_rbtree_node_t *sentinel;
+extern nt_rbtree_node_t sentinel;
 #endif
 

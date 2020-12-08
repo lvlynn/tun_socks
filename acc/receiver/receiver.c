@@ -1,4 +1,3 @@
-#include "core.h"
 #include "rbtree.h"
 #include "tun.h"
 #include "debug.h"
@@ -39,16 +38,12 @@ nt_new_connection( nt_connection_t *c, nt_log_t *log )
 }
 
 
-
 void do_write()
 {
 }
 
 
-u_char *buffer ;
-nt_connection_t  *c_stdin ;
-nt_connection_t  *c_stdout ;
-
+//u_char *buffer ;
 
 void test_read( nt_event_t *ev )
 {
@@ -63,18 +58,8 @@ void test_read( nt_event_t *ev )
 
     c = ev->data;
 
-    u_char *p = buffer;
-    if( p == NULL )
-        return NULL;
+    b = c->buffer;
 
-    printf( "p=%#x\n", p );
-
-    buf.start = p;
-    buf.end = p + 1500;
-    buf.pos = p;
-    buf.last = p;
-
-    b = &buf;
     for( ;; ) {
         size = b->end - b->last;
         printf( "size=%d\n", size );
@@ -109,7 +94,7 @@ void test_read( nt_event_t *ev )
     }
 
     nt_log_debug1( NT_LOG_DEBUG_EVENT, c->log, 0,
-                   "buf=%s", b->start );
+                   "receive=%d", b->last - b->start );
 
 
 
@@ -118,14 +103,14 @@ void test_read( nt_event_t *ev )
     } else
         printf( "[%s] read event NT_OK\n", __func__ );
 
-
-    c_stdout->write->active = 0;
-    c_stdout->write->ready = 0;
-    if( nt_handle_write_event( c_stdout->write, 0 ) != NT_OK ) {
+/*
+    c->write->active = 0;
+    c->write->ready = 0;
+    if( nt_handle_write_event( c->write, 0 ) != NT_OK ) {
         printf( "[%s] write event NT_ERROR\n", __func__ );
     } else
         printf( "[%s] write event NT_OK\n", __func__ );
-
+*/
 
 }
 
@@ -140,14 +125,9 @@ void test_write( nt_event_t *ev )
     ssize_t n;
 
     c = ev->data;
-    u_char *p = buffer;
 
-    buf.start = p;
-    buf.end = p + 1500;
-    buf.pos = p;
-    buf.last = p;
 
-    b = &buf;
+    b = c->buffer;
 
     char msg[128] = "hello world\n";
     b->last = nt_copy( b->start, msg, 13 );
@@ -189,20 +169,43 @@ void test_write( nt_event_t *ev )
 
 
     c->read->ready = 1;
-    if( nt_handle_read_event( c_stdin->read, NT_READ_EVENT ) != NT_OK ) {
+    if( nt_handle_read_event( c->read, NT_READ_EVENT ) != NT_OK ) {
         printf( "[%s] read event NT_ERROR\n", __func__ );
     } else
         printf( "[%s] read event NT_OK\n", __func__ );
 
 }
 
+ #include <netinet/ip.h>
 void test_ev_hander( nt_event_t *ev )
 {
+    nt_connection_t *conn ;
+    nt_buf_t *b;
+    conn = ev->data;
+    b = conn->buffer;
 
+    //连接进入，解析内容
     printf( "test_ev_hander\n" );
+    test_read( ev );
 
-    nt_add_event( ev, NT_READ_EVENT, NT_LEVEL_EVENT );
 
+    ssize_t size = b->last - b->start ;
+
+
+    debug( "size=%d" , size );
+    if( size <=0 )
+        return;
+
+    struct iphdr *ih = ( struct iphdr *  )b->start;
+
+    if( ih->version == 0x6 ){
+        debug( "ipv6 pkg"  );
+        return ;
+    }
+    debug( "ipv4 pkg"  );
+
+    //protocol_parse(  );
+//    nt_add_event( ev, NT_READ_EVENT, NT_LEVEL_EVENT );
 
 }
 
@@ -242,7 +245,8 @@ int main()
         nt_destroy_pool( pool );
         return NULL;
     }
-    
+ 
+    //创建接收器的fd
     rcv_fd = tun_init();
     if( rcv_fd < 0)
         return -1;
@@ -254,43 +258,46 @@ int main()
     nt_event_process_init( cycle );
 
     nt_socket_t s = rcv_fd ;
-
     nt_event_t *ev ;
 
     //    cycle->connections[0];
-    c_stdin = &cycle->connections[0];
-    c_stdout = &cycle->connections[1];
+    nt_connection_t  *c_rcv ;
+    c_rcv = &cycle->connections[0];
 
+    nt_new_connection( c_rcv, log );
 
-    nt_new_connection( c_stdin, log );
-    nt_new_connection( c_stdout, log );
+    c_rcv->pool = pool;
+    //c_rcv->read->handler = test_ev_hander;
+    c_rcv->read->handler = test_ev_hander;
+    c_rcv->write->handler = NULL;
+    c_rcv->fd = rcv_fd;
 
-
-    c_stdin->pool = pool;
-    c_stdin->read->handler = test_read;
-    c_stdin->write->handler = NULL;
-
-    c_stdout->pool = pool;
-    c_stdout->read->handler = NULL;
-    c_stdout->write->handler = test_write;
-
-    ev = ( nt_event_t * ) malloc( sizeof( nt_event_t ) );
-    ev->data = ( void * )c_stdin;
+/*    ev = ( nt_event_t * ) malloc( sizeof( nt_event_t ) );
+    ev->data = ( void * )c_rcv;
 
     ev->handler = test_ev_hander;
     ev->index = NT_INVALID_INDEX ;
     ev->write = 0;
     ev->log = log;
+*/
+    c_rcv->buffer = nt_pnalloc( pool, sizeof( nt_buf_t ) ); 
+     u_char *p  = nt_pnalloc( pool, 1500 );
+    c_rcv->buffer->start = p;
+    c_rcv->buffer->end = p + 1500;
+    c_rcv->buffer->pos = p;
+    c_rcv->buffer->last = p;
 
-    int ret =  nt_add_event( c_stdin->read,  NT_READ_EVENT,  0 );
 
+
+    c_rcv->read->ready = 1;
+ //   int ret =  nt_add_event( c_rcv->read,  NT_READ_EVENT,  0 );
+    int ret =  nt_add_event( c_rcv->read,  NT_READ_EVENT,  0 );
     printf( "ret = %d\n", ret );
 
-    buffer = nt_pnalloc( pool, 1500 );
-
+    
     //初始化接收器用的红黑树
-	nt_rbtree_t tree;
-    nt_rbtree_init( &tree, &sentinel, nt_rbtree_insert_handle  );
+    nt_rbtree_t tree;
+    nt_rbtree_init( &tree, &sentinel, nt_rbtree_insert_conn_handle  );
 
     for( ;; ) {
         nt_msec_t  timer, delta;
@@ -308,7 +315,8 @@ int main()
         nt_log_debug1( NT_LOG_DEBUG_EVENT, cycle->log, 0,
                        "timer delta: %M", delta );
 
-
+        //连接首次进入需要先 accept
+        //nt_event_process_posted( cycle, &nt_posted_accept_events  );
         /*
          *  delta是之前统计的耗时，存在毫秒级的耗时，就对所有时间的timer进行检查，
          *  果timeout 就从time rbtree中删除到期的timer，同时调用相应事件的handler函数处理
@@ -318,8 +326,9 @@ int main()
         }
 
 
+
         nt_event_process_posted( cycle, &nt_posted_events );
-        //        sleep( 3 );
+        sleep( 3 );
     }
 
     free( cycle );

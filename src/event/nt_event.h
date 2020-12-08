@@ -141,6 +141,16 @@ struct nt_event_s {
     nt_log_t       *log; //可以记录日志的nt_log_t对象 其实就是nt_listening_t中获取的log //赋值见nt_event_accept
 
 
+     /* ngx_event_accept，
+      * ngx_http_ssl_handshake 
+      * ngx_ssl_handshake_handler 
+      * ngx_http_v2_write_handler 
+      * ngx_http_v2_read_handler 
+      * ngx_http_wait_request_handler  
+      * ngx_http_request_handler 
+      * ngx_http_upstream_handler 
+      * ngx_file_aio_event_handler */
+    //由epoll读写事件在ngx_epoll_process_events触发
     nt_event_handler_pt  handler;
 
     //定时器节点，用于定时器红黑树中
