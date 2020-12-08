@@ -1,6 +1,10 @@
 #ifndef _NT_AUTO_CONFIG_H_
 #define _NT_AUTO_CONFIG_H_
 
+#ifndef NT_DEBUG
+    #define NT_DEBUG 1
+#endif
+
 //功能开启
 #ifndef NT_HAVE_SELECT
     #define NT_HAVE_SELECT  1
@@ -60,5 +64,11 @@
   #define NT_SYS_NERR  1
   #endif
 
+
+#define plu_tmp_config_path "/tmp"
+
+#ifndef NT_ERROR_LOG_PATH
+#define NT_ERROR_LOG_PATH  plu_tmp_config_path"/dl/.error.log"
+#endif
 
 #endif

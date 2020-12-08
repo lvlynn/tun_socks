@@ -19,11 +19,35 @@ objs/src/core/nt_log.o:  $(CORE_DEPS) \
 		-o objs/src/core/nt_log.o \
 		src/core/nt_log.c\
 
+objs/src/core/nt_syslog.o:  $(CORE_DEPS) \
+	src/core/nt_syslog.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_syslog.o \
+		src/core/nt_syslog.c\
+
+objs/src/core/nt_crc32.o:  $(CORE_DEPS) \
+	src/core/nt_crc32.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_crc32.o \
+		src/core/nt_crc32.c
+
 objs/src/core/nt_inet.o:  $(CORE_DEPS) \
 	src/core/nt_inet.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
 		-o objs/src/core/nt_inet.o \
 		src/core/nt_inet.c
+
+objs/src/core/nt_parse.o:  $(CORE_DEPS) \
+	src/core/nt_parse.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_parse.o \
+		src/core/nt_parse.c
+
+objs/src/core/nt_parse_time.o:  $(CORE_DEPS) \
+	src/core/nt_parse_time.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_parse_time.o \
+		src/core/nt_parse_time.c
 
 objs/src/core/nt_connection.o:  $(CORE_DEPS) \
 	src/core/nt_connection.c
@@ -49,11 +73,24 @@ objs/src/core/nt_palloc.o:  $(CORE_DEPS) \
 		-o objs/src/core/nt_palloc.o \
 		src/core/nt_palloc.c
 
+objs/src/core/nt_file.o:  $(CORE_DEPS) \
+	src/core/nt_file.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_file.o \
+		src/core/nt_file.c
+
+
 objs/src/core/nt_array.o:  $(CORE_DEPS) \
 	src/core/nt_array.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
 		-o objs/src/core/nt_array.o \
 		src/core/nt_array.c
+
+objs/src/core/nt_list.o:  $(CORE_DEPS) \
+	src/core/nt_list.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_list.o \
+		src/core/nt_list.c
 
 
 objs/src/core/nt_buf.o:  $(CORE_DEPS) \
@@ -61,6 +98,13 @@ objs/src/core/nt_buf.o:  $(CORE_DEPS) \
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
 		-o objs/src/core/nt_buf.o \
 		src/core/nt_buf.c
+
+objs/src/core/nt_conf.o:  $(CORE_DEPS) \
+	src/core/nt_conf.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/nt_conf.o \
+		src/core/nt_conf.c
+
 
 objs/src/core/nt_string.o:  $(CORE_DEPS) \
 	src/core/nt_string.c

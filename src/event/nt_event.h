@@ -166,7 +166,7 @@ typedef struct {
 
     nt_int_t ( *notify )( nt_event_handler_pt handler );
 
-    nt_int_t ( *process_events )( nt_cycle_t *cycle,
+    nt_int_t ( *process_events )( nt_cycle_t *cycle, nt_msec_t  timer,
                                   nt_uint_t flags );
 
     nt_int_t ( *init )( nt_cycle_t *cycle );
@@ -388,7 +388,42 @@ extern nt_uint_t             nt_use_accept_mutex;
 #define nt_event_get_conf(conf_ctx, module)                                  \
     (*(nt_get_conf(conf_ctx, nt_events_module))) [module.ctx_index]
 
+void nt_event_accept( nt_event_t *ev );
+void nt_event_no_accept(nt_event_t *ev);
+#if !(NT_WIN32)
+void nt_event_recvmsg( nt_event_t *ev );
+void nt_udp_rbtree_insert_value( nt_rbtree_node_t *temp,
+                                  nt_rbtree_node_t *node, nt_rbtree_node_t *sentinel );
+#endif
+void nt_delete_udp_connection( void *data );
+nt_int_t nt_trylock_accept_mutex( nt_cycle_t *cycle );
+nt_int_t nt_enable_accept_events( nt_cycle_t *cycle );
+u_char *nt_accept_log_error( nt_log_t *log, u_char *buf, size_t len );
+/* #if (NT_DEBUG)
+    void nt_debug_accepted_connection( nt_event_conf_t *ecf, nt_connection_t *c );
+#endif */
+
+
+void nt_process_events_and_timers( nt_cycle_t *cycle );
+nt_int_t nt_handle_read_event( nt_event_t *rev, nt_uint_t flags );
+nt_int_t nt_handle_write_event( nt_event_t *wev, size_t lowat );
+
+
+#if (NT_WIN32)
+    void nt_event_acceptex( nt_event_t *ev );
+    nt_int_t nt_event_post_acceptex( nt_listening_t *ls, nt_uint_t n );
+    u_char *nt_acceptex_log_error( nt_log_t *log, u_char *buf, size_t len );
+#endif
+
+
+nt_int_t nt_send_lowat( nt_connection_t *c, size_t lowat );
+
+
+/* used in nt_log_debugX() */
+#define nt_event_ident(p)  ((nt_connection_t *) (p))->fd
 
 nt_int_t nt_event_process_init( nt_cycle_t *cycle );
+
+
 
 #endif

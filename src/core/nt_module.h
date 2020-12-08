@@ -220,7 +220,7 @@ struct nt_module_s {
     const char           *signature;
 
     void                 *ctx;
-//    nt_command_t        *commands;
+    nt_command_t        *commands;
     nt_uint_t            type;
 
     nt_int_t ( *init_master )( nt_log_t *log );
@@ -244,5 +244,29 @@ struct nt_module_s {
     uintptr_t             spare_hook7;
 
 };
+
+
+typedef struct {
+    nt_str_t             name;
+    void               *( *create_conf )( nt_cycle_t *cycle );
+    char               *( *init_conf )( nt_cycle_t *cycle, void *conf );
+
+} nt_core_module_t;
+
+
+nt_int_t nt_preinit_modules( void );
+nt_int_t nt_cycle_modules( nt_cycle_t *cycle );
+nt_int_t nt_init_modules( nt_cycle_t *cycle );
+nt_int_t nt_count_modules( nt_cycle_t *cycle, nt_uint_t type );
+
+
+nt_int_t nt_add_module( nt_conf_t *cf, nt_str_t *file,
+                          nt_module_t *module, char **order );
+
+
+extern nt_module_t  *nt_modules[];
+extern nt_uint_t     nt_max_module;
+
+extern char          *nt_module_names[];
 
 #endif

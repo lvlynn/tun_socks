@@ -38,6 +38,7 @@ nt_event_find_timer(void)
 
     node = nt_rbtree_min(root, sentinel);
 
+    printf( "k=%ld, t=%ld\n", node->key , nt_current_msec );
     timer = (nt_msec_int_t) (node->key - nt_current_msec);
 
     return (nt_msec_t) (timer > 0 ? timer : 0);

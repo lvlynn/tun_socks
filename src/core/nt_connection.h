@@ -141,7 +141,7 @@ struct nt_connection_s {
 //    nt_recv_chain_pt   recv_chain;
 //    nt_send_chain_pt   send_chain;
 
-    //    nt_listening_t    *listening;
+    nt_listening_t    *listening;
 
     //发送个数
     off_t               sent;

@@ -2,7 +2,7 @@
 
 
 
-default:    build do_test
+default:    build do_test do_receive
 
 #all:
 #	$(CC) libnet/ip.c libnet/tcp.c tun.c -o bin/tun -g -I./libnet
@@ -21,3 +21,6 @@ build:
 
 do_test:
 	$(MAKE) -f test/Makefile
+
+do_receive:
+	$(MAKE) -f acc/receiver/Makefile

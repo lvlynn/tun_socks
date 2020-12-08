@@ -12,6 +12,8 @@ NT_OS_OBJ=objs/src/os/unix/nt_posix_init.o \
 		  objs/src/os/unix/nt_alloc.o \
 		  objs/src/os/unix/nt_times.o \
 		  objs/src/os/unix/nt_files.o \
+		  objs/src/os/unix/nt_read.o \
+		  objs/src/os/unix/nt_write.o \
 		  objs/src/os/unix/nt_recv.o \
 		  objs/src/os/unix/nt_send.o \
 		  objs/src/os/unix/nt_socket.o \

@@ -44,6 +44,7 @@ typedef void ( *nt_connection_handler_pt )( nt_connection_t *c );
 
 //引入模块头文件
 #include <nt_errno.h>
+#include <nt_atomic.h>
 #include <nt_rbtree.h>
 #include <nt_string.h>
 #include <nt_times.h>
@@ -56,10 +57,12 @@ typedef void ( *nt_connection_handler_pt )( nt_connection_t *c );
 #include <nt_buf.h>
 #include <nt_queue.h>
 #include <nt_array.h>
+#include <nt_list.h>
 #include <nt_process.h>
 
+#include <nt_linux.h>
 #include <nt_file.h>
- #include <nt_inet.h>
+#include <nt_inet.h>
 #include <nt_cycle.h>
 
 #include <nt_module.h>
@@ -70,5 +73,7 @@ typedef void ( *nt_connection_handler_pt )( nt_connection_t *c );
 #include <nt_event_posted.h>
 #include <nt_event_timer.h>
 
+#include <nt_syslog.h>
+#include <nt_crc32.h>
 
 #endif

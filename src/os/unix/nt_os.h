@@ -27,6 +27,9 @@ ssize_t nt_udp_unix_recv( nt_connection_t *c, u_char *buf, size_t size );
 ssize_t nt_unix_send( nt_connection_t *c, u_char *buf, size_t size );
 ssize_t nt_udp_unix_send( nt_connection_t *c, u_char *buf, size_t size );
 
+ssize_t nt_unix_read( nt_connection_t *c, u_char *buf, size_t size );
+ssize_t nt_unix_write( nt_connection_t *c, u_char *buf, size_t size );
+
 #if (IOV_MAX > 64)
     #define NT_IOVS_PREALLOCATE  64
 #else

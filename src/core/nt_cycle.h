@@ -1,6 +1,12 @@
 #ifndef _NT_CYCLE_H_
 #define _NT_CYCLE_H_
 
+#include <nt_core.h>
+
+#ifndef NT_CYCLE_POOL_SIZE
+#define NT_CYCLE_POOL_SIZE     NT_DEFAULT_POOL_SIZE                                                                         
+#endif
+
 //用于存储 大循环配置
 struct nt_cycle_s {
 
@@ -31,8 +37,8 @@ struct nt_cycle_s {
     nt_rbtree_t              config_dump_rbtree;
     nt_rbtree_node_t         config_dump_sentinel;
 
-//    nt_list_t                open_files;
-//    nt_list_t                shared_memory;
+    nt_list_t                open_files;
+    nt_list_t                shared_memory;
 
     nt_uint_t                connection_n;
     nt_uint_t                files_n;
@@ -61,4 +67,5 @@ struct nt_cycle_s {
 extern volatile nt_cycle_t  *nt_cycle;
 
 extern nt_uint_t             nt_test_config;
+extern nt_uint_t             nt_dump_config;
 #endif

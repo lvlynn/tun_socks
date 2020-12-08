@@ -39,7 +39,17 @@ objs/src/os/unix/nt_socket.o: $(CORE_DEPS) \
 		-o objs/src/os/unix/nt_socket.o \
 		src/os/unix/nt_socket.c
 
+objs/src/os/unix/nt_read.o: $(CORE_DEPS) \
+	src/os/unix/nt_read.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/os/unix/nt_read.o \
+		src/os/unix/nt_read.c
 
+objs/src/os/unix/nt_write.o: $(CORE_DEPS) \
+	src/os/unix/nt_write.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/os/unix/nt_write.o \
+		src/os/unix/nt_write.c
 
 objs/src/os/unix/nt_recv.o: $(CORE_DEPS) \
 	src/os/unix/nt_recv.c

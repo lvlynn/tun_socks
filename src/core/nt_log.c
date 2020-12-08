@@ -1,9 +1,9 @@
 #include <nt_core.h>
 #include <nt_time.h>
 
-//static char *nt_error_log( nt_conf_t *cf, nt_command_t *cmd, void *conf );
-//static char *nt_log_set_levels( nt_conf_t *cf, nt_log_t *log );
-//static void nt_log_insert( nt_log_t *log, nt_log_t *new_log );
+static char *nt_error_log( nt_conf_t *cf, nt_command_t *cmd, void *conf );
+static char *nt_log_set_levels( nt_conf_t *cf, nt_log_t *log );
+static void nt_log_insert( nt_log_t *log, nt_log_t *new_log );
 
 #if (NT_DEBUG)
 
@@ -23,6 +23,49 @@ typedef struct {
 #endif
 
 
+
+static nt_command_t  nt_errlog_commands[] = {
+
+    {
+        nt_string( "error_log" ),
+        NT_MAIN_CONF | NT_CONF_1MORE,
+        nt_error_log,
+        0,
+        0,
+        NULL
+
+    },
+
+    nt_null_command
+
+};
+
+
+static nt_core_module_t  nt_errlog_module_ctx = {
+    nt_string( "errlog" ),
+    NULL,
+    NULL
+
+};
+
+
+nt_module_t  nt_errlog_module = {
+    NT_MODULE_V1,
+    &nt_errlog_module_ctx,                /* module context */
+    nt_errlog_commands,                   /* module directives */
+    NT_CORE_MODULE,                       /* module type */
+    NULL,                                  /* init master */
+    NULL,                                  /* init module */
+    NULL,                                  /* init process */
+    NULL,                                  /* init thread */
+    NULL,                                  /* exit thread */
+    NULL,                                  /* exit process */
+    NULL,                                  /* exit master */
+    NT_MODULE_V1_PADDING
+
+};
+
+
 static nt_str_t err_levels[] = {
     nt_null_string,
     nt_string( "emerg" ),
@@ -34,6 +77,13 @@ static nt_str_t err_levels[] = {
     nt_string( "info" ),
     nt_string( "debug" )
 };
+
+static const char *debug_levels[] = {
+    "debug_core", "debug_alloc", "debug_mutex", "debug_event",
+    "debug_http", "debug_mail", "debug_stream"
+
+};
+
 
 
 static nt_log_t        nt_log;
@@ -47,6 +97,7 @@ void
 nt_log_error_core( nt_uint_t level, nt_log_t *log, nt_err_t err,
                    const char *fmt, va_list args )
 {
+  //  printf("%s\n", __FUNCTION__);
 //#if 0
     u_char      *p, *last, *msg;
     ssize_t      n;
@@ -138,7 +189,7 @@ next:
 
     msg -= ( 7 + err_levels[level].len + 3 );
 
-    ( void ) nt_sprintf( msg, "nginx: [%V] ", &err_levels[level] );
+    ( void ) nt_sprintf( msg, "nt: [%V] ", &err_levels[level] );
 
     ( void ) nt_write_console( nt_stderr, msg, p - msg );
 
@@ -171,6 +222,7 @@ nt_log_error( nt_uint_t level, nt_log_t *log, nt_err_t err,
 void nt_cdecl
 nt_log_debug_core( nt_log_t *log, nt_err_t err, const char *fmt, ... )
 {
+   // printf("%s\n", __FUNCTION__);
     va_list  args;
 
     va_start( args, fmt );
@@ -193,7 +245,7 @@ nt_log_abort( nt_err_t err, const char *fmt, ... )
     va_end( args );
 
     nt_log_error( NT_LOG_ALERT, nt_cycle->log, err,
-                   "%*s", p - errstr, errstr );
+                  "%*s", p - errstr, errstr );
 
 }
 
@@ -206,7 +258,7 @@ nt_log_stderr( nt_err_t err, const char *fmt, ... )
 
     last = errstr + NT_MAX_ERROR_STR;
 
-    p = nt_cpymem( errstr, "nginx: ", 7 );
+    p = nt_cpymem( errstr, "nt: ", 7 );
 
     va_start( args, fmt );
     p = nt_vslprintf( p, last, fmt, args );
@@ -243,7 +295,7 @@ nt_log_errno( u_char *buf, u_char *last, nt_err_t err )
 
     #if (NT_WIN32)
     buf = nt_slprintf( buf, last, ( ( unsigned ) err < 0x80000000 )
-                        ? " (%d: " : " (%Xd: ", err );
+                       ? " (%d: " : " (%Xd: ", err );
     #else
     buf = nt_slprintf( buf, last, " (%d: ", err );
     #endif
@@ -257,7 +309,7 @@ nt_log_errno( u_char *buf, u_char *last, nt_err_t err )
     return buf;
 }
 
-#if 0
+
 nt_log_t *
 nt_log_init( u_char *prefix )
 {
@@ -319,18 +371,19 @@ nt_log_init( u_char *prefix )
         }
     }
 
+    printf("name = %s\n", name);
     nt_log_file.fd = nt_open_file( name, NT_FILE_APPEND,
-                                     NT_FILE_CREATE_OR_OPEN,
-                                     NT_FILE_DEFAULT_ACCESS );
+                                   NT_FILE_CREATE_OR_OPEN,
+                                   NT_FILE_DEFAULT_ACCESS );
 
     if( nt_log_file.fd == NT_INVALID_FILE ) {
         nt_log_stderr( nt_errno,
-                        "[alert] could not open error log file: "
-                        nt_open_file_n " \"%s\" failed", name );
+                       "[alert] could not open error log file: "
+                       nt_open_file_n " \"%s\" failed", name );
         #if (NT_WIN32)
         nt_event_log( nt_errno,
-                       "could not open error log file: "
-                       nt_open_file_n " \"%s\" failed", name );
+                      "could not open error log file: "
+                      nt_open_file_n " \"%s\" failed", name );
         #endif
 
         nt_log_file.fd = nt_stderr;
@@ -395,7 +448,7 @@ nt_log_redirect_stderr( nt_cycle_t *cycle )
     if( fd != nt_stderr ) {
         if( nt_set_stderr( fd ) == NT_FILE_ERROR ) {
             nt_log_error( NT_LOG_ALERT, cycle->log, nt_errno,
-                           nt_set_stderr_n " failed" );
+                          nt_set_stderr_n " failed" );
 
             return NT_ERROR;
         }
@@ -440,8 +493,8 @@ nt_log_set_levels( nt_conf_t *cf, nt_log_t *log )
 
                 if( log->log_level != 0 ) {
                     nt_conf_log_error( NT_LOG_EMERG, cf, 0,
-                                        "duplicate log level \"%V\"",
-                                        &value[i] );
+                                       "duplicate log level \"%V\"",
+                                       &value[i] );
                     return NT_CONF_ERROR;
                 }
 
@@ -455,8 +508,8 @@ nt_log_set_levels( nt_conf_t *cf, nt_log_t *log )
             if( nt_strcmp( value[i].data, debug_levels[n++] ) == 0 ) {
                 if( log->log_level & ~NT_LOG_DEBUG_ALL ) {
                     nt_conf_log_error( NT_LOG_EMERG, cf, 0,
-                                        "invalid log level \"%V\"",
-                                        &value[i] );
+                                       "invalid log level \"%V\"",
+                                       &value[i] );
                     return NT_CONF_ERROR;
                 }
 
@@ -469,7 +522,7 @@ nt_log_set_levels( nt_conf_t *cf, nt_log_t *log )
 
         if( !found ) {
             nt_conf_log_error( NT_LOG_EMERG, cf, 0,
-                                "invalid log level \"%V\"", &value[i] );
+                               "invalid log level \"%V\"", &value[i] );
             return NT_CONF_ERROR;
         }
     }
@@ -495,6 +548,7 @@ nt_error_log( nt_conf_t *cf, nt_command_t *cmd, void *conf )
 char *
 nt_log_set_log( nt_conf_t *cf, nt_log_t **head )
 {
+ //   printf( "%s\n" , __func__  );
     nt_log_t          *new_log;
     nt_str_t          *value, name;
     nt_syslog_peer_t  *peer;
@@ -545,7 +599,7 @@ nt_log_set_log( nt_conf_t *cf, nt_log_t **head )
 
         if( size == ( size_t ) NT_ERROR || size < needed ) {
             nt_conf_log_error( NT_LOG_EMERG, cf, 0,
-                                "invalid buffer size \"%V\"", &value[1] );
+                               "invalid buffer size \"%V\"", &value[1] );
             return NT_CONF_ERROR;
         }
 
@@ -562,8 +616,8 @@ nt_log_set_log( nt_conf_t *cf, nt_log_t **head )
         buf->end = buf->start + size;
 
         buf->pos = nt_slprintf( buf->start, buf->end, "MEMLOG %uz %V:%ui%N",
-                                 size, &cf->conf_file->file.name,
-                                 cf->conf_file->line );
+                                size, &cf->conf_file->file.name,
+                                cf->conf_file->line );
 
         nt_memset( buf->pos, ' ', buf->end - buf->pos );
 
@@ -580,7 +634,7 @@ nt_log_set_log( nt_conf_t *cf, nt_log_t **head )
 
         #else
         nt_conf_log_error( NT_LOG_EMERG, cf, 0,
-                            "nginx was built without debug support" );
+                           "nt was built without debug support" );
         return NT_CONF_ERROR;
         #endif
     } else if( nt_strncmp( value[1].data, "syslog:", 7 ) == 0 ) {
@@ -637,7 +691,11 @@ nt_log_set_log( nt_conf_t *cf, nt_log_t **head )
         return NT_CONF_ERROR;
     }
 
+    printf( "*head = %lp\n", *head  );
+    printf( "new_log = %lp\n", new_log  );
+
     if( *head != new_log ) {
+        printf( "nt_log_insert\n"  );
         nt_log_insert( *head, new_log );
     }
 
@@ -675,13 +733,12 @@ nt_log_insert( nt_log_t *log, nt_log_t *new_log )
 
     log->next = new_log;
 }
-#endif
 
 #if (NT_DEBUG)
 
 static void
 nt_log_memory_writer( nt_log_t *log, nt_uint_t level, u_char *buf,
-                       size_t len )
+                      size_t len )
 {
     u_char                *p;
     size_t                 avail, written;

@@ -9,7 +9,7 @@ static nt_int_t nt_select_add_event( nt_event_t *ev, nt_int_t event,
                                      nt_uint_t flags );
 static nt_int_t nt_select_del_event( nt_event_t *ev, nt_int_t event,
                                      nt_uint_t flags );
-static nt_int_t nt_select_process_events( nt_cycle_t *cycle,
+static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_msec_t  timer,
         nt_uint_t flags );
 
 static char *nt_select_init_conf( nt_cycle_t *cycle, void *conf );
@@ -76,6 +76,22 @@ static nt_int_t nt_select_init( nt_cycle_t *cycle )
         nevents = 0;
     }
 
+    index = nt_alloc( sizeof( nt_event_t * ) * 2 * cycle->connection_n, cycle->log );
+
+    if( index == NULL ) {
+        return NT_ERROR;
+
+    }
+
+    if( event_index ) {
+        nt_memcpy( index, event_index, sizeof( nt_event_t * ) * nevents );
+        nt_free( event_index );
+
+    }
+
+    event_index = index;
+
+
     //设置io函数为 os_io
     nt_io = nt_os_io;
 
@@ -98,8 +114,13 @@ static nt_int_t nt_select_add_event( nt_event_t *ev, nt_int_t event, nt_uint_t f
 
     c = ev->data;
 
-    nt_log_debug2( NT_LOG_DEBUG_EVENT, ev->log, 0,
-                   "select add event fd:%d ev:%i", c->fd, event );
+    nt_log_debug1( NT_LOG_DEBUG_EVENT, ev->log, 0,
+                   "c->fd =%d ", c->fd );
+
+
+
+    nt_log_debug3( NT_LOG_DEBUG_EVENT, ev->log, 0,
+                   "select add event fd:%d ev:%i, ev->write=%d", c->fd, event , ev->write);
 
     //判断事件的序号已经被设置，避免重复设置
     if( ev->index != NT_INVALID_INDEX ) {
@@ -122,7 +143,7 @@ static nt_int_t nt_select_add_event( nt_event_t *ev, nt_int_t event, nt_uint_t f
     //触发READ事件
     if( event == NT_READ_EVENT ) {
         FD_SET( c->fd, &master_read_fd_set );
-
+        printf( "%s NT_READ_EVENT\n", __func__ );
         //触发WRITE事件
     } else if( event == NT_WRITE_EVENT ) {
         FD_SET( c->fd, &master_write_fd_set );
@@ -138,6 +159,7 @@ static nt_int_t nt_select_add_event( nt_event_t *ev, nt_int_t event, nt_uint_t f
     //设置ev为活跃状态
     ev->active = 1;
 
+    printf( "%d\n", nevents );
     //对ev赋值
     event_index[nevents] = ev;
 
@@ -211,7 +233,7 @@ static nt_int_t nt_select_del_event( nt_event_t *ev, nt_int_t event, nt_uint_t f
 
 }
 
-static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_uint_t flags )
+static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_msec_t  timer,nt_uint_t flags )
 {
 
     int                ready, nready;
@@ -239,10 +261,12 @@ static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_uint_t flags )
     }
 
 
-    int timer = 1;
-    tv.tv_sec = ( long )( timer / 1000 );
-    tv.tv_usec = ( long )( ( timer % 1000 ) * 1000 );
-    tp = &tv;
+    if (timer == NT_TIMER_INFINITE) {
+        tp = NULL;
+    } else {
+        tv.tv_sec = (long) (timer / 1000);
+        tv.tv_usec = (long) ((timer % 1000) * 1000);
+        tp = &tv;                                                                                                             }  
 
 
     nt_log_debug1( NT_LOG_DEBUG_EVENT, cycle->log, 0,
@@ -253,8 +277,14 @@ static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_uint_t flags )
 
     ready = select( max_fd + 1, &work_read_fd_set, &work_write_fd_set, NULL, tp );
 
-
     err = ( ready == -1 ) ? nt_errno : 0;
+
+  //  if (flags & NT_UPDATE_TIME || nt_event_timer_alarm) {
+    if (flags & NT_UPDATE_TIME ) {
+                  nt_time_update();                                                                    
+    }   
+
+
     if( err ) {
         if( err == NT_EINTR ) {
 
@@ -299,6 +329,9 @@ static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_uint_t flags )
         if( found ) {
             //设置事件 ready为1
             ev->ready = 1;
+
+            nt_log_debug1( NT_LOG_DEBUG_EVENT, cycle->log, 0,
+                           "ev-accept %d", ev->accept );
 
             //判断当前事件的accept是否为1， 如果不是1，推入post事件
             queue = ev->accept ? &nt_posted_accept_events

@@ -24,8 +24,15 @@ struct nt_time_s {
 
 void nt_time_init( void );
 
-//缓存时间的更新函数
-void nt_time_update( void );
+ //缓存时间的更新函数
+ void nt_time_update(void);
+ void nt_time_sigsafe_update(void);
+ u_char *nt_http_time(u_char *buf, time_t t); 
+ u_char *nt_http_cookie_time(u_char *buf, time_t t); 
+ void nt_gmtime(time_t t, nt_tm_t *tp);
+
+ time_t nt_next_time(time_t when);
+#define nt_next_time_n      "mktime()"
 
 
 #if (T_NT_RET_CACHE)

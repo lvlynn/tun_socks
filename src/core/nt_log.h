@@ -1,7 +1,6 @@
 #ifndef _NT_LOG_H_
 #define _NT_LOG_H_
 
-#include <nt_def.h>
 #include <nt_core.h>
 
 #define NT_LOG_STDERR            0
@@ -84,7 +83,7 @@ void nt_log_error_core( nt_uint_t level, nt_log_t *log, nt_err_t err,
         nt_log_error_core(NT_LOG_DEBUG, log, __VA_ARGS__)
 
 /*********************************/
-
+//未定义
 #elif (NT_HAVE_GCC_VARIADIC_MACROS)
 
 #define NT_HAVE_VARIADIC_MACROS  1
@@ -120,6 +119,9 @@ void nt_cdecl nt_log_debug_core( nt_log_t *log, nt_err_t err,
 
 #if (NT_DEBUG)
 
+
+//未定义NT_HAVE_VARIADIC_MACROS
+#if 0 
 #if (NT_HAVE_VARIADIC_MACROS)
 
 #define nt_log_debug0(level, log, err, fmt)                                  \
@@ -155,7 +157,7 @@ nt_log_debug(level, log, err, fmt,                                   \
 nt_log_debug(level, log, err, fmt,                                   \
              arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
 
-
+#endif 
 #else /* no variadic macros */
 
 #define nt_log_debug0(level, log, err, fmt)                                  \
@@ -225,7 +227,7 @@ u_char *nt_log_errno( u_char *buf, u_char *last, nt_err_t err );
 nt_int_t nt_log_open_default( nt_cycle_t *cycle );
 nt_int_t nt_log_redirect_stderr( nt_cycle_t *cycle );
 nt_log_t *nt_log_get_file_log( nt_log_t *head );
-//char *nt_log_set_log( nt_conf_t *cf, nt_log_t **head );
+char *nt_log_set_log( nt_conf_t *cf, nt_log_t **head );
 
 
 /*
