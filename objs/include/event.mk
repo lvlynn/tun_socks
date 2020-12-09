@@ -1,32 +1,36 @@
+mkfile_path=$(abspath $(lastword $(MAKEFILE_LIST)))
+PWD_INCLUDE=$(shell dirname $(mkfile_path))
+#PWD=$(patsubst %/objs/include,%,$(PWD_INCLUDE))
+PWD=$(subst /objs/include,,$(PWD_INCLUDE))
 
-objs/src/event/nt_event.o: $(CORE_DEPS) \
-	src/event/nt_event.c
+$(PWD)/objs/src/event/nt_event.o: $(CORE_DEPS) \
+	$(PWD)/src/event/nt_event.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
-		-o objs/src/event/nt_event.o \
-		src/event/nt_event.c
+		-o $(PWD)/objs/src/event/nt_event.o \
+		$(PWD)/src/event/nt_event.c
 
-objs/src/event/nt_event_posted.o: $(CORE_DEPS) \
-	src/event/nt_event_posted.c
+$(PWD)/objs/src/event/nt_event_posted.o: $(CORE_DEPS) \
+	$(PWD)/src/event/nt_event_posted.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
-		-o objs/src/event/nt_event_posted.o \
-		src/event/nt_event_posted.c
+		-o $(PWD)/objs/src/event/nt_event_posted.o \
+		$(PWD)/src/event/nt_event_posted.c
 
-objs/src/event/nt_event_accept.o: $(CORE_DEPS) \
-	src/event/nt_event_accept.c
+$(PWD)/objs/src/event/nt_event_accept.o: $(CORE_DEPS) \
+	$(PWD)/src/event/nt_event_accept.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
-		-o objs/src/event/nt_event_accept.o \
-		src/event/nt_event_accept.c
+		-o $(PWD)/objs/src/event/nt_event_accept.o \
+		$(PWD)/src/event/nt_event_accept.c
 
-objs/src/event/nt_event_timer.o: $(CORE_DEPS) \
-	src/event/nt_event_timer.c
+$(PWD)/objs/src/event/nt_event_timer.o: $(CORE_DEPS) \
+	$(PWD)/src/event/nt_event_timer.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
-		-o objs/src/event/nt_event_timer.o \
-		src/event/nt_event_timer.c
+		-o $(PWD)/objs/src/event/nt_event_timer.o \
+		$(PWD)/src/event/nt_event_timer.c
 
 
-objs/src/event/modules/nt_select.o: $(CORE_DEPS) \
-	src/event/modules/nt_select.c
+$(PWD)/objs/src/event/modules/nt_select.o: $(CORE_DEPS) \
+	$(PWD)/src/event/modules/nt_select.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
-		-o objs/src/event/modules/nt_select.o \
-		src/event/modules/nt_select.c
+		-o $(PWD)/objs/src/event/modules/nt_select.o \
+		$(PWD)/src/event/modules/nt_select.c
 

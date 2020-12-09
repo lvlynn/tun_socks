@@ -79,8 +79,8 @@ int main()
     nt_test_t test[10];
 
     nt_rbtree_node_t *search;
-
-    for( int i = 9; i >= 0 ; i-- ) {
+    int i ;
+    for( i = 9; i >= 0 ; i-- ) {
         //  rbnode[i].key = i;
         test[i].port = random( 10 );
         test[i].test = random( 1000 );
@@ -125,7 +125,7 @@ int main()
 
 
     printf( "================print min==================\n" );
-     for( int i = 0; i < 10; i++ ) {
+     for(  i = 0; i < 10; i++ ) {
 
         if( tree.root == &sentinel )
             continue;
