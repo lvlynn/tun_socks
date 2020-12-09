@@ -5,7 +5,8 @@
 #include <time.h>
 #include <stdarg.h>
 
-
+#define IP4_8(var,n) (var >> n) & 0x000000ff
+#define IP4_STR(var) IP4_8(var,0),IP4_8(var,8),IP4_8(var,16),IP4_8(var,24)
 
 static void _debug( const char *f,   char *fmt, ... )
 {

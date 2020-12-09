@@ -103,14 +103,14 @@ void test_read( nt_event_t *ev )
     } else
         printf( "[%s] read event NT_OK\n", __func__ );
 
-/*
-    c->write->active = 0;
-    c->write->ready = 0;
-    if( nt_handle_write_event( c->write, 0 ) != NT_OK ) {
-        printf( "[%s] write event NT_ERROR\n", __func__ );
-    } else
-        printf( "[%s] write event NT_OK\n", __func__ );
-*/
+    /*
+        c->write->active = 0;
+        c->write->ready = 0;
+        if( nt_handle_write_event( c->write, 0 ) != NT_OK ) {
+            printf( "[%s] write event NT_ERROR\n", __func__ );
+        } else
+            printf( "[%s] write event NT_OK\n", __func__ );
+    */
 
 }
 
@@ -176,7 +176,7 @@ void test_write( nt_event_t *ev )
 
 }
 
- #include <netinet/ip.h>
+#include <netinet/ip.h>
 void test_ev_hander( nt_event_t *ev )
 {
     nt_connection_t *conn ;
@@ -192,20 +192,40 @@ void test_ev_hander( nt_event_t *ev )
     ssize_t size = b->last - b->start ;
 
 
-    debug( "size=%d" , size );
-    if( size <=0 )
+    debug( "size=%d", size );
+    if( size <= 0 )
         return;
 
-    struct iphdr *ih = ( struct iphdr *  )b->start;
+    //判断ipv4 还是ipv6
+    struct iphdr *ih = ( struct iphdr * )b->start;
 
-    if( ih->version == 0x6 ){
-        debug( "ipv6 pkg"  );
+    if( ih->version == 0x6 ) {
+        debug( "ipv6 pkg" );
         return ;
     }
-    debug( "ipv4 pkg"  );
 
-    //protocol_parse(  );
-//    nt_add_event( ev, NT_READ_EVENT, NT_LEVEL_EVENT );
+    c->local_sockaddr = ih->saddr ;  //源ip
+    c->sockaddr = ih->daddr ;  //源ip
+
+    debug( "src = %d.%d.%d.%d, dst = %d.%d.%d.%d",
+           IP4_STR( c->local_sockaddr  ), 
+           IP4_STR( c->sockaddr  ) );
+    //判断该连接是否是已有连接
+    
+    //判断协议类型，tcp、 udp、icmp
+    //tcp ， 进行3次握手模拟
+    //udp ,  直接转发
+    switch( ih->protocol  ) {
+        case IPPROTO_TCP:
+            tcp_input( conn  );
+            break;
+    }
+
+
+    debug( "ipv4 pkg" );
+
+    //  protocol_parse(  );
+    //  nt_add_event( ev, NT_READ_EVENT, NT_LEVEL_EVENT );
 
 }
 
@@ -245,10 +265,10 @@ int main()
         nt_destroy_pool( pool );
         return NULL;
     }
- 
+
     //创建接收器的fd
     rcv_fd = tun_init();
-    if( rcv_fd < 0)
+    if( rcv_fd < 0 )
         return -1;
 
     cycle->log = log;
@@ -272,16 +292,16 @@ int main()
     c_rcv->write->handler = NULL;
     c_rcv->fd = rcv_fd;
 
-/*    ev = ( nt_event_t * ) malloc( sizeof( nt_event_t ) );
-    ev->data = ( void * )c_rcv;
+    /*    ev = ( nt_event_t * ) malloc( sizeof( nt_event_t ) );
+        ev->data = ( void * )c_rcv;
 
-    ev->handler = test_ev_hander;
-    ev->index = NT_INVALID_INDEX ;
-    ev->write = 0;
-    ev->log = log;
-*/
-    c_rcv->buffer = nt_pnalloc( pool, sizeof( nt_buf_t ) ); 
-     u_char *p  = nt_pnalloc( pool, 1500 );
+        ev->handler = test_ev_hander;
+        ev->index = NT_INVALID_INDEX ;
+        ev->write = 0;
+        ev->log = log;
+    */
+    c_rcv->buffer = nt_pnalloc( pool, sizeof( nt_buf_t ) );
+    u_char *p  = nt_pnalloc( pool, 1500 );
     c_rcv->buffer->start = p;
     c_rcv->buffer->end = p + 1500;
     c_rcv->buffer->pos = p;
@@ -290,14 +310,14 @@ int main()
 
 
     c_rcv->read->ready = 1;
- //   int ret =  nt_add_event( c_rcv->read,  NT_READ_EVENT,  0 );
+//   int ret =  nt_add_event( c_rcv->read,  NT_READ_EVENT,  0 );
     int ret =  nt_add_event( c_rcv->read,  NT_READ_EVENT,  0 );
     printf( "ret = %d\n", ret );
 
-    
+
     //初始化接收器用的红黑树
     nt_rbtree_t tree;
-    nt_rbtree_init( &tree, &sentinel, nt_rbtree_insert_conn_handle  );
+    nt_rbtree_init( &tree, &sentinel, nt_rbtree_insert_conn_handle );
 
     for( ;; ) {
         nt_msec_t  timer, delta;
