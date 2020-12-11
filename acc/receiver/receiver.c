@@ -1,6 +1,6 @@
 #include "rbtree.h"
 #include "tun.h"
-#include "debug.h"
+#include "protocol.h"
 
 
 nt_new_connection( nt_connection_t *c, nt_log_t *log )
@@ -60,6 +60,9 @@ void test_read( nt_event_t *ev )
 
     b = c->buffer;
 
+    b->last = b->start;
+    b->pos = b->start;
+
     for( ;; ) {
         size = b->end - b->last;
         printf( "size=%d\n", size );
@@ -98,10 +101,10 @@ void test_read( nt_event_t *ev )
 
 
 
-    if( nt_handle_read_event( ev, NT_CLOSE_EVENT ) != NT_OK ) {
+    /* if( nt_handle_read_event( ev, NT_CLOSE_EVENT ) != NT_OK ) {
         printf( "[%s] read event NT_ERROR\n", __func__ );
     } else
-        printf( "[%s] read event NT_OK\n", __func__ );
+        printf( "[%s] read event NT_OK\n", __func__ ); */
 
     /*
         c->write->active = 0;
@@ -176,7 +179,6 @@ void test_write( nt_event_t *ev )
 
 }
 
-#include <netinet/ip.h>
 void test_ev_hander( nt_event_t *ev )
 {
     nt_connection_t *conn ;
@@ -196,34 +198,7 @@ void test_ev_hander( nt_event_t *ev )
     if( size <= 0 )
         return;
 
-    //判断ipv4 还是ipv6
-    struct iphdr *ih = ( struct iphdr * )b->start;
-
-    if( ih->version == 0x6 ) {
-        debug( "ipv6 pkg" );
-        return ;
-    }
-
-    c->local_sockaddr = ih->saddr ;  //源ip
-    c->sockaddr = ih->daddr ;  //源ip
-
-    debug( "src = %d.%d.%d.%d, dst = %d.%d.%d.%d",
-           IP4_STR( c->local_sockaddr  ), 
-           IP4_STR( c->sockaddr  ) );
-    //判断该连接是否是已有连接
-    
-    //判断协议类型，tcp、 udp、icmp
-    //tcp ， 进行3次握手模拟
-    //udp ,  直接转发
-    switch( ih->protocol  ) {
-        case IPPROTO_TCP:
-            tcp_input( conn  );
-            break;
-    }
-
-
-    debug( "ipv4 pkg" );
-
+    ip_input( conn );    
     //  protocol_parse(  );
     //  nt_add_event( ev, NT_READ_EVENT, NT_LEVEL_EVENT );
 
@@ -272,6 +247,8 @@ int main()
         return -1;
 
     cycle->log = log;
+    
+    printf( "rcv_fd = %d\n", rcv_fd );
 
     // event 初始化
     nt_event_init( cycle );
@@ -316,8 +293,7 @@ int main()
 
 
     //初始化接收器用的红黑树
-    nt_rbtree_t tree;
-    nt_rbtree_init( &tree, &sentinel, nt_rbtree_insert_conn_handle );
+    nt_rbtree_init( &tcp_udp_tree, &g_sentinel, nt_rbtree_insert_conn_handle );
 
     for( ;; ) {
         nt_msec_t  timer, delta;
@@ -348,7 +324,7 @@ int main()
 
 
         nt_event_process_posted( cycle, &nt_posted_events );
-        sleep( 3 );
+//        sleep( 3 );
     }
 
     free( cycle );

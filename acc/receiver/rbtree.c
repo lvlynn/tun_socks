@@ -1,15 +1,24 @@
 #include "rbtree.h"
+#include "debug.h"
 
-nt_rbtree_node_t sentinel;
+
+nt_rbtree_t tcp_udp_tree;
+nt_rbtree_node_t g_sentinel;
 
 int nt_rbtree_insert_conn_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_rbtree_key_t cur_key )
 {
 
     if( flag == RBTREE_INSERT ) {
+        debug( "RBTREE_INSERT" );
         //   printf( "RBTREE_INSERT \n" );
-        nt_rev_connection_t *tcur = ( nt_rev_connection_t * )cur_key;
-        nt_rev_connection_t *ttree = ( nt_rev_connection_t * )tree_key;
+        if( tree_key == 0  )
+            return 1;
 
+        nt_rev_connection_t *tcur = ( nt_rev_connection_t * )cur_key;
+        debug( "tcur->port=%d", tcur->port );
+
+        nt_rev_connection_t *ttree = ( nt_rev_connection_t * )tree_key;
+        debug( "ttree->port=%d", ttree->port );
         if( tcur->port < ttree->port )
             return 1;
         else if( tcur->port > ttree->port )
@@ -33,21 +42,56 @@ int nt_rbtree_insert_conn_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_r
     }
 }
 
+//连接查询
+nt_rbtree_node_t *rcv_conn_search( nt_rbtree_t *tree, u_int16_t port )
+{
+    nt_rbtree_delete_key( tree, port  );
+    nt_rbtree_node_t *node;
+    node = nt_rbtree_search( tree, port );
+
+    if( node  != &g_sentinel )
+        return node;
+    else    
+        return NULL;
+}
+
+
 //连接添加到红黑树
 int rcv_conn_add( nt_rbtree_t *tree, nt_connection_t  *conn )
 {
-
-    int port;
+    u_int16_t port;
     nt_rbtree_node_t *node;
+    nt_rev_connection_t *rc ;
+    nt_skb_t *skb;
 
-    node = ( nt_rbtree_node_t * ) malloc( sizeof( nt_rbtree_node_t ) );
+    rc = conn->data;
 
-    node->key = port;
-    node->parent =  &sentinel;
-    node->left =  &sentinel;
-    node->right =  &sentinel;
+
+    skb = rc->skb;
+
+    if( skb->protocol == IPPROTO_TCP ){
+        nt_skb_tcp_t *skb_data;
+
+        skb_data = skb->data;
+        port = rc->port;
+
+    } else if ( skb->protocol == IPPROTO_UDP  ){
+
+    } 
+
+    debug( "port=%d", port );
+    
+    node = ( nt_rbtree_node_t * ) nt_palloc( conn->pool, sizeof( nt_rbtree_node_t ) );
+
+
+    debug( "rc=%p", &rc );
+    node->key = rc;
+
+    node->parent =  &g_sentinel;
+    node->left =  &g_sentinel;
+    node->right =  &g_sentinel;
    
-    nt_rbtree_insert( &tree, node );
+    nt_rbtree_insert( tree, node );
 
     return 0;
 }

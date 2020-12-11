@@ -1,5 +1,5 @@
-#ifndef _DEBUG_H_
-#define _DEBUG_H_
+#ifndef _REV_DEBUG_H_
+#define _REV_DEBUG_H_
 
 #include <stdio.h>
 #include <time.h>

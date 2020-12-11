@@ -23,7 +23,7 @@ struct{
     uint16_t sport; //源ip
     uint32_t dip;   //目的端口
     uint16_t dport; //目的ip
-}
+};
 
 
 
@@ -125,12 +125,14 @@ void tcp_create( nt_conn_t *conn )
     debug( "before-->playload_len=%d", playload_len );
     debug( "before-->th->seq=%u", ntohl (th->seq  ));
     debug( "before-->th->ack_seq=%u", ntohl (th->ack_seq  ));
+   
 
     
     /* if( playload_len )
         pkg_th->ack_seq        = htonl( ntohl( th->seq ) + playload_len );       // tcp ack number
     else
         pkg_th->ack_seq        = htonl( ntohl( th->seq ) + 1 );       // tcp ack number */
+
 
     //先置零    
     pkg_th->urg =0;
@@ -318,7 +320,8 @@ int tcp_input(nt_conn_t *conn){
     struct tcphdr *th = ( struct tcphdr * )( ih + 1 );
    // ndt->tcp_info->th = th;
 
-    if( ndt->protocol == 4 ){
+    debug( "protocol=%d", ndt->ip_version );
+    if( ndt->ip_version == 4 ){
         conn->pcb->ipv4_src.port = th->source ; 
         conn->pcb->ipv4_dst.port = th->dest ; 
     } else {
@@ -349,6 +352,7 @@ int tcp_input(nt_conn_t *conn){
     //debug( "flag size=%d", th->doff);
 
     if( ndt->tcp_info->payload_len == 0 ) {
+
         //syn包
         //   if(th->th_flags == TH_SYN)
         if( th->syn == 1 && th->ack == 0 ) {
