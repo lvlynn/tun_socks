@@ -70,7 +70,7 @@
 #define TCP_PHASE_SEND_SYN_ACK 5
 
 
-//client 发payload; payload长度不为0
+//client 发payload; payload长度不为0 ,并且 psh标志位为0
 #define TCP_PHASE_PSH 11
 
 //client 发payload 结束，psh标志位为1 

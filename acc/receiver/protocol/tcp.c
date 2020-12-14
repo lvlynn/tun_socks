@@ -135,6 +135,7 @@ uint8_t tcp_phase( nt_skb_tcp_t *tcp, struct tcphdr *th )
             tcp->phase = TCP_PHASE_FIN ;
 
     } else {
+        debug( "th->psh=%d", th->psh );
         if( th->psh == 1 ) {
             tcp->phase = TCP_PHASE_PSH_END ;
         } else {
@@ -236,12 +237,12 @@ void tcp_create( nt_skb_t *skb, struct iphdr *ih, struct tcphdr *th )
         b->last = nt_cpymem( b->last , tcp->data, tcp->data_len );
 
         break;
-    case TCP_PHASE_SEND_FIN: //收到FIN ACK, 回应 ACK
-    case TCP_PHASE_SEND_FIN_ACK: //主动回应 FIN ACK
+    case TCP_PHASE_SEND_FIN: //主动回 FIN 
+    case TCP_PHASE_SEND_FIN_ACK:  //收到FIN ACK, 回应 ACK
         debug( " TCP_FIN_ACK " );
         pkg_th->doff = 0x5;
         pkg_th->ack  = 1;                                   // ack标识位
-        if( tcp->phase == TCP_PHASE_SEND_FIN_ACK )
+        if( tcp->phase == TCP_PHASE_SEND_FIN )
             pkg_th->fin  = 1;
         pkg_th->seq = th->ack_seq;                             // tcp seq number
 
@@ -295,6 +296,7 @@ int tcp_input( nt_connection_t *c )
     tcp->data_len = tcp_len - tcp->hdr_len;
 
 
+    debug( "tcp->hdr_len=%d", tcp->hdr_len );
     debug( "packet len=%d, playload_len=%d", tcp_len, tcp->data_len );
 
     ret = tcp_phase( tcp, th );
@@ -444,6 +446,8 @@ int tcp_phase_send_response( nt_connection_t *c ){
 
     if( tcp->phase == TCP_PHASE_SEND_PSH_ACK)
         return TCP_PHASE_PROXY_DIRECT;
+    else if ( tcp->phase == TCP_PHASE_SEND_FIN_ACK )
+        return TCP_PHASE_SEND_FIN;
     else
         return TCP_PHASE_NULL;
 
@@ -469,7 +473,7 @@ int tcp_phase_handle( nt_connection_t *c )
     th = ( struct tcphdr * )( ih + 1 );
 
     while( tcp->phase ){
-
+    //    debug( "tcp->phase =%d", tcp->phase  );
         switch( tcp->phase ) {
         case TCP_PHASE_SYN:
             tcp_parse_option( b->start );
@@ -494,7 +498,16 @@ int tcp_phase_handle( nt_connection_t *c )
             
             tcp->phase = tcp_direct_server( c );
             break;
-
+        case TCP_PHASE_FIN:
+            //收到FIN 回应FIN ACK
+            tcp->phase = TCP_PHASE_SEND_FIN_ACK ;
+            break;
+        case TCP_PHASE_SEND_FIN_ACK:
+            tcp->phase = tcp_phase_send_response( c  );
+            break;
+        case TCP_PHASE_SEND_FIN:
+            tcp->phase = tcp_phase_send_response( c  );
+            break;
         default:
             tcp->phase = TCP_PHASE_NULL;
             break;

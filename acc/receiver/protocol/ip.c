@@ -59,6 +59,8 @@ int ip_create( nt_skb_t *skb , struct iphdr *ih)
 		skb->buf_len = skb->iphdr_len + skb_data->hdr_len;
 		break;
 	case TCP_PHASE_ACK:
+	case TCP_PHASE_SEND_FIN:     
+	case TCP_PHASE_SEND_FIN_ACK:
 	case TCP_PHASE_SEND_PSH_ACK:
 		skb->buf_len = skb->iphdr_len + 20;
 		break;
@@ -102,6 +104,9 @@ static int ipv4_input( nt_connection_t *c )
     struct iphdr *ih;
     u_int16_t sport ;
     nt_rbtree_node_t *node;
+    nt_rev_connection_t *nrc;
+    nt_skb_t *skb;
+
 
     b = c->buffer;
     ih = ( struct iphdr * )b->start;
@@ -126,17 +131,27 @@ static int ipv4_input( nt_connection_t *c )
     //并把源IP，目的IP存入其中
     //把这个新的 nt_rev_connection_t 添加到红黑树
     node = rcv_conn_search( &tcp_udp_tree, sport );
-    if( node ) {
+    if( node != NULL ) {
+        debug( "node in tree" );
+       nrc = ( nt_rev_connection_t *)node->key;
+       skb = nrc->skb;
+       skb->protocol = ih->protocol ;
+       skb->skb_len = b->last - b->start;
+       skb->iphdr_len = ih->ihl << 2;
+
+       c->data = nrc ; 
+       nrc->conn = c;
 
     } else {
         debug( "node not in tree" );
-        nt_rev_connection_t *nrc = nt_palloc( c->pool, sizeof( nt_rev_connection_t ) );
+        nrc = nt_palloc( c->pool, sizeof( nt_rev_connection_t ) );
 
         //生成一个新的skb
-        nt_skb_t *skb = nt_palloc( c->pool, sizeof( nt_skb_t ) );
+        skb = nt_palloc( c->pool, sizeof( nt_skb_t ) );
 
         skb->protocol = ih->protocol ;
         skb->skb_len = b->last - b->start;
+        skb->iphdr_len = ih->ihl << 2;
 
         if( ih->protocol == IPPROTO_TCP ) {
             nt_skb_tcp_t *skb_tcp = nt_palloc( c->pool, sizeof( nt_skb_t ) );
@@ -178,11 +193,11 @@ static int ipv4_input( nt_connection_t *c )
         nrc->conn = c;
         nrc->skb = skb;
 
-        skb->iphdr_len = ih->ihl << 2;
         c->data = nrc ;
         //把新的nrc添加到红黑树;
-     //   rcv_conn_add( &tcp_udp_tree, c );
+        rcv_conn_add( &tcp_udp_tree, c );
     }
+
 
 
 

@@ -89,16 +89,21 @@ nt_rbtree_node_t *nt_rbtree_search( nt_rbtree_t *tree, nt_rbtree_key_t key )
 
     root = tree->root;
     sentinel = tree->sentinel;
-    if( tree->root == sentinel )
+    if( tree->root == sentinel ){
+        printf( "nt_rbtree_search return root sentinel\n" );
         return sentinel;
+    }
 
     int ret = 0;
     while( ( ret = tree->insert( RBTREE_SEARCH, root->key, key ) ) != 0 ) {
+        printf( "ret=%d", ret );
         if( ret < 0 )
             root = root->right;
         else
             root = root->left;
 
+        if( root == sentinel )
+           break; 
         /* if( key < root->key )
             root = root->left;
         else

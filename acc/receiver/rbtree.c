@@ -32,6 +32,9 @@ int nt_rbtree_insert_conn_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_r
     if( flag == RBTREE_SEARCH ) {
         nt_rev_connection_t *ttree = ( nt_rev_connection_t * )tree_key;
 
+        debug( "cur_key=%d", cur_key );
+        debug( "ttree->port=%d", ttree->port );
+
         if( cur_key < ttree->port )
             return 1;
         else if( cur_key > ttree->port )
@@ -45,8 +48,8 @@ int nt_rbtree_insert_conn_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_r
 //连接查询
 nt_rbtree_node_t *rcv_conn_search( nt_rbtree_t *tree, u_int16_t port )
 {
-    nt_rbtree_delete_key( tree, port  );
     nt_rbtree_node_t *node;
+
     node = nt_rbtree_search( tree, port );
 
     if( node  != &g_sentinel )
@@ -84,7 +87,7 @@ int rcv_conn_add( nt_rbtree_t *tree, nt_connection_t  *conn )
     node = ( nt_rbtree_node_t * ) nt_palloc( conn->pool, sizeof( nt_rbtree_node_t ) );
 
 
-    debug( "rc=%p", &rc );
+    debug( "node=%p", node );
     node->key = rc;
 
     node->parent =  &g_sentinel;
@@ -92,6 +95,9 @@ int rcv_conn_add( nt_rbtree_t *tree, nt_connection_t  *conn )
     node->right =  &g_sentinel;
    
     nt_rbtree_insert( tree, node );
+    debug( "tree->root addr=%p", tree->root );
+    debug( "tree->sen addr=%p", tree->sentinel );
+    debug( "tree->count=%d", tree->count );
 
     return 0;
 }
