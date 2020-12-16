@@ -414,7 +414,82 @@ int tcp_direct_server( nt_connection_t *c )
 
 }
 
+int tcp_phase_proxy_socks( nt_connection_t *c ){
+    debug( "++++++++++++++tcp_phase_proxy_socks+++++++++++++"  );
+    nt_rev_connection_t *rc ;
+    nt_skb_t *skb;
+    nt_skb_tcp_t *tcp;
+    int ret;
+    const char path[]="/tmp/nt.socks5.sock";
+    int fd;
+    struct sockaddr_un server_addr;
+    ssize_t size ;
+
+    rc = c->data;
+    skb = rc->skb;
+    tcp = skb->data;
+
+    nt_buf_t *b;
+    //ssize_t size = b->last - b->start;
+    b = c->buffer;
+
+    struct iphdr *ih;
+    struct tcphdr *th;
+    ih = ( struct iphdr * )b->start;
+    th = ( struct tcphdr * )( ih + 1 );
+   
+    fd = socket(AF_UNIX,SOCK_STREAM,0);
+
+    server_addr.sun_family=AF_UNIX;
+    strcpy(server_addr.sun_path,path);
+
+
+    if(connect(fd,(struct sockaddr *)&server_addr,sizeof(server_addr)) == -1){
+        debug(" connect to server fail. errno=%d", errno);
+        return TCP_PHASE_NULL;
+    }
+
+    nt_tcp_socks_t  tcp_socks;    
+    tcp_socks.type = 2;
+    tcp_socks.domain = 4;
+    tcp_socks.protocol = 1;
+    tcp_socks.server_ip = inet_addr("172.16.254.157");
+    tcp_socks.server_port = htons( "1080" );
+
+    strcpy( tcp_socks.user , "test" );
+    strcpy( tcp_socks.password , "test" );
+
+    struct sockaddr_in *addr;
+    addr = ( struct sockaddr_in *)tcp->src;
+    tcp_socks.sip = addr->sin_addr.s_addr; 
+    tcp_socks.sport =  addr->sin_port;
+
+    addr = ( struct sockaddr_in *)tcp->dst;
+    tcp_socks.dip = addr->sin_addr.s_addr; 
+    tcp_socks.dport = addr->sin_port;
+
+    tcp_socks.data_len =  tcp->data_len ;
+    debug(" size  = %d",  tcp_socks.data_len);
+    tcp->data = c->buffer->start + skb->iphdr_len + tcp->hdr_len ;
+    memcpy( tcp_socks.data , tcp->data,  tcp_socks.data_len );
+  //  tcp_socks.data = tcp->data ;
+    debug(" buf  = %s",  tcp_socks.data);
+
+
+    size = sizeof( nt_tcp_socks_t  ) - 1500  + tcp_socks.data_len;
+    debug(" size  = %d", size);
+
+    ret = send( fd, (void *)&tcp_socks , size, 0 );
+
+    debug(" ret  = %d", ret);
+    if( ret < 0 )
+        return TCP_PHASE_NULL;
+
+    return TCP_PHASE_NULL;
+}
+
 int tcp_phase_send_response( nt_connection_t *c ){
+    debug( "++++++++++++++tcp_phase_send_response+++++++++++++"  );
     nt_rev_connection_t *rc ;
     nt_skb_t *skb;
     nt_skb_tcp_t *tcp;
@@ -445,7 +520,8 @@ int tcp_phase_send_response( nt_connection_t *c ){
         return TCP_PHASE_NULL;
 
     if( tcp->phase == TCP_PHASE_SEND_PSH_ACK)
-        return TCP_PHASE_PROXY_DIRECT;
+        /* return TCP_PHASE_PROXY_DIRECT; */
+        return TCP_PHASE_PROXY_SOCKS;
     else if ( tcp->phase == TCP_PHASE_SEND_FIN_ACK )
         return TCP_PHASE_SEND_FIN;
     else
@@ -495,8 +571,11 @@ int tcp_phase_handle( nt_connection_t *c )
             break;
         case TCP_PHASE_PROXY_DIRECT:
             //发送payload 到 server
-            
             tcp->phase = tcp_direct_server( c );
+            break;
+        case TCP_PHASE_PROXY_SOCKS:
+            //发送payload 到 server
+            tcp->phase = tcp_phase_proxy_socks( c );
             break;
         case TCP_PHASE_FIN:
             //收到FIN 回应FIN ACK

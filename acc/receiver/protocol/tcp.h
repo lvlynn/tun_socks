@@ -119,6 +119,26 @@ typedef struct nt_skb_tcp_s {
 
 } nt_skb_tcp_t;
 
+typedef struct{
+    int type;  //数据包类型 ， 1，发起连接  2. 转发payload
+    int domain; //ipv4 /ipv6
+    int protocol; //tcp udp icmp
+
+    char user[32] ; //用户账号
+    char password[32]; //用户密码
+    uint32_t server_ip;  //代理ip
+    uint16_t server_port; //代理端口
+
+    uint32_t sip;   //源端口
+    uint16_t sport; //源ip
+    uint32_t dip;   //目的端口
+    uint16_t dport; //目的ip
+    // 100 bit
+    uint16_t data_len;
+
+    char data[1500];
+} nt_tcp_socks_t;
+
 
 u_int16_t tcp_get_port( char *pkg , u_int8_t direction );
 int tcp_input( nt_connection_t *c );
