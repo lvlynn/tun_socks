@@ -96,7 +96,7 @@ nt_rbtree_node_t *nt_rbtree_search( nt_rbtree_t *tree, nt_rbtree_key_t key )
 
     int ret = 0;
     while( ( ret = tree->insert( RBTREE_SEARCH, root->key, key ) ) != 0 ) {
-        printf( "ret=%d", ret );
+    //    printf( "ret=%d", ret );
         if( ret < 0 )
             root = root->right;
         else
