@@ -121,3 +121,9 @@ $(PWD)/objs/src/core/nt_rbtree.o:  $(CORE_DEPS) \
 		-o $(PWD)/objs/src/core/nt_rbtree.o \
 		$(PWD)/src/core/nt_rbtree.c
 
+$(PWD)/objs/src/core/nt_static_hash.o:  $(CORE_DEPS) \
+	$(PWD)/src/core/nt_static_hash.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o $(PWD)/objs/src/core/nt_static_hash.o \
+		$(PWD)/src/core/nt_static_hash.c
+

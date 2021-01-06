@@ -35,6 +35,10 @@ typedef intptr_t        nt_flag_t;
     #define NT_ALIGNMENT   sizeof(unsigned long)    /* platform word */
 #endif
 
+//f(a,b)是b的倍数，且f(a,b)是a的一个最小弱上界。
+//实际上就是得到一个对齐的地址，或者得到一个对齐的一段由pool分配的数据)
+//d 5   8  ->  8
+//d 9   8  ->  16
 #define nt_align(d, a)     (((d) + (a - 1)) & ~(a - 1))
 #define nt_align_ptr(p, a)                                                   \
     (u_char *) (((uintptr_t) (p) + ((uintptr_t) a - 1)) & ~((uintptr_t) a - 1))

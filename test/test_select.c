@@ -7,7 +7,17 @@ void test()
 
     printf( "test\n" );
 }
-
+/*
+ *  //ev事件的重要标志位
+ *
+ *  ready ,在 accept进入一个新事件的时候设定 rev->ready为1， wev->ready为1
+ *  在ngx_get_connection中设定 wev->write = 1 ， rev->write 默认为0
+ *  也就是说如果ev->write 1 我们可以认定为当前事件为write事件
+ *  error
+ *  active 
+ *
+ *
+ * */
 
 
 

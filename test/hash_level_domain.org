@@ -1,0 +1,450 @@
+#include "nt_core.h"
+
+
+/* volatile nt_cycle_t *nt_cycle;   */
+
+#define random(x) (rand()%x)
+
+
+int DOMAIN_PROXY=100;
+
+/*
+ *  精确表格式
+ *  baidu(key) -> elt(value) ->  1|news.com 0|www.com
+ *
+ *  通配表格式
+ *  baidu(key) -> elt(value) ->  1|*.com 0|www.*
+ * */
+
+//为了让精确域名先查询， 精确域名用头插， 通配域名用尾插
+typedef struct {
+    struct nt_acc_rule_s *next;
+
+    signed  rule:4; // 0/1  不加速/加速
+    unsigned  len:4; // 0/1  不加速/加速
+
+    u_char name[1]; //存域名, //去除主域名 news.com   www.com
+
+} nt_acc_elt_t;
+
+
+//为了一个value申请的空间少且查询只需要遍历一个链
+typedef struct {
+    // exact ， wildcard
+    //精确匹配表
+    nt_acc_elt_t *elt;  //第一个为后缀， 后面为精确域名的前缀
+
+    //wildcard
+    //正则匹配
+//    nt_acc_rule_t *wildcard;
+} hash_value_t;
+
+
+typedef struct {
+    nt_str_t center;
+    nt_str_t head;
+    nt_str_t tail;
+
+    int8_t type ;
+} hash_host_t;
+
+
+static nt_str_t acc_host_tail[16] = {
+    nt_string(".com"),  //220.181.111.147
+    nt_string(".com.tw"),  //220.181.111.147
+    nt_string(".org"),  //220.181.111.147
+    nt_string(".org.uk"),  //220.181.111.147
+    nt_string(".org.hk"),  //220.181.111.147
+    nt_string(".net"),  //220.181.111.147
+    nt_string(".net.au"),  //220.181.111.147
+    nt_string(".me"),  //220.181.111.147
+    nt_string(".de"),  //220.181.111.147
+    nt_string(".info"),  //220.181.111.147
+};
+
+void rand_str( char *out, int n )
+{
+    //srand(utime(NULL));
+    int i = 0;
+    for( i = 0; i < n; i++ ) {
+
+        *( out + i ) = 97 + random( 26 );
+    }
+
+    *( out + n - 1 ) = '\0';
+}
+
+
+/* nt_int_t set_str( nt_str_t *str,  size_t len ){
+
+    str->len = i - d1;
+    str->data = malloc( sizeof( str ) );
+    nt_memcpy( center->data, key->data + ( key->len - i ),  center->len );
+}
+ */
+/*
+ *.test.com -> test
+ .test.com  -> test
+ test.com   -> test
+ *.com      -> com
+ test.*     -> test
+ www.test.* -> test
+ */
+void get_cut_host( hash_t *hash, u_char *domain, nt_array_t *elements )
+{
+
+    size_t i = 0, n = 0;
+    size_t d1;
+    nt_str_t *name = NULL;
+
+    char *ret;
+    while ( ret = strsep(&domain, ".")){
+        n++;
+        /* debug( "q=%s", q  );
+        debug( "ret=%s", ret  ); */
+
+        name = ( nt_str_t*   ) nt_array_push( elements   );
+        nt_str_set( name, ret );
+        debug( "name=%s", name->data );
+    }
+
+    /* for( q = key->data ; q < ( key->data + key->len ); ){
+            debug( "q=%s", q  );
+
+    } */
+       //      name = ( nt_str_t*  ) nt_array_push( elements  );
+
+       //     nt_str_set( name, key->data - q);
+   
+    debug( "elements->nelts = %d", elements->nelts );
+    
+    for( i = elements->nelts; i > 0; i-- ){
+
+            name = ( nt_str_t* )elements->elts + i - 1;
+            debug( "name=%s", name->data );
+    }
+
+    return ;
+   
+}
+
+
+
+size_t hash_level_num = 0;
+
+
+hash_level_add( hash_t *hash, nt_array_t *host ){
+
+    nt_str_t *key;
+    nt_str_t *value;
+
+    size_t i, n;
+
+    if( hash_level_num < host->nelts ){
+
+    }
+
+    for( i = host->nelts; i > 0; i-- ){
+
+        key = ( nt_str_t* ) host->elts + i - 1;
+        debug( "key=%s", key->data );
+
+        i = i - 1;
+        value = ( nt_str_t* ) host->elts + i - 1;
+        
+        if( hash_level_num < 1 ){
+
+        }  
+
+
+
+        hash_add( hash, name , add  );
+    }
+
+}
+
+//多级查询
+hash_level_query( hash_t *hash, nt_array_t *host ){
+    size_t i, n;
+
+    for( i = host->nelts; i > 0; i-- ){
+
+        name = ( nt_str_t* ) host->elts + i - 1;
+        debug( "name=%s", name->data );
+
+        query = hash_query( hash,  name->data );
+        if( query == NULL ){
+
+
+        } else {
+
+
+        }
+    }
+
+
+}
+
+//添加前先查询是否存在
+nt_int_t add_to_hash_table( hash_t *hash, u_char *domain, u_int8_t rule )
+{
+    size_t i, n;
+
+    hash_value_t *add;
+    hash_value_t *query;
+    hash_host_t host = {0};
+
+    nt_array_t *sub_host;
+    nt_str_t *name;
+
+    //1. 获取二级域名
+    //2. 获得一级域名
+
+    sub_host = nt_array_create( hash->pool, 2, sizeof( nt_str_t ) );
+    get_cut_host(hash,  domain, sub_host );
+        return ;
+
+#if 0
+    debug( "center=%*s", host.center.len,  host.center.data );
+    debug( "tail=%*s", host.tail.len, host.tail.data );
+
+      debug( "hl=%d", host.head.len );
+    if( host.head.len != 0 )
+        debug( "head=%*s", host.head.len, host.head.data );
+
+    query = hash_query( hash,  host.center.data );
+
+    
+    char name[64] = {0};
+
+    if( query == NULL ) {
+
+        add = ( hash_value_t * ) malloc( sizeof( hash_value_t ) );
+
+        nt_acc_elt_t *elt;
+        elt = ( nt_acc_elt_t *  ) nt_pcalloc( hash->pool, sizeof( nt_acc_elt_t  ) + host.head.len + host.tail.len  );
+        elt->rule = rule;
+        elt->next = NULL;
+        elt->len = host.head.len + host.tail.len;
+
+        nt_memcpy(  elt->name , host.head.data, host.head.len); 
+        nt_memcpy(  elt->name + host.head.len , host.tail.data, host.tail.len); 
+
+        nt_memcpy( name, host.center.data, host.center.len );
+        *(name + host.center.len + 1) = '\0';
+        add->elt = elt;
+
+        hash_add( hash, name , add );
+//        nt_free( exact );
+    } else {
+        //先判断有没有存在
+        
+        nt_acc_elt_t *elt;
+        nt_acc_elt_t *pre;
+
+        elt = query->elt ;
+
+        while( elt ){
+            pre = elt;
+
+             //正序比较
+            debug( "name=%s , host.head.data=%s", elt->name, host.head.data );
+            if( nt_strncmp( elt->name, host.head.data, host.head.len ) != 0 )
+            {
+                elt = elt->next;
+                continue;
+            }
+
+            //改倒序比较
+            debug( "name=%s , host.tail.data=%s", elt->name, host.tail.data );
+            if(  nt_rstrncmp( elt->name + host.head.len, host.tail.data, host.tail.len  ) != 0 )
+            {
+                elt = elt->next;
+                continue;
+            }
+
+            debug( "l l %d, %d", elt->len, host.head.len + host.tail.len );
+            if( elt->len != ( host.head.len + host.tail.len ) ){
+                elt = elt->next;
+                continue;
+            }
+
+            break;
+        }
+
+        if( elt ){
+            debug( "存在相同的域名，%s", elt->name );
+            return NT_BUSY; 
+        }
+
+        nt_acc_elt_t *new;
+        new = ( nt_acc_elt_t *  ) nt_pcalloc( hash->pool, sizeof( nt_acc_elt_t  ) + host.head.len + host.tail.len  );
+        new->rule = rule;
+        nt_memcpy(  new->name , host.head.data, host.head.len); 
+        nt_memcpy(  new->name + host.head.len , host.tail.data, host.tail.len); 
+        new->next = NULL;
+        new->len = host.head.len + host.tail.len;
+
+//        query->rule;
+        //有正则，存后面
+        if( host.type ){
+            pre->next = new;    
+        } else{ //无正则，存前面
+            elt = query->elt;
+
+            query->elt = new;
+            new->next = elt;
+        }
+    }
+
+#endif 
+    return 1;
+}
+
+nt_int_t hast_add_domain( hash_t *hash, char *path )
+{
+
+    FILE *f;
+    char line[128] = {0};
+    nt_array_t* elements = NULL;
+    nt_hash_key_t* arr_node = NULL;
+    nt_str_t *key = NULL;
+    int type = 0;
+    int ret = 0;
+    size_t len;
+
+    f = fopen( path, "r" );
+    if( f == NULL ) {
+        printf( "open file error\n" );
+        return -1;
+    }
+    while( fgets( line, sizeof( line ), f ) != NULL ) {
+        //NT_HASH_WILDCARD_KEY表明可以处理带通配符的关键字
+
+       // key = malloc(  sizeof( nt_str_t ) );
+
+        len = nt_strlen( line ) - 1 ;
+
+        if( len < 1 )
+            continue;
+
+        if( *line == '#' )
+            continue;
+
+        if( *line == '[' && *( line + 1 ) == 'e' ) {
+            type = 0;
+            break;
+        }
+
+        if( *line == '[' && *( line + 1 ) == 'd' ) {
+            type = 0;
+            continue;
+        } else if( *line == '[' && *( line + 1 ) == 'p' ) {
+            type = 1;
+            continue;
+        }
+
+        debug( "line=%s, len=%d", line, len );
+        /* ret =  nt_hash_add_key( ha, key, key->data, NT_HASH_WILDCARD_KEY ); */
+//        hash_add( hash,  key, key ) != NT_OK )
+        add_to_hash_table( hash, line, type );
+        memset( line, 0, sizeof( line ) );
+    }
+
+    fclose( f );
+
+    nt_destroy_pool( hash->temp_pool );
+    return NT_OK;
+}
+
+
+
+
+int main( int argc, char **argv )
+{
+    nt_log_t *log;
+    nt_pool_t *p;
+    hash_t *hash;
+    u_short ret;
+    int i = 0;
+
+    nt_time_init();
+    log = nt_log_init( NULL );
+    log->log_level = NT_LOG_DEBUG_ALL;
+
+    nt_log_debug1( NT_LOG_DEBUG_EVENT, log, 0,
+                   "timer delta: %M", nt_current_msec );
+
+    p = nt_create_pool( 1024 * 4, log ); //16KB
+    /* p = nt_create_pool(100, log); //16KB */
+    if( p == NULL ) {
+        printf( "nt_create_pool error\r\n" );
+        return NT_ERROR;
+    }
+
+    hash = ( nt_hash_init_t * )nt_palloc( p, sizeof( hash_t ) );
+
+    hash->pool = p;
+
+    hash->temp_pool = nt_create_pool( 1024 * 1000, log ); //16KB
+
+    debug( "size=%d", sizeof( hash_elt_t ) );
+
+    ret = hash_init( hash, 10000 );
+    if( ret != NT_OK ) {
+        return NT_ERROR;
+    }
+    hash_level_num = 1;
+
+
+    char *d0 = "baidu";
+    char key[ 12 ] = { 0 };
+    /* nt_acc_elt_t *query; */
+    hash_value_t *query;
+    /* hash_init( hinit, NULL, 2 );
+    hinit->key = nt_hash_key;
+    */
+
+    //添加
+    /* for( i = 0; i < 8000; i++ ) {
+        rand_str( key, 12 );
+        if( hash_add( hash,  key, key ) != NT_OK ) {
+            debug( "add fail" );
+            continue ;
+        }
+    } */
+    hast_add_domain( hash, argv[1] );
+
+    debug( "pool-max=%d", p->max );
+//    return ;
+
+    //查询
+    query = hash_query( hash,  "baidu" );
+    nt_acc_elt_t *elt;
+    if( query ){
+        elt = query->elt;
+        debug( "找到了" );
+        while( elt ){
+            debug( "elt=%s", elt->name );
+            elt = elt->next;
+        }
+    }
+    //删除
+
+    /* if( hash_del( hash,  key ) != NT_OK ) {
+        debug( "del fail" );
+        return ;
+    }
+ */
+    //pause();
+    return ;
+//查询
+    query = hash_query( hash,  key );
+    debug( "query=%s", query );
+
+    //全打印
+//    nt_hash_dump( hinit.hash  );
+    hash_free( hash );
+    nt_destroy_pool( p );
+    return 0;
+}

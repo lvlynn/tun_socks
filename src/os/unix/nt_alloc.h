@@ -19,8 +19,11 @@ void *nt_calloc(size_t size, nt_log_t *log);
 void *nt_realloc(void *p, size_t size, nt_log_t *log);
 #endif
 
-#define nt_free          free
-
+//#define nt_free          free
+#define nt_free(p)     if(p){ \
+                                free(p); \
+                                p = NULL ; \
+                            }
 /*
 #if (NT_JEMALLOC)
 

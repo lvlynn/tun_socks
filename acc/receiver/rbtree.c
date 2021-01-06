@@ -32,8 +32,8 @@ int nt_rbtree_insert_conn_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_r
     if( flag == RBTREE_SEARCH ) {
         nt_rev_connection_t *ttree = ( nt_rev_connection_t * )tree_key;
 
-        debug( "cur_key=%d", cur_key );
-        debug( "ttree->port=%d", ttree->port );
+        /* debug( "cur_key=%d", cur_key );
+        debug( "ttree->port=%d", ttree->port ); */
 
         if( cur_key < ttree->port )
             return 1;

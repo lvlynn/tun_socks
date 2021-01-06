@@ -58,6 +58,7 @@ typedef void ( *nt_connection_handler_pt )( nt_connection_t *c );
 #include <nt_queue.h>
 #include <nt_array.h>
 #include <nt_list.h>
+#include <nt_static_hash.h>
 #include <nt_process.h>
 
 #include <nt_linux.h>

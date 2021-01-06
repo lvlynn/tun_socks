@@ -259,5 +259,6 @@ extern nt_module_t  nt_errlog_module;
 extern nt_uint_t    nt_use_stderr;
 
 
+#define debug( arg... ) _debug( __func__ ,  arg)
 
 #endif
