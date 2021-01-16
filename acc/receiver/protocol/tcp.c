@@ -1,6 +1,7 @@
 #include "protocol.h"
+#include "rbtree.h"
 
-unsigned short tcp_chk( const unsigned short *data, int size )
+ unsigned short tcp_chk( const unsigned short *data, int size )
 {
     unsigned long sum;
     pshead ph;
@@ -36,6 +37,8 @@ u_int16_t tcp_get_port( char *pkg, u_int8_t direction )
 
     return ntohs( port ) ;
 }
+
+
 
 /*  解析tcp 头中的option部分，主用来提取mss
  *   Kind | Length | Name           | RFC     | 描述
@@ -113,6 +116,124 @@ void tcp_parse_option( char *data )
 
 }
 
+
+void tcp_rbtree( nt_connection_t *c )
+{
+    u_int16_t sport ;
+    nt_rbtree_node_t *node;
+    nt_rev_connection_t *nrc;
+    nt_skb_t *skb;
+    nt_buf_t *b;
+    struct iphdr *ih;
+
+    b = c->buffer;  //存放read进来的数据包
+    ih = ( struct iphdr * )b->start;
+
+
+    sport = tcp_get_port( b->start, TCP_SRC );
+
+    //查询该连接是否已经在红黑树中，如果没有就添加一个新的 nt_rev_connection_t 对象
+    //并把源IP，目的IP存入其中
+    //把这个新的 nt_rev_connection_t 添加到红黑树
+    node = rcv_conn_search( &tcp_udp_tree, sport );
+    if( node != NULL ) {
+        debug( "node in tree" );
+        nrc = ( nt_rev_connection_t * )node->key;
+        skb = nrc->skb;
+        skb->protocol = ih->protocol ;
+        skb->skb_len = b->last - b->start;
+        skb->iphdr_len = ih->ihl << 2;
+
+        c->data = nrc ;
+        nrc->conn = c;
+
+        nt_skb_tcp_t *skb_tcp = skb->data;
+
+        struct sockaddr_in *addr2;
+        addr2 = ( struct sockaddr_in * )skb_tcp->src;
+        debug( "src = %d.%d.%d.%d:%d", IP4_STR( addr2->sin_addr.s_addr ), ntohs( addr2->sin_port ) );
+
+        addr2 = ( struct sockaddr_in * )skb_tcp->dst;
+        debug( "dst = %d.%d.%d.%d:%d", IP4_STR( addr2->sin_addr.s_addr ), ntohs( addr2->sin_port ) );
+
+    } else {
+        debug( "node not in tree" );
+        nrc = nt_pcalloc( c->pool, sizeof( nt_rev_connection_t ) );
+
+        //生成一个新的skb
+        skb = nt_pcalloc( c->pool, sizeof( nt_skb_t ) );
+
+        skb->protocol = ih->protocol ;
+        skb->skb_len = b->last - b->start;
+        skb->iphdr_len = ih->ihl << 2;
+
+        //申请一个回复用的buf
+        skb->buffer = nt_create_temp_buf( c->pool, 1500 );
+
+
+        if( ih->protocol == IPPROTO_TCP ) {
+            nt_skb_tcp_t *skb_tcp = nt_pcalloc( c->pool, sizeof( nt_skb_tcp_t ) );
+
+
+            debug( "skb_tcp=%p", skb_tcp );
+
+            struct sockaddr *src = ( struct sockaddr * ) nt_pcalloc( c->pool, sizeof( struct sockaddr ) );
+            struct sockaddr *dst = ( struct sockaddr * ) nt_pcalloc( c->pool, sizeof( struct sockaddr ) );
+
+            debug( "src=%p, dst=%p", src, dst );
+
+
+            skb_tcp->data = NULL;
+            skb_tcp->data_len = 0;
+
+            skb_tcp->payload_len = 0;
+            skb_tcp->seq = ntohl( 1 );
+            skb_tcp->ack_seq = ntohl( 1 );
+
+
+            skb->data = skb_tcp;
+
+            debug( "src = %d.%d.%d.%d, dst = %d.%d.%d.%d",
+                   IP4_STR( ih->saddr ),
+                   IP4_STR( ih->daddr ) );
+
+            struct sockaddr_in addr;
+            addr.sin_family = AF_INET;
+            addr.sin_addr.s_addr = ih->saddr;
+            addr.sin_port = htons( sport );
+            nt_memcpy( src, ( struct sockaddr * )&addr, sizeof( struct sockaddr ) );
+            skb_tcp->src = src;
+
+
+            addr.sin_addr.s_addr = ih->daddr;
+            addr.sin_port = htons( tcp_get_port( b->start, TCP_DST ) );
+            nt_memcpy( dst, ( struct sockaddr * )&addr, sizeof( struct sockaddr ) );
+            skb_tcp->dst = dst;
+
+            struct sockaddr_in *addr2;
+            addr2 = ( struct sockaddr_in * )skb_tcp->src;
+            debug( "src = %d.%d.%d.%d:%d", IP4_STR( addr2->sin_addr.s_addr ), ntohs( addr2->sin_port ) );
+
+
+            addr2 = ( struct sockaddr_in * )skb_tcp->dst;
+            debug( "dst = %d.%d.%d.%d:%d", IP4_STR( addr2->sin_addr.s_addr ), ntohs( addr2->sin_port ) );
+
+
+
+        }
+
+        nrc->port = sport;
+        nrc->conn = c;
+        nrc->skb = skb;
+
+        c->data = nrc ;
+        //把新的nrc添加到红黑树;
+        rcv_conn_add( &tcp_udp_tree, c );
+    }
+
+}
+
+
 //判断该tcp包处于哪个阶段
 uint8_t tcp_phase( nt_skb_tcp_t *tcp, struct tcphdr *th )
 {
@@ -159,7 +280,7 @@ void tcp_create( nt_skb_t *skb, struct iphdr *ih, struct tcphdr *th )
     b->last = b->start;
     b->pos = b->start;
 
-    memset( b->start , 0 , b->end - b->start );
+    memset( b->start, 0, b->end - b->start );
     tcp = skb->data;
 
     ip_create( skb, ih );
@@ -213,13 +334,13 @@ void tcp_create( nt_skb_t *skb, struct iphdr *ih, struct tcphdr *th )
         //发送payload阶段，未结束
         pkg_th->doff = 0x5;
         pkg_th->ack  = 1;
-        debug( "TCP_SEND_PAYLOAD seq=%u", ntohl( tcp->seq  ) );           
-        pkg_th->seq = htonl( ntohl(tcp->seq) + tcp->payload_len )  ;                             // tcp seq   number
-        debug( "TCP_SEND_PAYLOAD seq=%u", ntohl( tcp->seq  ) ); 
+        debug( "TCP_SEND_PAYLOAD seq=%u", ntohl( tcp->seq ) );
+        pkg_th->seq = htonl( ntohl( tcp->seq ) + tcp->payload_len )  ;                           // tcp seq   number
+        debug( "TCP_SEND_PAYLOAD seq=%u", ntohl( tcp->seq ) );
         debug( "TCP_SEND_PAYLOAD conn->odt->payload_len=%d", tcp->payload_len );
-        pkg_th->ack_seq = htonl( ntohl( th->seq  ) + payload_len  );       // tcp ack number
+        pkg_th->ack_seq = htonl( ntohl( th->seq ) + payload_len );         // tcp ack number
         //memcpy( pkg_th + 1, tcp->data, tcp->data_len   ); //发送payload
-        b->last = nt_cpymem( b->last , tcp->data, tcp->data_len );
+        b->last = nt_cpymem( b->last, tcp->data, tcp->data_len );
         //        b->last += tcp->data_len;
         break;
     case TCP_PHASE_SEND_PSH_END:
@@ -231,12 +352,12 @@ void tcp_create( nt_skb_t *skb, struct iphdr *ih, struct tcphdr *th )
         debug( "TCP_SEND_PAYLOAD_END seq=%u", ntohl( tcp->seq ) );
         debug( "TCP_SEND_PAYLOAD_END conn->odt->payload_len=%d", tcp->payload_len );
         pkg_th->ack_seq = htonl( ntohl( th->seq ) + payload_len );       // tcp ack number
-       // memcpy( pkg_th + 1, tcp->data, tcp->data_len  ); //发送payload
-      //  b->last += tcp->data_len;
-        b->last = nt_cpymem( b->last , tcp->data, tcp->data_len );
+        // memcpy( pkg_th + 1, tcp->data, tcp->data_len  ); //发送payload
+        //  b->last += tcp->data_len;
+        b->last = nt_cpymem( b->last, tcp->data, tcp->data_len );
 
         break;
-    case TCP_PHASE_SEND_FIN: //主动回 FIN 
+    case TCP_PHASE_SEND_FIN: //主动回 FIN
     case TCP_PHASE_SEND_FIN_ACK:  //收到FIN ACK, 回应 ACK
         debug( " TCP_FIN_ACK " );
         pkg_th->doff = 0x5;
@@ -287,7 +408,7 @@ int tcp_input( nt_connection_t *c )
     ih = ( struct iphdr * )b->start;
     th = ( struct tcphdr * )( ih + 1 );
 
-    
+
 
 //    uint16_t iphdr_len = ih->ihl << 2;
 //    uint16_t tcphdr_len = th->doff << 2;
@@ -311,7 +432,7 @@ int tcp_input( nt_connection_t *c )
 
     //执行回复动作
     tcp_phase_handle( c );
-    
+
 
 }
 
@@ -390,18 +511,18 @@ int tcp_direct_server( nt_connection_t *c )
             tcp->data = buf ;
             tcp->data_len = ret;
 
-            debug( "ret= %d, buf size=%d", ret, sizeof( buf  )  );
+            debug( "ret= %d, buf size=%d", ret, sizeof( buf ) );
             if( ret != sizeof( buf ) ) {
                 tcp->phase = TCP_PHASE_SEND_PSH_END;
             } else
                 tcp->phase = TCP_PHASE_SEND_PSH;
 
             //tcp_phase_send_response( c  );
-            tcp_create( skb, ih , th );
+            tcp_create( skb, ih, th );
             ssize_t size = skb->buffer->last - skb->buffer->start;
 
-            debug( "size=%d",  size);
-            write( c->fd, skb->buffer->start  , size);
+            debug( "size=%d",  size );
+            write( c->fd, skb->buffer->start, size );
 
             if( ret != sizeof( buf ) )
                 break ;
@@ -416,13 +537,14 @@ int tcp_direct_server( nt_connection_t *c )
 
 }
 
-int tcp_phase_proxy_socks( nt_connection_t *c ){
-    debug( "++++++++++++++tcp_phase_proxy_socks+++++++++++++"  );
+int tcp_phase_proxy_socks( nt_connection_t *c )
+{
+    debug( "++++++++++++++tcp_phase_proxy_socks+++++++++++++" );
     nt_rev_connection_t *rc ;
     nt_skb_t *skb;
     nt_skb_tcp_t *tcp;
     int ret;
-    const char path[]="/tmp/nt.socks5.sock";
+    const char path[] = "/tmp/nt.socks5.sock";
     int fd;
     struct sockaddr_un server_addr;
     ssize_t size ;
@@ -439,19 +561,19 @@ int tcp_phase_proxy_socks( nt_connection_t *c ){
     struct tcphdr *th;
     ih = ( struct iphdr * )b->start;
     th = ( struct tcphdr * )( ih + 1 );
-   
-    fd = socket(AF_UNIX,SOCK_STREAM,0);
 
-    server_addr.sun_family=AF_UNIX;
-    strcpy(server_addr.sun_path,path);
+    fd = socket( AF_UNIX, SOCK_STREAM, 0 );
+
+    server_addr.sun_family = AF_UNIX;
+    strcpy( server_addr.sun_path, path );
 
 
-    if(connect(fd,(struct sockaddr *)&server_addr,sizeof(server_addr)) == -1){
-        debug(" connect to server fail. errno=%d", errno);
+    if( connect( fd, ( struct sockaddr * )&server_addr, sizeof( server_addr ) ) == -1 ) {
+        debug( " connect to server fail. errno=%d", errno );
         return TCP_PHASE_NULL;
     }
 
-    nt_tcp_socks_t  tcp_socks;    
+    nt_tcp_socks_t  tcp_socks;
     tcp_socks.type = 2;
     tcp_socks.domain = 4;
     tcp_socks.protocol = 1;
@@ -462,41 +584,41 @@ int tcp_phase_proxy_socks( nt_connection_t *c ){
     tcp_socks.seq = tcp->seq;
     tcp_socks.ack = tcp->ack_seq;
 
-    tcp_socks.server_ip = inet_addr("172.16.254.157");
+    tcp_socks.server_ip = inet_addr( "172.16.254.157" );
     tcp_socks.server_port = htons( "1080" );
 
-    strcpy( tcp_socks.user , "test" );
-    strcpy( tcp_socks.password , "test" );
+    strcpy( tcp_socks.user, "test" );
+    strcpy( tcp_socks.password, "test" );
 
     //源码ip打印出来不对
     struct sockaddr_in *addr;
-    addr = ( struct sockaddr_in *)tcp->src;
-    tcp_socks.sip = addr->sin_addr.s_addr; 
-    //tcp_socks.sip = ih->saddr; 
+    addr = ( struct sockaddr_in * )tcp->src;
+    tcp_socks.sip = addr->sin_addr.s_addr;
+    //tcp_socks.sip = ih->saddr;
     tcp_socks.sport =  addr->sin_port;
 
 
-    addr = ( struct sockaddr_in *)tcp->dst;
-    tcp_socks.dip = addr->sin_addr.s_addr; 
+    addr = ( struct sockaddr_in * )tcp->dst;
+    tcp_socks.dip = addr->sin_addr.s_addr;
     tcp_socks.dport = addr->sin_port;
 
 
-    debug( "sip=%u.%u.%u.%u:%d", IP4_STR( tcp_socks.sip   ), ntohs( tcp_socks.sport   ));
+    debug( "sip=%u.%u.%u.%u:%d", IP4_STR( tcp_socks.sip ), ntohs( tcp_socks.sport ) );
 
     tcp_socks.data_len =  tcp->data_len ;
-    debug(" size  = %d",  tcp_socks.data_len);
+    debug( " size  = %d",  tcp_socks.data_len );
     tcp->data = c->buffer->start + skb->iphdr_len + tcp->hdr_len ;
-    memcpy( tcp_socks.data , tcp->data,  tcp_socks.data_len );
-  //  tcp_socks.data = tcp->data ;
-    debug(" buf  = %s",  tcp_socks.data);
+    memcpy( tcp_socks.data, tcp->data,  tcp_socks.data_len );
+    //  tcp_socks.data = tcp->data ;
+    debug( " buf  = %s",  tcp_socks.data );
 
 
-    size = sizeof( nt_tcp_socks_t  ) - 1500  + tcp_socks.data_len;
-    debug(" size  = %d", size);
+    size = sizeof( nt_tcp_socks_t ) - 1500  + tcp_socks.data_len;
+    debug( " size  = %d", size );
 
-    ret = send( fd, (void *)&tcp_socks , size, 0 );
+    ret = send( fd, ( void * )&tcp_socks, size, 0 );
 
-    debug(" ret  = %d", ret);
+    debug( " ret  = %d", ret );
     if( ret < 0 )
         return TCP_PHASE_NULL;
 
@@ -525,18 +647,18 @@ int tcp_phase_proxy_socks( nt_connection_t *c ){
             tcp->data = buf ;
             tcp->data_len = ret;
 
-            debug( "ret= %d, buf size=%d", ret, sizeof( buf  )  );
+            debug( "ret= %d, buf size=%d", ret, sizeof( buf ) );
             if( ret != sizeof( buf ) ) {
                 tcp->phase = TCP_PHASE_SEND_PSH_END;
             } else
                 tcp->phase = TCP_PHASE_SEND_PSH;
 
             //tcp_phase_send_response( c  );
-            tcp_create( skb, ih , th );
+            tcp_create( skb, ih, th );
             ssize_t size = skb->buffer->last - skb->buffer->start;
 
-            debug( "size=%d",  size);
-            write( c->fd, skb->buffer->start  , size);
+            debug( "size=%d",  size );
+            write( c->fd, skb->buffer->start, size );
 
             if( ret != sizeof( buf ) )
                 break ;
@@ -552,8 +674,9 @@ int tcp_phase_proxy_socks( nt_connection_t *c ){
     return TCP_PHASE_NULL;
 }
 
-int tcp_phase_send_response( nt_connection_t *c ){
-    debug( "++++++++++++++tcp_phase_send_response+++++++++++++"  );
+int tcp_phase_send_response( nt_connection_t *c )
+{
+    debug( "++++++++++++++tcp_phase_send_response+++++++++++++" );
     nt_rev_connection_t *rc ;
     nt_skb_t *skb;
     nt_skb_tcp_t *tcp;
@@ -570,32 +693,32 @@ int tcp_phase_send_response( nt_connection_t *c ){
     th = ( struct tcphdr * )( ih + 1 );
 
     struct sockaddr_in *addr;
-    addr = ( struct sockaddr_in *)tcp->src;
-    debug( "sip=%u.%u.%u.%u:%d", IP4_STR( addr->sin_addr.s_addr   ), ntohs( addr->sin_port   ));
+    addr = ( struct sockaddr_in * )tcp->src;
+    debug( "sip=%u.%u.%u.%u:%d", IP4_STR( addr->sin_addr.s_addr ), ntohs( addr->sin_port ) );
 
 
     //创建回复数据包, 回复SYN ACK
     tcp_create( skb, ih, th );
 
-    addr = ( struct sockaddr_in *)tcp->src;
-    debug( "sip=%u.%u.%u.%u:%d", IP4_STR( addr->sin_addr.s_addr   ), ntohs( addr->sin_port   ));
+    addr = ( struct sockaddr_in * )tcp->src;
+    debug( "sip=%u.%u.%u.%u:%d", IP4_STR( addr->sin_addr.s_addr ), ntohs( addr->sin_port ) );
 
 
     ret = tcp_output( c );
 
-    if( ret < 0   ){
+    if( ret < 0 ) {
         debug( "tcp_phase_send_response ret =%d \n", ret );
         ret = tcp_output( c );
     }
 
 
-    if( ret < 0   )
+    if( ret < 0 )
         return TCP_PHASE_NULL;
 
-    if( tcp->phase == TCP_PHASE_SEND_PSH_ACK)
+    if( tcp->phase == TCP_PHASE_SEND_PSH_ACK )
         /* return TCP_PHASE_PROXY_DIRECT; */
         return TCP_PHASE_PROXY_SOCKS;
-    else if ( tcp->phase == TCP_PHASE_SEND_FIN_ACK )
+    else if( tcp->phase == TCP_PHASE_SEND_FIN_ACK )
         return TCP_PHASE_SEND_FIN;
     else
         return TCP_PHASE_NULL;
@@ -622,8 +745,8 @@ int tcp_phase_handle( nt_connection_t *c )
     th = ( struct tcphdr * )( ih + 1 );
 
 
-    
-    while( tcp->phase ){
+
+    while( tcp->phase ) {
 
         debug( "tcp->phase=%d", tcp->phase );
 
@@ -635,7 +758,7 @@ int tcp_phase_handle( nt_connection_t *c )
             tcp->phase = TCP_PHASE_SEND_SYN_ACK;
         case TCP_PHASE_SEND_SYN_ACK:
             tcp->phase = tcp_phase_send_response( c );
-          
+
             break;
         case TCP_PHASE_PSH:
             //回复client
@@ -661,10 +784,10 @@ int tcp_phase_handle( nt_connection_t *c )
             tcp->phase = TCP_PHASE_SEND_FIN_ACK ;
             break;
         case TCP_PHASE_SEND_FIN_ACK:
-            tcp->phase = tcp_phase_send_response( c  );
+            tcp->phase = tcp_phase_send_response( c );
             break;
         case TCP_PHASE_SEND_FIN:
-            tcp->phase = tcp_phase_send_response( c  );
+            tcp->phase = tcp_phase_send_response( c );
             break;
         default:
             tcp->phase = TCP_PHASE_NULL;
@@ -699,10 +822,9 @@ int  tcp_output( nt_connection_t *c )
     print_pkg( b->start );
     ret = write( c->fd, b->start, size );
 
-  
+
     debug( "ret=%d", ret );
 }
-
 
 
 

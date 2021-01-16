@@ -4,6 +4,7 @@
 #include <nt_core.h>
 #include "debug.h"
 #include "tcp.h"
+#include "udp.h"
 
 
 #include <sys/socket.h>
@@ -15,6 +16,7 @@
 
 #define IP_CHK 1
 #define TCP_CHK 2
+#define UDP_CHK 3
 
 
 typedef struct{
@@ -28,8 +30,9 @@ typedef struct{
 
 
 unsigned long chk( const unsigned  short * data, int size );
-unsigned short tcp_chk( const unsigned short *data, int size );
 unsigned short ip_chk( const unsigned short *data, int size  );
+unsigned short tcp_chk( const unsigned short *data, int size );
+unsigned short udp_chk( const unsigned short *data, int size );
 void print_pkg( char *data );
 
 
@@ -43,6 +46,9 @@ static unsigned short chksum( const char *data, int size, int type )
 		break;
 	case TCP_CHK:
 		sum = tcp_chk( udata, size );
+		break;
+	case UDP_CHK:
+		sum = udp_chk( udata, size );
 		break;
 	default:
 		return ( unsigned short )( ~sum );

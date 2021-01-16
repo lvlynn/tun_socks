@@ -19,6 +19,7 @@ protocol=$(PWD)/acc/receiver/build/protocol
 
 obj=$(protocol)/ip.o \
 	$(protocol)/tcp.o \
+	$(protocol)/udp.o \
 	$(out)/tun.o \
 	$(out)/rbtree.o \
 	$(out)/receiver.o \
@@ -40,6 +41,9 @@ $(protocol)/ip.o:
 
 $(protocol)/tcp.o:
 	$(CC)  $(CFLAGS) $(ALL_INCS)  -c  $(menu)/protocol/tcp.c  -o $(protocol)/tcp.o   -L$(PWD)/bin -lnt
+
+$(protocol)/udp.o:
+	$(CC)  $(CFLAGS) $(ALL_INCS)  -c  $(menu)/protocol/udp.c  -o $(protocol)/udp.o   -L$(PWD)/bin -lnt
 
 
 $(out)/tun.o:

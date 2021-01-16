@@ -146,6 +146,8 @@ typedef struct{
 
 
 u_int16_t tcp_get_port( char *pkg , u_int8_t direction );
+void tcp_rbtree( nt_connection_t *c );
+
 int tcp_input( nt_connection_t *c );
 int  tcp_output( nt_connection_t *c );
 int tcp_phase_handle( nt_connection_t *c  );
