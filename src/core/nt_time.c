@@ -109,10 +109,10 @@ nt_time_update( void )
     nt_gettimeofday( &tv );
 
     sec = tv.tv_sec;
-    printf( "msec=%u\n", sec );
+//    printf( "msec=%u\n", sec );
     msec = tv.tv_usec / 1000;
 
-    printf( "msec=%u\n", msec );
+//    printf( "msec=%u\n", msec );
     #if (T_NT_RET_CACHE)
     usec = tv.tv_usec % 1000;
     #endif

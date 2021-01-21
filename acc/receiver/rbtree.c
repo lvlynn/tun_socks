@@ -82,12 +82,12 @@ int rcv_conn_add( nt_rbtree_t *tree, nt_connection_t  *conn )
 
     } 
 
-    debug( "port=%d", port );
+//    debug( "port=%d", port );
     
     node = ( nt_rbtree_node_t * ) nt_palloc( conn->pool, sizeof( nt_rbtree_node_t ) );
 
 
-    debug( "node=%p", node );
+//    debug( "node=%p", node );
     node->key = rc;
 
     node->parent =  &g_sentinel;
@@ -95,9 +95,9 @@ int rcv_conn_add( nt_rbtree_t *tree, nt_connection_t  *conn )
     node->right =  &g_sentinel;
    
     nt_rbtree_insert( tree, node );
-    debug( "tree->root addr=%p", tree->root );
-    debug( "tree->sen addr=%p", tree->sentinel );
-    debug( "tree->count=%d", tree->count );
+//    debug( "tree->root addr=%p", tree->root );
+//    debug( "tree->sen addr=%p", tree->sentinel );
+//    debug( "tree->count=%d", tree->count );
 
     return 0;
 }

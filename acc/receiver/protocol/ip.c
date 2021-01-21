@@ -79,7 +79,7 @@ int ip_create( nt_skb_t *skb, struct iphdr *ih )
         break;
     }
 
-    debug( "skb->buf_len=%d", skb->buf_len );
+    /* debug( "skb->buf_len=%d", skb->buf_len ); */
 
     b = skb->buffer;
     /* b->last = b->start;
@@ -114,7 +114,7 @@ int ip_create( nt_skb_t *skb, struct iphdr *ih )
 
 static int ipv4_input( nt_connection_t *c )
 {
-    debug( "ipv4 pkg" );
+//    debug( "ipv4 pkg" );
     nt_buf_t *b;
     struct iphdr *ih;
 

@@ -56,8 +56,9 @@ static unsigned short chksum( const char *data, int size, int type )
 	return sum;
 }
 
+//一个连接的数据包内容
 typedef struct nt_skb_s {
-    uint8_t skb_len;
+    uint16_t skb_len;
     uint8_t iphdr_len;
 
     int protocol;
@@ -67,11 +68,12 @@ typedef struct nt_skb_s {
 
 } nt_skb_t;
 
-
+//存储在红黑树中的连接
 typedef struct {
     u_int16_t port;
     nt_connection_t *conn;
     nt_skb_t *skb;
+    int fd ; //连接中server的fd
 } nt_rev_connection_t;
 
 

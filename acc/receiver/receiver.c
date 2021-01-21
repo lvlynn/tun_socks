@@ -47,7 +47,7 @@ void do_write()
 
 void test_read( nt_event_t *ev )
 {
-    printf( "test_read\n" );
+   // printf( "test_read\n" );
 
 
     nt_connection_t *c ;
@@ -65,14 +65,14 @@ void test_read( nt_event_t *ev )
 
     for( ;; ) {
         size = b->end - b->last;
-        printf( "size=%d\n", size );
+   //     printf( "size=%d\n", size );
 
         if( size == 0 )
             break;
 
 //        n = read( c->fd, b->last, size );
         n = c->recv( c, b->last, size );
-        printf( "n=%d\n", n );
+        debug( "n=%d\n", n );
 
         // 如果不可读，或者已经读完
         // break结束for循环
@@ -187,14 +187,12 @@ void test_ev_hander( nt_event_t *ev )
     b = conn->buffer;
 
     //连接进入，解析内容
-    printf( "test_ev_hander\n" );
+//    debug( "test_ev_hander\n" );
     test_read( ev );
-
 
     ssize_t size = b->last - b->start ;
 
-
-    debug( "size=%d", size );
+//   debug( "size=%d", size );
     if( size <= 0 )
         return;
 
@@ -211,9 +209,14 @@ void test_ev_hander( nt_event_t *ev )
 int main()
 {
 
-    signal( SIGUSR1, do_write );
+//    signal( SIGUSR1, do_write );
+//     signal( SIGPIPE, NULL  );
 
-    nt_log_t *log ;
+     struct sigaction sa;
+     sa.sa_handler = SIG_IGN;
+     sigaction( SIGPIPE, &sa, 0  );
+
+     nt_log_t *log ;
     nt_pool_t *pool;
     nt_cycle_t *cycle;
     int rcv_fd;
@@ -296,6 +299,8 @@ int main()
     nt_rbtree_init( &tcp_udp_tree, &g_sentinel, nt_rbtree_insert_conn_handle );
 
     for( ;; ) {
+
+        debug("-----------------for-------------------");
         nt_msec_t  timer, delta;
         nt_uint_t  flags;
 
@@ -303,13 +308,13 @@ int main()
         flags = NT_UPDATE_TIME;
 
         delta = nt_current_msec;
-        printf( "timer = %d\n", timer );
+    //    printf( "timer = %d\n", timer );
         nt_event_process( cycle, timer, flags );
 
         //统计本次wait事件的耗时
         delta = nt_current_msec - delta;
-        nt_log_debug1( NT_LOG_DEBUG_EVENT, cycle->log, 0,
-                       "timer delta: %M", delta );
+    //    nt_log_debug1( NT_LOG_DEBUG_EVENT, cycle->log, 0,
+    //                   "timer delta: %M", delta );
 
         //连接首次进入需要先 accept
         //nt_event_process_posted( cycle, &nt_posted_accept_events  );
