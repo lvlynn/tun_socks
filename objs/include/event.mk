@@ -21,6 +21,12 @@ $(PWD)/objs/src/event/nt_event_accept.o: $(CORE_DEPS) \
 		-o $(PWD)/objs/src/event/nt_event_accept.o \
 		$(PWD)/src/event/nt_event_accept.c
 
+$(PWD)/objs/src/event/nt_event_connect.o: $(CORE_DEPS) \
+	$(PWD)/src/event/nt_event_connect.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o $(PWD)/objs/src/event/nt_event_connect.o \
+		$(PWD)/src/event/nt_event_connect.c
+
 $(PWD)/objs/src/event/nt_event_timer.o: $(CORE_DEPS) \
 	$(PWD)/src/event/nt_event_timer.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \

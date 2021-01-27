@@ -1,5 +1,6 @@
 
 #include <nt_core.h>
+#include <nt_event.h>
 
 
 static void nt_close_posted_connection(nt_connection_t *c);

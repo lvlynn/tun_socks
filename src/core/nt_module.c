@@ -163,10 +163,10 @@ nt_add_module(nt_conf_t *cf, nt_str_t *file, nt_module_t *module,
         return NT_ERROR;
     }
 
-    if (module->version != nginx_version) {
+    if (module->version != nt_version) {
         nt_conf_log_error(NT_LOG_EMERG, cf, 0,
                            "module \"%V\" version %ui instead of %ui",
-                           file, module->version, (nt_uint_t) nginx_version);
+                           file, module->version, (nt_uint_t) nt_version);
         return NT_ERROR;
     }
 

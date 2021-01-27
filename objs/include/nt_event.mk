@@ -8,5 +8,6 @@ NT_EVENT_INC=$(PWD)/src/event/nt_event.h
 NT_EVENT_OBJ=$(PWD)/objs/src/event/nt_event.o \
 	     $(PWD)/objs/src/event/nt_event_posted.o \
 	     $(PWD)/objs/src/event/nt_event_accept.o \
+	     $(PWD)/objs/src/event/nt_event_connect.o \
 	     $(PWD)/objs/src/event/nt_event_timer.o \
 	     $(PWD)/objs/src/event/modules/nt_select.o 

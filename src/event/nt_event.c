@@ -16,6 +16,10 @@ nt_uint_t             nt_use_accept_mutex;
 //event的回调函数集合
 nt_event_actions_t   nt_event_actions;
 
+
+static nt_atomic_t   connection_counter = 1; 
+nt_atomic_t         *nt_connection_counter = &connection_counter; 
+
 #if 0
 nt_module_t  nt_event_core_module = {
     NT_MODULE_V1,
@@ -62,7 +66,7 @@ nt_event_init( nt_cycle_t *cycle )
    * */
 nt_int_t nt_event_process_init( nt_cycle_t *cycle )
 {
-    cycle->connection_n = 512;
+    cycle->connection_n = 1024;
     nt_uint_t           m, i;
     nt_event_t         *rev, *wev;
     #if (NT_SSL && NT_SSL_ASYNC)
@@ -81,7 +85,7 @@ nt_int_t nt_event_process_init( nt_cycle_t *cycle )
         return NT_ERROR;
     }
 
-//创建全局的nt_connection_t数组，保存所有的connection
+    //创建全局的nt_connection_t数组，保存所有的connection
     //由于这个过程是在各个worker进程中执行的，所以每个worker都有自己的connection数组
     cycle->connections =
         nt_alloc( sizeof( nt_connection_t ) * cycle->connection_n, cycle->log );
@@ -92,7 +96,7 @@ nt_int_t nt_event_process_init( nt_cycle_t *cycle )
     c = cycle->connections;
 
 
-    //创建一个读事件数组
+    //创建与连接同个数的一个读事件数组
     cycle->read_events = nt_alloc( sizeof( nt_event_t ) * cycle->connection_n,
                                    cycle->log );
     if( cycle->read_events == NULL ) {
@@ -105,7 +109,7 @@ nt_int_t nt_event_process_init( nt_cycle_t *cycle )
         rev[i].instance = 1;
     }
 
-    //创建一个写事件数组
+    //创建创建与连接同个数的一个写事件数组
     cycle->write_events = nt_alloc( sizeof( nt_event_t ) * cycle->connection_n,
                                     cycle->log );
     if( cycle->write_events == NULL ) {
@@ -120,6 +124,7 @@ nt_int_t nt_event_process_init( nt_cycle_t *cycle )
 
 
     #if (NT_SSL && NT_SSL_ASYNC)
+    //创建创建与连接同个数的一个异步事件数组
     cycle->async_events = nt_alloc( sizeof( nt_event_t ) * cycle->connection_n,
                                     cycle->log );
     if( cycle->async_events == NULL ) {

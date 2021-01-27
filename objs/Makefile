@@ -22,6 +22,7 @@ CORE_INCS = -I $(PWD)/src/core \
 			-I $(PWD)/src/event \
 			-I $(PWD)/src/event/modules \
 			-I $(PWD)/src/os/unix \
+			-I $(PWD)/src/stream \
 			-I $(PWD)/config 
 
 ADDON_DEPS = $(CORE_DEPS) 
@@ -58,6 +59,8 @@ include $(PWD)/objs/include/core.mk
 include $(PWD)/objs/include/event.mk
 
 include $(PWD)/objs/include/os.mk
+
+include $(PWD)/objs/include/stream.mk
 
 manpage:
 	echo "end"

@@ -45,7 +45,7 @@ typedef intptr_t        nt_flag_t;
 
 
 #define nt_abort       abort
-
+#define nt_random               random
 
 /* TODO: platform specific: array[NT_INVALID_ARRAY_INDEX] must cause SIGSEGV */
 #define NT_INVALID_ARRAY_INDEX 0x80000000

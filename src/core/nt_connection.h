@@ -7,6 +7,15 @@
 
 typedef struct nt_listening_s  nt_listening_t;
 
+
+struct nt_udp_connection_s {
+    nt_rbtree_node_t   node;
+    nt_connection_t   *connection;
+    nt_buf_t          *buffer;
+
+};
+
+
 struct nt_listening_s {
     nt_socket_t        fd;
 
@@ -138,8 +147,8 @@ struct nt_connection_s {
     nt_recv_pt         recv;
     //send回调
     nt_send_pt         send;
-//    nt_recv_chain_pt   recv_chain;
-//    nt_send_chain_pt   send_chain;
+    /* nt_recv_chain_pt   recv_chain;
+    nt_send_chain_pt   send_chain; */
 
     nt_listening_t    *listening;
 
@@ -171,7 +180,7 @@ struct nt_connection_s {
     #endif
     #endif
 
-  //  nt_udp_connection_t  *udp;
+    nt_udp_connection_t  *udp;
 
     struct sockaddr    *local_sockaddr;
     socklen_t           local_socklen;
@@ -181,7 +190,7 @@ struct nt_connection_s {
 
     nt_queue_t         queue;
 
-    //nt_atomic_uint_t   number;
+    nt_atomic_uint_t   number;
 
     nt_uint_t          requests;
 

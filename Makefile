@@ -14,6 +14,7 @@ clean:
 	rm -rf objs/src/event/*.o
 	rm -rf objs/src/event/modules/*.o
 	rm -rf objs/src/os/unix/*.o
+	rm -rf objs/src/stream/*.o
 
 
 build:

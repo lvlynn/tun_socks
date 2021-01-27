@@ -1,7 +1,6 @@
 
-//#include <nt_config.h>
 #include <nt_core.h>
-//#include <nt_event.h>
+#include <nt_event.h>
 
 
 nt_rbtree_t              nt_event_timer_rbtree;

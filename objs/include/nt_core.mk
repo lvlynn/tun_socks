@@ -18,6 +18,7 @@ NT_CORE_INC= $(PWD)/src/core/nt.h \
 
 
 NT_CORE_OBJ=$(PWD)/objs/src/core/nt_log.o \
+			$(PWD)/objs/src/core/nt_module.o \
 			$(PWD)/objs/src/core/nt_syslog.o \
 			$(PWD)/objs/src/core/nt_time.o \
 			$(PWD)/objs/src/core/nt_inet.o \
@@ -35,6 +36,8 @@ NT_CORE_OBJ=$(PWD)/objs/src/core/nt_log.o \
 			$(PWD)/objs/src/core/nt_conf.o \
 			$(PWD)/objs/src/core/nt_rbtree.o \
 			$(PWD)/objs/src/core/nt_static_hash.o \
+			$(PWD)/objs/src/core/nt_resolver.o \
+			$(PWD)/objs/src/core/nt_proxy_protocol.o \
 			$(PWD)/objs/src/core/nt_string.o 
 
 

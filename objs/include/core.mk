@@ -10,6 +10,12 @@ $(PWD)/objs/src/core/nt.o:  $(CORE_DEPS) \
 		-o $(PWD)/objs/src/core/nt.o \
 		$(PWD)/src/core/nt.c
 
+$(PWD)/objs/src/core/nt_module.o:  $(CORE_DEPS) \
+	$(PWD)/src/core/nt_module.c 
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o $(PWD)/objs/src/core/nt_module.o \
+		$(PWD)/src/core/nt_module.c
+
 $(PWD)/objs/src/core/nt_time.o:  $(CORE_DEPS) \
 	$(PWD)/src/core/nt_time.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
@@ -126,4 +132,16 @@ $(PWD)/objs/src/core/nt_static_hash.o:  $(CORE_DEPS) \
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
 		-o $(PWD)/objs/src/core/nt_static_hash.o \
 		$(PWD)/src/core/nt_static_hash.c
+
+$(PWD)/objs/src/core/nt_resolver.o:  $(CORE_DEPS) \
+	$(PWD)/src/core/nt_resolver.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o $(PWD)/objs/src/core/nt_resolver.o \
+		$(PWD)/src/core/nt_resolver.c
+
+$(PWD)/objs/src/core/nt_proxy_protocol.o:  $(CORE_DEPS) \
+	$(PWD)/src/core/nt_proxy_protocol.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o $(PWD)/objs/src/core/nt_proxy_protocol.o \
+		$(PWD)/src/core/nt_proxy_protocol.c
 

@@ -1,5 +1,6 @@
 #include <nt_def.h>
 #include <nt_core.h>
+#include <nt_event.h>
 
 
 nt_queue_t  nt_posted_accept_events;

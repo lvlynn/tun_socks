@@ -1,0 +1,28 @@
+
+
+ngxin 结构体流程
+
+nt_event_t *ev  # select poll epoll 的触发事件承载结构体
+
+ev->data 存放 nt_connection_t *c  一个连接的信息
+
+c->data 重新指向 上级ev ,方便重新访问内容
+
+c->read 是个ev读事件 
+c->write 是个ev写事件 
+
+#在stream 中，指向如下
+
+本身的 listen 80 创建一个fd ,占用一个 ngx_connection_t 
+tcp连接触发 accept 时， 会产生一个新的 ngx_connection_t
+udp数据进来不会有触发accept 因此采用rbtree来判断该连接是否是第一个数据，
+如果是会产生一个新的 ngx_connection_t
+
+ev为 c->read 或 c->write
+ngx_connection_t             *c;                                                                                                                   
+ngx_stream_session_t         *s;  
+ngx_stream_upstream_t        *u;  
+c = ev->data;
+s = c->data;
+u = s->upstream;
+

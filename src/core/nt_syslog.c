@@ -1,5 +1,6 @@
 
 #include <nt_core.h>
+#include <nt_event.h>
 
 
 #define NT_SYSLOG_MAX_STR                                                    \

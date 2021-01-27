@@ -12,6 +12,7 @@ typedef struct nt_command_s         nt_command_t;
 typedef struct nt_time_s            nt_time_t;
 typedef struct nt_log_s             nt_log_t;
 typedef struct nt_event_s           nt_event_t;
+typedef struct nt_udp_connection_s  nt_udp_connection_t;
 typedef struct nt_connection_s      nt_connection_t;
 typedef struct nt_open_file_s       nt_open_file_t;
 // typedef struct pid_t            nt_pid_t;
@@ -71,10 +72,9 @@ typedef void ( *nt_connection_handler_pt )( nt_connection_t *c );
 #include <nt_conf.h>
 #include <nt_time.h>
 
-#include <nt_event_posted.h>
-#include <nt_event_timer.h>
-
 #include <nt_syslog.h>
 #include <nt_crc32.h>
+#include <nt_resolver.h>
+#include <nt_proxy_protocol.h>
 
 #endif

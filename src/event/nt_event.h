@@ -4,47 +4,6 @@
 #include <nt_def.h>
 #include <nt_core.h>
 
-#if (NT_HAVE_EPOLL) && !(NT_TEST_BUILD_EPOLL)
-
-    #define NT_READ_EVENT     (EPOLLIN|EPOLLRDHUP)
-    #define NT_WRITE_EVENT    EPOLLOUT
-
-    #define NT_LEVEL_EVENT    0
-    #define NT_CLEAR_EVENT    EPOLLET
-    #define NT_ONESHOT_EVENT  0x70000000
-    #if 0
-        #define NT_ONESHOT_EVENT  EPOLLONESHOT
-    #endif
-
-    #if (NT_HAVE_EPOLLEXCLUSIVE)
-        #define NT_EXCLUSIVE_EVENT  EPOLLEXCLUSIVE
-    #endif
-
-#elif (NT_HAVE_POLL)
-
-    #define NT_READ_EVENT     POLLIN
-    #define NT_WRITE_EVENT    POLLOUT
-
-    #define NT_LEVEL_EVENT    0
-    #define NT_ONESHOT_EVENT  1
-
-
-#else /* select */
-
-    #define NT_READ_EVENT     0
-    #define NT_WRITE_EVENT    1
-
-    #define NT_LEVEL_EVENT    0
-    #define NT_ONESHOT_EVENT  1
-
-#endif /* NT_HAVE_KQUEUE */
-
-
-#if (NT_HAVE_IOCP)
-    #define NT_IOCP_ACCEPT      0
-    #define NT_IOCP_IO          1
-    #define NT_IOCP_CONNECT     2
-#endif
 
 #define NT_INVALID_INDEX  0xd0d0d0d0
 
@@ -129,6 +88,11 @@ struct nt_event_s {
     //标志位，为1时表示当前事件已经关闭，epoll模块没有使用它
     unsigned         closed: 1; //nt_close_connection中置1
 
+
+    /* to test on worker exit */
+    unsigned         channel: 1;
+    unsigned         resolver: 1;
+
     //计时器事件标志，指示在关闭工作人员时应忽略该事件。优雅的工作人员关闭被延迟，直到没有安排不可取消的计时器事件。
     unsigned         cancelable: 1;
 
@@ -141,16 +105,16 @@ struct nt_event_s {
     nt_log_t       *log; //可以记录日志的nt_log_t对象 其实就是nt_listening_t中获取的log //赋值见nt_event_accept
 
 
-     /* ngx_event_accept，
-      * ngx_http_ssl_handshake 
-      * ngx_ssl_handshake_handler 
-      * ngx_http_v2_write_handler 
-      * ngx_http_v2_read_handler 
-      * ngx_http_wait_request_handler  
-      * ngx_http_request_handler 
-      * ngx_http_upstream_handler 
-      * ngx_file_aio_event_handler */
-    //由epoll读写事件在ngx_epoll_process_events触发
+    /* nt_event_accept，
+     * nt_http_ssl_handshake
+     * nt_ssl_handshake_handler
+     * nt_http_v2_write_handler
+     * nt_http_v2_read_handler
+     * nt_http_wait_request_handler
+     * nt_http_request_handler
+     * nt_http_upstream_handler
+     * nt_file_aio_event_handler */
+    //由epoll读写事件在nt_epoll_process_events触发
     nt_event_handler_pt  handler;
 
     //定时器节点，用于定时器红黑树中
@@ -189,6 +153,26 @@ typedef struct {
 } nt_event_actions_t;
 
 extern nt_event_actions_t   nt_event_actions;
+
+
+
+#if (NT_HAVE_IOCP)
+    #define NT_IOCP_ACCEPT      0
+    #define NT_IOCP_IO          1
+    #define NT_IOCP_CONNECT     2
+#endif
+
+
+#if (NT_TEST_BUILD_EPOLL)
+    #define NT_EXCLUSIVE_EVENT  0
+#endif
+
+
+#ifndef NT_CLEAR_EVENT
+    #define NT_CLEAR_EVENT    0    /* dummy declaration */
+#endif
+
+
 
 #define nt_process_events   nt_event_actions.process_events
 #define nt_done_events      nt_event_actions.done
@@ -391,6 +375,7 @@ typedef struct {
 #define NT_POST_EVENTS         2
 
 //声明
+extern nt_atomic_t          *nt_connection_counter;
 extern nt_uint_t             nt_event_flags;
 extern nt_uint_t             nt_accept_mutex_held;
 extern nt_uint_t             nt_use_accept_mutex;
@@ -399,11 +384,11 @@ extern nt_uint_t             nt_use_accept_mutex;
     (*(nt_get_conf(conf_ctx, nt_events_module))) [module.ctx_index]
 
 void nt_event_accept( nt_event_t *ev );
-void nt_event_no_accept(nt_event_t *ev);
+void nt_event_no_accept( nt_event_t *ev );
 #if !(NT_WIN32)
 void nt_event_recvmsg( nt_event_t *ev );
 void nt_udp_rbtree_insert_value( nt_rbtree_node_t *temp,
-                                  nt_rbtree_node_t *node, nt_rbtree_node_t *sentinel );
+                                 nt_rbtree_node_t *node, nt_rbtree_node_t *sentinel );
 #endif
 void nt_delete_udp_connection( void *data );
 nt_int_t nt_trylock_accept_mutex( nt_cycle_t *cycle );
@@ -433,6 +418,13 @@ nt_int_t nt_send_lowat( nt_connection_t *c, size_t lowat );
 #define nt_event_ident(p)  ((nt_connection_t *) (p))->fd
 
 nt_int_t nt_event_process_init( nt_cycle_t *cycle );
+
+extern nt_queue_t  nt_posted_accept_events;
+extern nt_queue_t  nt_posted_events;
+
+
+#include <nt_event_posted.h>
+#include <nt_event_timer.h>
 
 
 
