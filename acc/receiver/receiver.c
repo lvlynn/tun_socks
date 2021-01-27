@@ -3,7 +3,7 @@
 #include "protocol.h"
 
 
-nt_new_connection( nt_connection_t *c, nt_log_t *log )
+nt_init_connection( nt_connection_t *c, nt_log_t *log )
 {
 
     nt_event_t       *rev, *wev;
@@ -179,7 +179,7 @@ void test_write( nt_event_t *ev )
 
 }
 
-void test_ev_hander( nt_event_t *ev )
+void listen_fd_hander( nt_event_t *ev )
 {
     nt_connection_t *conn ;
     nt_buf_t *b;
@@ -187,7 +187,7 @@ void test_ev_hander( nt_event_t *ev )
     b = conn->buffer;
 
     //连接进入，解析内容
-//    debug( "test_ev_hander\n" );
+//    debug( "listen_fd_hander\n" );
     test_read( ev );
 
     ssize_t size = b->last - b->start ;
@@ -255,6 +255,8 @@ int main()
 
     // event 初始化
     nt_event_init( cycle );
+
+    //这里会初始化连接池
     nt_event_process_init( cycle );
 
     nt_socket_t s = rcv_fd ;
@@ -262,20 +264,20 @@ int main()
 
     //    cycle->connections[0];
     nt_connection_t  *c_rcv ;
+    //取连接池中的第一个连接作为 tun fd的监听连接
     c_rcv = &cycle->connections[0];
-
-    nt_new_connection( c_rcv, log );
+    nt_init_connection( c_rcv, log );
 
     c_rcv->pool = pool;
-    //c_rcv->read->handler = test_ev_hander;
-    c_rcv->read->handler = test_ev_hander;
+    //c_rcv->read->handler = listen_fd_hander;
+    c_rcv->read->handler = listen_fd_hander;
     c_rcv->write->handler = NULL;
     c_rcv->fd = rcv_fd;
 
     /*    ev = ( nt_event_t * ) malloc( sizeof( nt_event_t ) );
         ev->data = ( void * )c_rcv;
 
-        ev->handler = test_ev_hander;
+        ev->handler = listen_fd_hander;
         ev->index = NT_INVALID_INDEX ;
         ev->write = 0;
         ev->log = log;
@@ -296,7 +298,8 @@ int main()
 
 
     //初始化接收器用的红黑树
-    nt_rbtree_init( &tcp_udp_tree, &g_sentinel, nt_rbtree_insert_conn_handle );
+    nt_rbtree_init( &acc_tcp_tree, &g_sentinel, nt_rbtree_insert_conn_handle );
+    nt_rbtree_init( &acc_udp_tree, &g_sentinel, nt_rbtree_insert_conn_handle );
 
     for( ;; ) {
 

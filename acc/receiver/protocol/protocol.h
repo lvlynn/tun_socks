@@ -74,7 +74,7 @@ typedef struct {
     nt_connection_t *conn;
     nt_skb_t *skb;
     int fd ; //连接中server的fd
-} nt_rev_connection_t;
+} nt_acc_session_t;
 
 
 int ip_create( nt_skb_t *skb , struct iphdr *ih);

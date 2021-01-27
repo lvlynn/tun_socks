@@ -122,10 +122,12 @@ typedef struct nt_skb_tcp_s {
    
 } nt_skb_tcp_t;
 
+
 typedef struct{
+    int protocol; //tcp udp icmp
     int type;  //数据包类型 ， 1，发起连接  2. 转发payload
     int domain; //ipv4 /ipv6
-    int protocol; //tcp udp icmp
+
     int seq;
     int ack;
 
@@ -151,6 +153,10 @@ void tcp_rbtree( nt_connection_t *c );
 int tcp_input( nt_connection_t *c );
 int  tcp_output( nt_connection_t *c );
 int tcp_phase_handle( nt_connection_t *c  );
+
+
+
+
 
 
 #endif

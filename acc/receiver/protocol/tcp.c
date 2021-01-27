@@ -121,7 +121,7 @@ void tcp_rbtree( nt_connection_t *c )
 {
     u_int16_t sport ;
     nt_rbtree_node_t *node;
-    nt_rev_connection_t *nrc;
+    nt_acc_session_t *s;
     nt_skb_t *skb;
     nt_buf_t *b;
     struct iphdr *ih;
@@ -132,22 +132,22 @@ void tcp_rbtree( nt_connection_t *c )
 
     sport = tcp_get_port( b->start, TCP_SRC );
 
-    //查询该连接是否已经在红黑树中，如果没有就添加一个新的 nt_rev_connection_t 对象
+    //查询该连接是否已经在红黑树中，如果没有就添加一个新的 nt_acc_session_t 对象
     //并把源IP，目的IP存入其中
-    //把这个新的 nt_rev_connection_t 添加到红黑树
-    node = rcv_conn_search( &tcp_udp_tree, sport );
+    //把这个新的 nt_acc_session_t 添加到红黑树
+    node = rcv_conn_search( &acc_tcp_tree, sport );
     if( node != NULL ) {
 //        debug( "node in tree" );
-        nrc = ( nt_rev_connection_t * )node->key;
-        skb = nrc->skb;
+        s = ( nt_acc_session_t * )node->key;
+        skb = s->skb;
         skb->protocol = ih->protocol ;
 
         skb->skb_len = b->last - b->start;
         skb->iphdr_len = ih->ihl << 2;
 
 
-        nrc->conn = c;
-        c->data = nrc ;
+        s->conn = c;
+        c->data = s ;
 
         nt_skb_tcp_t *skb_tcp = skb->data;
 
@@ -160,7 +160,7 @@ void tcp_rbtree( nt_connection_t *c )
 
     } else {
         debug( "该连接是一个数据包" );
-        nrc = nt_pcalloc( c->pool, sizeof( nt_rev_connection_t ) );
+        s = nt_pcalloc( c->pool, sizeof( nt_acc_session_t ) );
 
         //生成一个新的skb
         skb = nt_pcalloc( c->pool, sizeof( nt_skb_t ) );
@@ -221,14 +221,14 @@ void tcp_rbtree( nt_connection_t *c )
 
         }
 
-        nrc->port = sport;
-        nrc->conn = c;
-        nrc->skb = skb;
-        nrc->fd = 0;
+        s->port = sport;
+        s->conn = c;
+        s->skb = skb;
+        s->fd = 0;
 
-        c->data = nrc ;
-        //把新的nrc添加到红黑树;
-        rcv_conn_add( &tcp_udp_tree, c );
+        c->data = s ;
+        //把新的s添加到红黑树;
+        rcv_conn_add( &acc_tcp_tree, c );
     }
 
 }
@@ -397,7 +397,7 @@ void tcp_create( nt_skb_t *skb, struct iphdr *ih, struct tcphdr *th )
 int tcp_input( nt_connection_t *c )
 {
 
-    nt_rev_connection_t *rc ;
+    nt_acc_session_t *s ;
     nt_skb_t *skb;
     nt_skb_tcp_t *tcp;
     nt_buf_t *b;
@@ -406,8 +406,8 @@ int tcp_input( nt_connection_t *c )
     u_int8_t ret;
 
     b = c->buffer;
-    rc = c->data;
-    skb = rc->skb;
+    s = c->data;
+    skb = s->skb;
     tcp = skb->data;
 
     ih = ( struct iphdr * )b->start;
@@ -448,7 +448,7 @@ int tcp_input( nt_connection_t *c )
 int tcp_direct_server( nt_connection_t *c )
 {
 
-    nt_rev_connection_t *rc ;
+    nt_acc_session_t *rc ;
     nt_skb_t *skb;
     nt_skb_tcp_t *tcp;
     int ret;
@@ -548,7 +548,7 @@ int tcp_direct_server( nt_connection_t *c )
 int tcp_phase_proxy_socks( nt_connection_t *c )
 {
     debug( "++++++++++++++tcp_phase_proxy_socks+++++++++++++" );
-    nt_rev_connection_t *rc ;
+    nt_acc_session_t *s ;
     nt_skb_t *skb;
     nt_skb_tcp_t *tcp;
     int ret;
@@ -557,8 +557,8 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
     struct sockaddr_un server_addr;
     ssize_t size ;
 
-    rc = c->data;
-    skb = rc->skb;
+    s = c->data;
+    skb = s->skb;
     tcp = skb->data;
 
     nt_buf_t *b;
@@ -571,7 +571,7 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
     th = ( struct tcphdr * )( ih + 1 );
 
     //未发起过连接
-    if( rc->fd == 0){
+    if( s->fd == 0){
 
         fd = socket( AF_UNIX, SOCK_STREAM, 0 );
 
@@ -583,9 +583,9 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
             debug( " connect to server fail. errno=%d", errno );
             return TCP_PHASE_NULL;
         }
-        rc->fd = fd;
+        s->fd = fd;
     } else
-        fd = rc->fd; 
+        fd = s->fd; 
 
     //填充发送内容
     nt_tcp_socks_t  tcp_socks;
@@ -694,7 +694,7 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
 int tcp_phase_send_response( nt_connection_t *c )
 {
     debug( "++++++++++++++tcp_phase_send_response+++++++++++++" );
-    nt_rev_connection_t *rc ;
+    nt_acc_session_t *s ;
     nt_skb_t *skb;
     nt_skb_tcp_t *tcp;
     nt_buf_t *b;
@@ -703,8 +703,8 @@ int tcp_phase_send_response( nt_connection_t *c )
     u_int8_t ret;
 
     b = c->buffer;
-    rc = c->data;
-    skb = rc->skb;
+    s = c->data;
+    skb = s->skb;
     tcp = skb->data;
     ih = ( struct iphdr * )b->start;
     th = ( struct tcphdr * )( ih + 1 );
@@ -745,7 +745,7 @@ int tcp_phase_send_response( nt_connection_t *c )
 
 int tcp_phase_handle( nt_connection_t *c )
 {
-    nt_rev_connection_t *rc ;
+    nt_acc_session_t *s ;
     nt_skb_t *skb;
     nt_skb_tcp_t *tcp;
     nt_buf_t *b;
@@ -754,8 +754,8 @@ int tcp_phase_handle( nt_connection_t *c )
     u_int8_t ret;
 
     b = c->buffer;
-    rc = c->data;
-    skb = rc->skb;
+    s = c->data;
+    skb = s->skb;
     tcp = skb->data;
     ih = ( struct iphdr * )b->start;
     th = ( struct tcphdr * )( ih + 1 );
@@ -833,13 +833,13 @@ int tcp_phase_handle( nt_connection_t *c )
 
 int  tcp_output( nt_connection_t *c )
 {
-    nt_rev_connection_t *rc ;
+    nt_acc_session_t *s ;
     nt_skb_t *skb;
     nt_skb_tcp_t *tcp;
     int ret;
 
-    rc = c->data;
-    skb = rc->skb;
+    s = c->data;
+    skb = s->skb;
     tcp = skb->data;
 
     nt_buf_t *b;

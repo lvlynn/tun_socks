@@ -2,7 +2,9 @@
 #include "debug.h"
 
 
-nt_rbtree_t tcp_udp_tree;
+nt_rbtree_t acc_tcp_tree;
+nt_rbtree_t acc_udp_tree;
+
 nt_rbtree_node_t g_sentinel;
 
 int nt_rbtree_insert_conn_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_rbtree_key_t cur_key )
@@ -14,10 +16,10 @@ int nt_rbtree_insert_conn_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_r
         if( tree_key == 0  )
             return 1;
 
-        nt_rev_connection_t *tcur = ( nt_rev_connection_t * )cur_key;
+        nt_acc_session_t *tcur = ( nt_acc_session_t * )cur_key;
         debug( "tcur->port=%d", tcur->port );
 
-        nt_rev_connection_t *ttree = ( nt_rev_connection_t * )tree_key;
+        nt_acc_session_t *ttree = ( nt_acc_session_t * )tree_key;
         debug( "ttree->port=%d", ttree->port );
         if( tcur->port < ttree->port )
             return 1;
@@ -30,7 +32,7 @@ int nt_rbtree_insert_conn_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_r
     }
 
     if( flag == RBTREE_SEARCH ) {
-        nt_rev_connection_t *ttree = ( nt_rev_connection_t * )tree_key;
+        nt_acc_session_t *ttree = ( nt_acc_session_t * )tree_key;
 
         /* debug( "cur_key=%d", cur_key );
         debug( "ttree->port=%d", ttree->port ); */
@@ -64,19 +66,19 @@ int rcv_conn_add( nt_rbtree_t *tree, nt_connection_t  *conn )
 {
     u_int16_t port;
     nt_rbtree_node_t *node;
-    nt_rev_connection_t *rc ;
+    nt_acc_session_t *s ;
     nt_skb_t *skb;
 
-    rc = conn->data;
+    s = conn->data;
 
 
-    skb = rc->skb;
+    skb = s->skb;
 
     if( skb->protocol == IPPROTO_TCP ){
         nt_skb_tcp_t *skb_data;
 
         skb_data = skb->data;
-        port = rc->port;
+        port = s->port;
 
     } else if ( skb->protocol == IPPROTO_UDP  ){
 
@@ -88,7 +90,7 @@ int rcv_conn_add( nt_rbtree_t *tree, nt_connection_t  *conn )
 
 
 //    debug( "node=%p", node );
-    node->key = rc;
+    node->key = s;
 
     node->parent =  &g_sentinel;
     node->left =  &g_sentinel;
