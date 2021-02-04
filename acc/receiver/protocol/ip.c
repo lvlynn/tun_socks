@@ -143,7 +143,6 @@ static int ipv4_input( nt_connection_t *c )
     debug( "ih->protocol=%d", ih->protocol ) ;
     switch( ih->protocol ) {
     case IPPROTO_TCP:
-        tcp_rbtree( c );
         tcp_input( c );
         break;
     case IPPROTO_UDP:

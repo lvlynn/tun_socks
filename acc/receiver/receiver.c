@@ -1,6 +1,7 @@
 #include "rbtree.h"
 #include "tun.h"
 #include "protocol.h"
+#include "nt_event.h"
 
 
 nt_init_connection( nt_connection_t *c, nt_log_t *log )

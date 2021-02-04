@@ -77,6 +77,27 @@ typedef struct {
 } nt_acc_session_t;
 
 
+typedef struct {
+    int protocol; //tcp udp icmp
+    int type;  //数据包类型 ， 1，发起连接  2. 转发payload
+    int domain; //ipv4 /ipv6
+
+    char user[32] ; //用户账号
+    char password[32]; //用户密码
+    uint32_t server_ip;  //代理ip
+    uint16_t server_port; //代理端口
+
+    uint32_t sip;   //源端口
+    uint16_t sport; //源ip
+    uint32_t dip;   //目的端口
+    uint16_t dport; //目的ip
+
+
+} nt_acc_socks5_auth_t;
+
+
+
+
 int ip_create( nt_skb_t *skb , struct iphdr *ih);
 int ip_input(nt_connection_t *c);
 #endif

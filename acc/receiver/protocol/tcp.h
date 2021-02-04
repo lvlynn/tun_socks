@@ -49,7 +49,7 @@
 #define TCPOLEN_MSS_ALIGNED     4
 
 
-
+#define TCP_PHASE_CONN_FREE 100
 #define TCP_PHASE_NULL 0
 
 
@@ -128,8 +128,8 @@ typedef struct{
     int type;  //数据包类型 ， 1，发起连接  2. 转发payload
     int domain; //ipv4 /ipv6
 
-    int seq;
-    int ack;
+    uint32_t seq;
+    uint32_t ack;
 
     char user[32] ; //用户账号
     char password[32]; //用户密码
@@ -145,6 +145,18 @@ typedef struct{
 
     char data[1500];
 } nt_tcp_socks_t;
+
+
+typedef struct{
+    uint32_t seq;
+    uint32_t ack;
+
+    // 100 bit
+    uint32_t data_len;
+
+    char data[1500];
+} nt_acc_tcp_t;
+
 
 
 u_int16_t tcp_get_port( char *pkg , u_int8_t direction );
