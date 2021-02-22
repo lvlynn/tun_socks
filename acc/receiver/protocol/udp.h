@@ -13,6 +13,7 @@ typedef struct nt_skb_udp_s {
 
     u_int8_t phase; //tcp处于哪个阶段
     uint16_t hdr_len; //数据包的头部长度
+    uint16_t ip_id; //udp id 标识，用于分片数据的重组
 
     uint16_t data_len; //数据包的载荷长度
     u_char *data ;
@@ -41,6 +42,12 @@ typedef struct{
 } nt_udp_socks_t;
 
 
+typedef struct{
+    // 100 bit
+    uint32_t data_len;
+
+    char data[1500];
+} nt_acc_udp_t;
 
 
 #endif

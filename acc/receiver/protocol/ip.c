@@ -43,6 +43,8 @@ void print_pkg( char *data )
         break;
     }
     case IPPROTO_UDP: {
+        debug("udp ih id=%d", ih->id );
+        debug("udp ih frag=%d", ntohs(ih->frag_off )& IP_MF);
         struct udphdr *udp = ( struct udphdr * )( ih + 1 );
         debug( "src = %d.%d.%d.%d:%d, dst = %d.%d.%d.%d:%d",
                IP4_STR( ih->saddr ), ntohs( udp->source ),

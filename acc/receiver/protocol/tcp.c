@@ -1,7 +1,7 @@
 #include "protocol.h"
 #include "rbtree.h"
 
- unsigned short tcp_chk( const unsigned short *data, int size )
+unsigned short tcp_chk( const unsigned short *data, int size )
 {
     unsigned long sum;
     pshead ph;
@@ -116,7 +116,8 @@ void tcp_parse_option( char *data )
 
 }
 
-void tcp_free( nt_connection_t *c ){
+void tcp_free( nt_connection_t *c )
+{
 
     nt_acc_session_t *s;
 
@@ -208,7 +209,7 @@ void tcp_init( nt_connection_t *c )
             /* debug( "src = %d.%d.%d.%d, dst = %d.%d.%d.%d",
                    IP4_STR( ih->saddr ),
                    IP4_STR( ih->daddr ) );
- */
+            */
             struct sockaddr_in addr;
             addr.sin_family = AF_INET;
             addr.sin_addr.s_addr = ih->saddr;
@@ -241,7 +242,8 @@ void tcp_init( nt_connection_t *c )
 
         c->data = s ;
         //把新的s添加到红黑树;
-        rcv_conn_add( &acc_tcp_tree, c );
+        nt_rbtree_node_t *node = ( nt_rbtree_node_t * ) nt_palloc( c->pool, sizeof( nt_rbtree_node_t ) );
+        rcv_conn_add( &acc_tcp_tree, s, node );
     }
 
 }
@@ -258,14 +260,14 @@ uint8_t tcp_phase( nt_skb_tcp_t *tcp, struct tcphdr *th )
         if( th->syn == 1 && th->ack == 0 )
             tcp->phase = TCP_PHASE_SYN;
 
-        if( th->ack == 1 && th->syn == 1 ){
+        if( th->ack == 1 && th->syn == 1 ) {
             tcp->phase = TCP_PHASE_SYN_ACK;
         }
 
         //ack 第二包的ack或 FIN的ack
         if( th->ack == 1 && th->syn == 0 && th->fin == 0 ) {
             debug( "tcp->phase ack %d", tcp->phase );
-            if( tcp->phase == TCP_PHASE_CONN_FREE ){
+            if( tcp->phase == TCP_PHASE_CONN_FREE ) {
                 return NT_DONE;
             }
 
@@ -301,7 +303,8 @@ void tcp_create( nt_skb_t *skb, struct iphdr *ih, struct tcphdr *th )
     b->last = b->start;
     b->pos = b->start;
 
-    memset( b->start, 0, b->end - b->start );
+    //不知道为什么，不清空的话，会出现请求curl baidu.com 数据只有一半
+    /* memset( b->start + 1329, 0, 1500 - 1329 ); */
     tcp = skb->data;
 
     ip_create( skb, ih );
@@ -380,7 +383,7 @@ void tcp_create( nt_skb_t *skb, struct iphdr *ih, struct tcphdr *th )
         // memcpy( pkg_th + 1, tcp->data, tcp->data_len  ); //发送payload
         //  b->last += tcp->data_len;
         b->last = nt_cpymem( b->last, tcp->data, tcp->data_len );
-
+        memset( b->last, 0, b->end - b->last ); 
         break;
     case TCP_PHASE_SEND_FIN: //主动回 FIN
     case TCP_PHASE_SEND_FIN_ACK:  //收到FIN ACK, 回应 ACK
@@ -443,20 +446,20 @@ int tcp_input( nt_connection_t *c )
 
     tcp->hdr_len = th->doff << 2;
     tcp->data_len = tcp_len - tcp->hdr_len;
-    
-/*
-    debug( "skb->skb_len=%d", skb->skb_len );
-    debug( "skb->iphdr_len=%d", skb->iphdr_len );
-    debug( "tcp->hdr_len=%d", tcp->hdr_len );
-    debug( "packet len=%d, playload_len=%d", tcp_len, tcp->data_len );
-*/
+
+    /*
+        debug( "skb->skb_len=%d", skb->skb_len );
+        debug( "skb->iphdr_len=%d", skb->iphdr_len );
+        debug( "tcp->hdr_len=%d", tcp->hdr_len );
+        debug( "packet len=%d, playload_len=%d", tcp_len, tcp->data_len );
+    */
 
     ret = tcp_phase( tcp, th );
     if( ret == NT_ERROR )
         return NT_ERROR;
 
     debug( "tcp phase ret =%d", ret );
-    if( ret == NT_DONE ){
+    if( ret == NT_DONE ) {
         tcp_free( c );
         return NT_DONE;
     }
@@ -522,8 +525,8 @@ int tcp_direct_server( nt_connection_t *c )
     }
 
 
-//    char buf[1452] = {0};
-    char buf[568] = {0};
+    char buf[1452] = {0};
+//    char buf[568] = {0};
     int len = 0;
 
     int have_send_ack = 0;
@@ -531,9 +534,27 @@ int tcp_direct_server( nt_connection_t *c )
 
     tcp->payload_len = 0;
 
+/* #define SEND_USE_TUN_FD 1 */
+
+#ifndef SEND_USE_TUN_FD
+    int sock = socket( AF_INET, SOCK_RAW, IPPROTO_TCP );
+    int on = 1;
+    if( setsockopt( sock, IPPROTO_IP, IP_HDRINCL, &on, sizeof( on ) ) == -1 ) {
+        perror( "setsockopt() failed" );
+        return -1;
+    } else {
+        /*printf( "setsockopt() ok\n"  );*/
+    }
+    size_t size ;
+    struct sockaddr_in to;
+    to.sin_family = AF_INET;
+    to.sin_addr.s_addr = ih->saddr;
+    to.sin_port = th->source;
+#endif
+
     do {
         ret = recv( rfd, buf, sizeof( buf ), 0 );
-        debug( "ret=%d, buf=%s", ret, buf );
+      //  debug( "ret=%d, buf=%s", ret, buf );
 
         //send playload
         if( 0 >= ret ) {
@@ -551,12 +572,17 @@ int tcp_direct_server( nt_connection_t *c )
             } else
                 tcp->phase = TCP_PHASE_SEND_PSH;
 
-            //tcp_phase_send_response( c  );
             tcp_create( skb, ih, th );
             ssize_t size = skb->buffer->last - skb->buffer->start;
 
             debug( "size=%d",  size );
+            #ifdef SEND_USE_TUN_FD
+            //tun直接转回去
             write( c->fd, skb->buffer->start, size );
+            #else
+            //使用原始套接字
+            sendto( sock, skb->buffer->start,  size, 0, ( struct sockaddr* ) &to, sizeof( to ) );
+            #endif
 
             if( ret != sizeof( buf ) )
                 break ;
@@ -598,7 +624,7 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
 
     int fist_connect = 0;
     //未发起过连接
-    if( s->fd == 0){
+    if( s->fd == 0 ) {
 
         fd = socket( AF_UNIX, SOCK_STREAM, 0 );
 
@@ -613,25 +639,33 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
         }
         s->fd = fd;
         fist_connect = 1;
-    } else{
-        fd = s->fd; 
+    } else {
+        fd = s->fd;
     }
 
     //先发送连接信息，再发送data内容
-    
+    //现在tcp存在一个问题，就是发送到nginx后，有可能两次发送会被合并成一次。这是不对的。
+
     struct iovec iov[2];
     nt_acc_socks5_auth_t asa;
-    if (   fist_connect ){
+    if( fist_connect ) {
         //填充连接信息
         asa.type = 1;     //发起连接
         asa.domain = 4;   //ipv4
         asa.protocol = 1; // 1 tcp
 
+#if 0
         asa.server_ip = inet_addr( "172.16.254.157" );
-        asa.server_port = htons( "1080" );
-
+        asa.server_port = htons( 1080 );
         strcpy( asa.user, "test" );
         strcpy( asa.password, "test" );
+
+#else
+        asa.server_ip = inet_addr( "162.14.16.22" );
+        asa.server_port = htons( 18000 );
+        strcpy( asa.user, "18206086619" );
+        strcpy( asa.password, "ICtOe0rhCVt5i6pF" );
+#endif
 
 
         struct sockaddr_in *addr;
@@ -644,7 +678,7 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
         asa.dport = addr->sin_port;
 
         iov[0].iov_base = &asa;
-        iov[0].iov_len = sizeof( nt_acc_socks5_auth_t  );
+        iov[0].iov_len = sizeof( nt_acc_socks5_auth_t );
 
     }
 
@@ -665,19 +699,20 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
     tcp->data = c->buffer->start + skb->iphdr_len + tcp->hdr_len ;
     memcpy( at.data, tcp->data,  at.data_len );
     //  tcp_socks.data = tcp->data ;
-    //debug( " buf  = %s",  tcp_socks.data );
+    /* debug( " buf  = %s",  tcp_socks.data ); */
+    debug( " 本次载荷大小为：%d",   at.data_len );
 
     size = sizeof( nt_acc_tcp_t ) - 1500  + at.data_len;
     debug( " size  = %d", size );
 
     //发送
-    if (   fist_connect ){
+    if( fist_connect ) {
         debug( " fist_connect " );
         iov[1].iov_base = &at;
         iov[1].iov_len = size;
         //首次认证和data一起发送
         //不然nginx处理可能有问题
-        ret =  writev( fd, iov, 2);
+        ret =  writev( fd, iov, 2 );
     } else {
         debug( " no fist_connect " );
         ret = send( fd, ( void * )&at, size, 0 );
@@ -687,7 +722,7 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
     if( ret < 0 )
         return TCP_PHASE_NULL;
 
-#if 0
+    #if 0
     //填充发送内容
     nt_tcp_socks_t  tcp_socks;
     tcp_socks.type = 2;
@@ -739,7 +774,7 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
     if( ret < 0 )
         return TCP_PHASE_NULL;
 
-#endif
+    #endif
     return TCP_PHASE_NULL;
 
 //    char buf[1452] = {0};
@@ -834,14 +869,13 @@ int tcp_phase_send_response( nt_connection_t *c )
 
     if( tcp->phase == TCP_PHASE_SEND_PSH_ACK )
         /* return TCP_PHASE_PROXY_DIRECT; */
-        return TCP_PHASE_PROXY_SOCKS;
+    return TCP_PHASE_PROXY_SOCKS;
     else if( tcp->phase == TCP_PHASE_SEND_FIN_ACK )
         return TCP_PHASE_SEND_FIN;
-    else if( tcp->phase == TCP_PHASE_SEND_FIN ){
+    else if( tcp->phase == TCP_PHASE_SEND_FIN ) {
         debug( "return TCP_PHASE_CONN_FREE" );
         return TCP_PHASE_CONN_FREE;
-    }
-    else
+    } else
         return TCP_PHASE_NULL;
 
 }
@@ -873,7 +907,7 @@ int tcp_phase_handle( nt_connection_t *c )
 
         switch( tcp->phase ) {
         case TCP_PHASE_SYN:
-         //   tcp_parse_option( b->start );
+            //   tcp_parse_option( b->start );
             debug( "TCP_PHASE_SYN" );
             //接收到SYN包，把阶段改为发送SYN ACK
             tcp->phase = TCP_PHASE_SEND_SYN_ACK;
@@ -884,55 +918,55 @@ int tcp_phase_handle( nt_connection_t *c )
 
             break;
         case TCP_PHASE_PSH:
-            debug("TCP_PHASE_PSH");
+            debug( "TCP_PHASE_PSH" );
             //不用回ACK， 直接中转给socks
             tcp->phase = TCP_PHASE_PROXY_SOCKS;
             break;
         case TCP_PHASE_PSH_END:
-            debug("TCP_PHASE_PSH_END");
+            debug( "TCP_PHASE_PSH_END" );
             //接收到PSH 结束，回复 PSH ACK;
             tcp->phase = TCP_PHASE_SEND_PSH_ACK;
             break;
         case TCP_PHASE_SEND_PSH_ACK:
-            debug("TCP_PHASE_SEND_PSH_ACK");
+            debug( "TCP_PHASE_SEND_PSH_ACK" );
             //回复PSH ACK
             tcp->phase = tcp_phase_send_response( c );
 
             break;
         case TCP_PHASE_PROXY_DIRECT:
-            debug("TCP_PHASE_PROXY_DIRECT");
+            debug( "TCP_PHASE_PROXY_DIRECT" );
             //发送payload 到 server
             tcp->phase = tcp_direct_server( c );
             break;
         case TCP_PHASE_PROXY_SOCKS:
-            debug("TCP_PHASE_PROXY_SOCKS");
+            debug( "TCP_PHASE_PROXY_SOCKS" );
             //发送payload 到 server
             tcp->phase = tcp_phase_proxy_socks( c );
             break;
         case TCP_PHASE_FIN:
-            debug("TCP_PHASE_FIN");
+            debug( "TCP_PHASE_FIN" );
             //收到FIN 回应FIN ACK
             tcp->phase = TCP_PHASE_SEND_FIN_ACK ;
             break;
         case TCP_PHASE_SEND_FIN_ACK:
-            debug("TCP_PHASE_SEND_FIN_ACK");
+            debug( "TCP_PHASE_SEND_FIN_ACK" );
             tcp->phase = tcp_phase_send_response( c );
             break;
         case TCP_PHASE_SEND_FIN:
-            debug("TCP_PHASE_SEND_FIN");
+            debug( "TCP_PHASE_SEND_FIN" );
             tcp->phase = tcp_phase_send_response( c );
             //发送完后需要进入free阶段
-           // tcp->phase = TCP_PHASE_CONN_FREE;
+            // tcp->phase = TCP_PHASE_CONN_FREE;
             break;
         case TCP_PHASE_CONN_FREE:
             //
-            debug("TCP_PHASE_CONN_FREE");
+            debug( "TCP_PHASE_CONN_FREE" );
             //tcp_free( c );
             //tcp->phase = TCP_PHASE_NULL;
             return tcp->phase;
             break;
         default:
-            debug("TCP_PHASE_NULL");
+            debug( "TCP_PHASE_NULL" );
             tcp->phase = TCP_PHASE_NULL;
             break;
         }
@@ -968,6 +1002,4 @@ int  tcp_output( nt_connection_t *c )
 
 //    debug( "ret=%d", ret );
 }
-
-
 

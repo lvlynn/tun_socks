@@ -129,6 +129,7 @@ int udp_proxy_socks( nt_connection_t *c  )
     const char path[] = "/tmp/nt.socks5.sock";
     struct sockaddr_un server_addr;
     ssize_t size ;
+	int fist_connect = 0;
 
 	s = c->data;
 	skb = s->skb;
@@ -151,49 +152,84 @@ int udp_proxy_socks( nt_connection_t *c  )
               debug( " connect to server fail. errno=%d", errno );
               return -1;
           }   
-          s->fd = fd; 
+          s->fd = fd;
+		fist_connect = 1; 
       } else
           fd = s->fd; 
 
-	
- //填充发送内容
-      nt_udp_socks_t  us;
-      us.type = 2;
-      us.domain = 4;
-      us.protocol = 2;
+
+	  //先发送连接信息，再发送data内容
+
+	  struct iovec iov[2];
+	  nt_acc_socks5_auth_t asa;
+	  if (   fist_connect ){
+		  //填充连接信息
+		  asa.type = 1;     //发起连接
+		  asa.domain = 4;   //ipv4
+		  asa.protocol = 2; // 1 tcp
+
+
+#if 0
+        asa.server_ip = inet_addr( "172.16.254.157" );
+        asa.server_port = htons( 1080 );
+        strcpy( asa.user, "test" );
+        strcpy( asa.password, "test" );
+
+#else
+        asa.server_ip = inet_addr( "162.14.16.22" );
+        asa.server_port = htons( 18000 );
+        strcpy( asa.user, "18206086619" );
+        strcpy( asa.password, "ICtOe0rhCVt5i6pF" );
+#endif
+
+
+
+		  struct sockaddr_in *addr;
+		  addr = ( struct sockaddr_in * )udp->src;
+		  asa.sip = addr->sin_addr.s_addr;
+		  asa.sport =  addr->sin_port;
+
+		  addr = ( struct sockaddr_in * )udp->dst;
+		  asa.dip = addr->sin_addr.s_addr;
+		  asa.dport = addr->sin_port;
+
+		  iov[0].iov_base = &asa;
+		  iov[0].iov_len = sizeof( nt_acc_socks5_auth_t  );  
+
+	  }   
+
+      //发送
+      if (   fist_connect ){
+          debug( " fist_connect " );
+          iov[1].iov_base = udp->data;
+          iov[1].iov_len = udp->data_len;
+        debug( " data_len  = %d",  udp->data_len );
+          //首次认证和data一起发送
+          //不然nginx处理可能有问题
+          ret =  writev( fd, iov, 2);
+      } else {
+          debug( " no fist_connect " );
+
+          char nil[10] = {0};
+          iov[0].iov_base = nil;
+          iov[0].iov_len = 10;  
+
+          iov[1].iov_base = udp->data;
+          iov[1].iov_len = udp->data_len;
+            debug( " data_len  = %d",  udp->data_len );
+          //首次认证和data一起发送
+          //不然nginx处理可能有问题
+          ret =  writev( fd, iov, 2);
+        //  ret = send( fd, ( void * )udp->data, udp->data_len, 0 );
+      }
   
-      us.server_ip = inet_addr( "172.16.254.157" );
-      us.server_port = htons( "1080" );
-  
-      strcpy( us.user, "test" );
-      strcpy( us.password, "test" );
-  
-      //源码ip打印出来不对
-      struct sockaddr_in *addr;
-      addr = ( struct sockaddr_in * )udp->src;
-      us.sip = addr->sin_addr.s_addr;
-      //tcp_socks.sip = ih->saddr;
-      us.sport =  addr->sin_port;
-  
-  
-	  addr = ( struct sockaddr_in * )udp->dst;
-	  us.dip = addr->sin_addr.s_addr;
-	  us.dport = addr->sin_port;
+      debug( " ret  = %d", ret );
+      if( ret < 0 )
+          return TCP_PHASE_NULL;
 
-	  us.data_len =  udp->data_len ;
-	  memcpy( us.data, udp->data,  us.data_len );
+    return TCP_PHASE_NULL;
 
 
-    int rfd = socket( AF_INET, SOCK_DGRAM, 0  );
-
-	size = sizeof( nt_udp_socks_t ) - 1500  + us.data_len;
-
-	//发送
-	ret = send( fd, ( void * )&us, size, 0 );
-
-	debug( " ret  = %d", ret );
-
-	return 0;
 }
 
 
@@ -211,9 +247,31 @@ int udp_init( nt_connection_t *c ){
 
     u_int16_t sport ;
     nt_rbtree_node_t *node;
-    sport = tcp_get_port( b->start, TCP_SRC  );
 
-    node = rcv_conn_search( &acc_udp_tree, sport  );
+    debug( "IP_MF=%d", ntohs(ih->frag_off )& IP_MF  );
+
+    debug( "IP_off=%d", ntohs(ih->frag_off )& IP_OFFMASK  );
+
+    //如果是第一个包，ip的分片偏移为0;
+    //判断是否为第一个包，是的话，可以取到端口
+    if( ( ntohs(ih->frag_off )& IP_OFFMASK ) == 0){
+        debug( "first data" );
+        //是第一个包
+        sport = tcp_get_port( b->start, TCP_SRC );
+        node = rcv_conn_search( &acc_udp_tree, sport   );
+
+    } else {
+        debug( "no first data" );
+        //不是第一个包
+        //取不到端口,从红黑树中获取信息
+        node = rcv_conn_search( &acc_udp_id_tree, ih->id );
+        if(  node == NULL  ){
+
+            debug( "node NULL" );
+            return NT_ERROR;
+        }
+    }
+
     if( node != NULL ){
         s = ( nt_acc_session_t *  )node->key;
         skb = s->skb;
@@ -221,15 +279,27 @@ int udp_init( nt_connection_t *c ){
         skb->skb_len = b->last - b->start;
         skb->iphdr_len = ih->ihl << 2;
 
+        nt_skb_udp_t *udp = skb->data;
+
+        if( ( ntohs(ih->frag_off )& IP_OFFMASK ) == 0){
+            udp->data = b->start + skb->iphdr_len + sizeof( struct udphdr );
+        } else
+            udp->data = b->start + skb->iphdr_len ;
+
+        udp->data_len = b->last - udp->data ;
+        udp->ip_id = ih->id;
+
+        debug( "size=%d", udp->data_len );
+
         s->conn = c;
         c->data = s ;
     } else {
+        debug( "first connect" );
         s = nt_pcalloc( c->pool, sizeof( nt_acc_session_t ) );
         skb = nt_pcalloc( c->pool, sizeof( nt_skb_t  )  );
 
         skb->protocol = ih->protocol ;
         skb->skb_len = b->last - b->start;
-        debug( "skb->skb_len=%d", skb->skb_len );
         skb->iphdr_len = ih->ihl << 2;
 
         skb->buffer = nt_create_temp_buf( c->pool, 1500  );
@@ -255,11 +325,27 @@ int udp_init( nt_connection_t *c ){
         udp->data_len = b->last - udp->data ;
 
         debug( "udp data len=%d", udp->data_len  );
+        udp->ip_id = ih->id;
 
         skb->data = udp;
+        s->port = sport;
         s->conn = c;
         s->skb = skb;
-        c->data = s;
+        s->fd = 0;
+
+        c->data = s ;
+
+        //把新的s添加到红黑树;
+        nt_rbtree_node_t *node = ( nt_rbtree_node_t * ) nt_palloc( c->pool, sizeof( nt_rbtree_node_t ) );
+        rcv_conn_add( &acc_udp_tree, s , node );
+
+    }
+
+    //如果第一个包有分片需要添加到红黑树，以便后面的数据包可以找到该信息
+    debug( "MF=%d", (ntohs(ih->frag_off ) & IP_MF ));
+    if( ntohs(ih->frag_off )& IP_MF ){
+        debug( "第一个数据包被分片" );
+        rcv_conn_add( &acc_udp_id_tree, s, node );
     }
 
 
@@ -275,6 +361,7 @@ int udp_input( nt_connection_t *c ){
     struct udphdr *uh;
 	nt_acc_session_t *s;
     nt_skb_udp_t *udp;
+    nt_int_t ret;
 
 #if 0
     udp_init( c );
@@ -309,7 +396,10 @@ int udp_input( nt_connection_t *c ){
     print_pkg( b->start );
 
     
-    udp_init( c );
+    ret = udp_init( c );
+    if( ret != NT_OK ){
+        return;
+    }
 
 //    udp_direct_server(c);
 

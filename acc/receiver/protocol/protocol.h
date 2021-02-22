@@ -58,14 +58,13 @@ static unsigned short chksum( const char *data, int size, int type )
 
 //一个连接的数据包内容
 typedef struct nt_skb_s {
-    uint16_t skb_len;
-    uint8_t iphdr_len;
+    uint16_t skb_len;  //进来的数据包总长
+    uint8_t iphdr_len; //ip层头长
 
-    int protocol;
-    nt_buf_t *buffer;       //用来存储当前回复内容
-    uint16_t buf_len;
-    void *data;
-
+    int protocol;      //数据包协议
+    nt_buf_t *buffer;  //用来存储当前回复内容
+    uint16_t buf_len;  //要回复的内容长度
+    void *data;        //存储 tcp/udp 内容( nt_skb_tcp_t, nt_skb_udp_t )
 } nt_skb_t;
 
 //存储在红黑树中的连接

@@ -284,9 +284,10 @@ int main()
         ev->log = log;
     */
     c_rcv->buffer = nt_pnalloc( pool, sizeof( nt_buf_t ) );
-    u_char *p  = nt_pnalloc( pool, 1500 );
+    //udp 不能超过1500 MTU 否则nginx 构造出来会超过1500 而被丢弃
+    u_char *p  = nt_pnalloc( pool, 1490 );
     c_rcv->buffer->start = p;
-    c_rcv->buffer->end = p + 1500;
+    c_rcv->buffer->end = p + 1490;
     c_rcv->buffer->pos = p;
     c_rcv->buffer->last = p;
 
@@ -301,6 +302,7 @@ int main()
     //初始化接收器用的红黑树
     nt_rbtree_init( &acc_tcp_tree, &g_sentinel, nt_rbtree_insert_conn_handle );
     nt_rbtree_init( &acc_udp_tree, &g_sentinel, nt_rbtree_insert_conn_handle );
+    nt_rbtree_init( &acc_udp_id_tree, &g_sentinel, nt_rbtree_insert_udp_id_handle );
 
     for( ;; ) {
 
