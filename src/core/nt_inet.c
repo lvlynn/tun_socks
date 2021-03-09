@@ -1,6 +1,7 @@
 
 #include <nt_core.h>
 
+static nt_int_t nt_parse_tun_url(nt_pool_t *pool, nt_url_t *u);
 
 static nt_int_t nt_parse_unix_domain_url(nt_pool_t *pool, nt_url_t *u);
 static nt_int_t nt_parse_inet_url(nt_pool_t *pool, nt_url_t *u);
@@ -690,6 +691,10 @@ nt_parse_url(nt_pool_t *pool, nt_url_t *u)
     p = u->url.data;
     len = u->url.len;
 
+    if( nt_strncasecmp(p, (u_char *) "tun:", 4) == 0 ){
+        return nt_parse_tun_url( pool, u );
+    }
+
     if (len >= 5 && nt_strncasecmp(p, (u_char *) "unix:", 5) == 0) {
         return nt_parse_unix_domain_url(pool, u);
     }
@@ -700,6 +705,89 @@ nt_parse_url(nt_pool_t *pool, nt_url_t *u)
 
     return nt_parse_inet_url(pool, u);
 }
+
+
+static nt_int_t
+nt_parse_tun_url(nt_pool_t *pool, nt_url_t *u)
+{
+/* #if (NT_HAVE_TUN_SOCKET) */
+#if (1)
+    u_char              *path, *uri, *last;
+    size_t               len;
+    struct sockaddr  *sa;
+
+    len = u->url.len;
+    path = u->url.data;
+
+    path += 4;
+    len -= 4;
+
+    //分离出 "tun:"
+    if (u->uri_part) {
+
+        last = path + len;
+        uri = nt_strlchr(path, last, ':');
+
+        if (uri) {
+            len = uri - path;
+            uri++;
+            u->uri.len = last - uri;
+            u->uri.data = uri;
+        }
+    }
+
+    if (len == 0) {
+        u->err = "no path in the unix domain socket";
+        return NT_ERROR;
+    }
+
+    u->host.len = len++;
+    u->host.data = path;
+
+    if (len > 14) {
+        u->err = "too long path in the tun socket";
+        return NT_ERROR;
+    }
+
+    u->socklen = sizeof(struct sockaddr);
+    sa =  &u->sockaddr;
+    sa->sa_family = NT_AF_TUN;
+    (void) nt_cpystrn((u_char *) sa->sa_data, path, len);
+
+    u->addrs = nt_pcalloc(pool, sizeof(nt_addr_t));
+    if (u->addrs == NULL) {
+        return NT_ERROR;
+    }
+
+    sa = nt_pcalloc(pool, sizeof(struct sockaddr));
+    if (sa == NULL) {
+        return NT_ERROR;
+    }
+
+    u->family = NT_AF_TUN;
+    u->naddrs = 1;
+
+    sa->sa_family = NT_AF_TUN;
+    (void) nt_cpystrn((u_char *) sa->sa_data, path, len);
+
+    u->addrs[0].sockaddr = (struct sockaddr *) sa;
+    u->addrs[0].socklen = sizeof(struct sockaddr);
+    u->addrs[0].name.len = len + 4;
+    u->addrs[0].name.data = u->url.data;
+
+    return NT_OK;
+
+#else
+
+    u->err = "the unix domain sockets are not supported on this platform";
+
+    return NT_ERROR;
+
+#endif
+}
+
+
+
 
 
 static nt_int_t

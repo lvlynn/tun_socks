@@ -70,8 +70,10 @@ int tun_create( char *dev, int flags )
     struct ifreq ifr;
     int fd, err;
 
+    //发现ac66u-b1 里面的 tun path 为 /dev/tun ，但得用 /dev/net/tun 才行
     if( ( fd = open( "/dev/net/tun", O_RDWR ) ) < 0 ) {
-        debug( "Error : %d\n", errno );
+//    if( ( fd = open( "/dev/tun", O_RDWR ) ) < 0 ) {
+        debug( "open Error : %d\n", errno );
         return -1;
 
     }
@@ -85,7 +87,7 @@ int tun_create( char *dev, int flags )
     }
 
     if( ( err = ioctl( fd, TUNSETIFF, ( void * )&ifr ) ) < 0 ) {
-        debug( "Error :%d\n", errno );
+        debug( "TUNSETIFF Error :%d\n", errno );
         close( fd );
         return -1;
 

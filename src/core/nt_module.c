@@ -26,9 +26,11 @@ nt_preinit_modules(void)
     for (i = 0; nt_modules[i]; i++) {
         nt_modules[i]->index = i;
         nt_modules[i]->name = nt_module_names[i];
+        debug( "preinit module name=%s" , nt_module_names[i] );
     }
 
     nt_modules_n = i;
+    debug( "module num=%d" , nt_modules_n );
     nt_max_module = nt_modules_n + NT_MAX_DYNAMIC_MODULES;
 
     return NT_OK;

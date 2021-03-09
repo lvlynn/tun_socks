@@ -33,6 +33,7 @@
 void nt_event_process_posted( nt_cycle_t *cycle, nt_queue_t *posted );
 
 
-
+extern nt_queue_t  nt_posted_accept_events;
+extern nt_queue_t  nt_posted_events;
 
 #endif

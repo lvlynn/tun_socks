@@ -355,7 +355,7 @@ done:
                           filename->data);
             rc = NT_ERROR;
         }
-	unlink(tmp_conf_path);
+        unlink(tmp_conf_path);
         cf->conf_file = prev;
     }
 
@@ -367,6 +367,9 @@ done:
 }
 
 
+/*
+ * 解析配置文件中的各模块中的cmd 回调
+ * */
 static nt_int_t
 nt_conf_handler(nt_conf_t *cf, nt_int_t last)
 {
@@ -383,9 +386,11 @@ nt_conf_handler(nt_conf_t *cf, nt_int_t last)
     for (i = 0; cf->cycle->modules[i]; i++) {
 
         cmd = cf->cycle->modules[i]->commands;
+        
         if (cmd == NULL) {
             continue;
         }
+        /* debug( "i=%d, module=%s, cmd = %s",i, cf->cycle->modules[i]->name, cmd->name.data ); */
 
         for ( /* void */ ; cmd->name.len; cmd++) {
 
@@ -475,7 +480,10 @@ nt_conf_handler(nt_conf_t *cf, nt_int_t last)
                 }
             }
 
+            //这里调用了 各模块中 commands 的参数回调函数
+            /* debug( "------cmd = %s", cmd->name.data ); */
             rv = cmd->set(cf, cmd, conf);
+            /* debug( "返回值cmd ret = %s", rv ); */
 
             if (rv == NT_CONF_OK) {
                 return NT_OK;

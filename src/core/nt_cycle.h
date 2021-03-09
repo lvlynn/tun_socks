@@ -4,8 +4,27 @@
 #include <nt_core.h>
 
 #ifndef NT_CYCLE_POOL_SIZE
-#define NT_CYCLE_POOL_SIZE     NT_DEFAULT_POOL_SIZE                                                                         
+    #define NT_CYCLE_POOL_SIZE     NT_DEFAULT_POOL_SIZE
 #endif
+
+
+#define NT_DEBUG_POINTS_STOP   1
+#define NT_DEBUG_POINTS_ABORT  2
+
+
+typedef struct nt_shm_zone_s  nt_shm_zone_t;
+
+typedef nt_int_t ( *nt_shm_zone_init_pt )( nt_shm_zone_t *zone, void *data );
+
+
+struct nt_shm_zone_s {
+    void                     *data;
+    nt_shm_t                 shm;
+    nt_shm_zone_init_pt      init;
+    void                     *tag;
+    void                     *sync;
+    nt_uint_t                noreuse;  /* unsigned  noreuse:1; */
+};
 
 //用于存储 大循环配置
 struct nt_cycle_s {
@@ -64,8 +83,68 @@ struct nt_cycle_s {
 
 };
 
-extern volatile nt_cycle_t  *nt_cycle;
 
+typedef struct {
+    nt_flag_t                daemon;
+    nt_flag_t                master;
+
+    nt_msec_t                timer_resolution;
+    nt_msec_t                shutdown_timeout;
+
+    nt_int_t                 worker_processes;
+    nt_int_t                 debug_points;
+
+    nt_int_t                 rlimit_nofile;
+    off_t                     rlimit_core;
+
+    int                       priority;
+
+    nt_uint_t                cpu_affinity_auto;
+    nt_uint_t                cpu_affinity_n;
+    nt_cpuset_t             *cpu_affinity;
+
+    char                     *username;
+    nt_uid_t                 user;
+    nt_gid_t                 group;
+
+    nt_str_t                 working_directory;
+    nt_str_t                 lock_file;
+
+    nt_str_t                 pid;
+    nt_str_t                 oldpid;
+
+    nt_array_t               env;
+    char                    **environment;
+
+    nt_uint_t                transparent;  /* unsigned  transparent:1; */
+} nt_core_conf_t;
+
+
+#define nt_is_init_cycle(cycle)  (cycle->conf_ctx == NULL)
+
+
+nt_cycle_t *nt_init_cycle( nt_cycle_t *old_cycle );
+nt_int_t nt_create_pidfile( nt_str_t *name, nt_log_t *log );
+void nt_delete_pidfile( nt_cycle_t *cycle );
+nt_int_t nt_signal_process( nt_cycle_t *cycle, char *sig );
+void nt_reopen_files( nt_cycle_t *cycle, nt_uid_t user );
+char **nt_set_environment( nt_cycle_t *cycle, nt_uint_t *last );
+nt_pid_t nt_exec_new_binary( nt_cycle_t *cycle, char *const *argv );
+nt_cpuset_t *nt_get_cpu_affinity( nt_uint_t n );
+nt_shm_zone_t *nt_shared_memory_add( nt_conf_t *cf, nt_str_t *name,
+                                     size_t size, void *tag );
+void nt_set_shutdown_timer( nt_cycle_t *cycle );
+
+
+extern volatile nt_cycle_t  *nt_cycle;
+extern nt_array_t            nt_old_cycles;
+extern nt_module_t           nt_core_module;
 extern nt_uint_t             nt_test_config;
 extern nt_uint_t             nt_dump_config;
+extern nt_uint_t             nt_quiet_mode;
+#if (T_NT_SHOW_INFO)
+    extern nt_uint_t             nt_show_modules;
+    extern nt_uint_t             nt_show_directives;
+#endif
+
 #endif

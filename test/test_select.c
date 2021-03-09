@@ -2,6 +2,7 @@
 #include <nt_core.h>
 #include <nt_event.h>
 
+#include "test_common.h"
 
 void test()
 {
@@ -19,10 +20,6 @@ void test()
  *
  *
  * */
-
-
-
-
 nt_new_connection( nt_connection_t *c, nt_log_t *log )
 {
 
@@ -225,49 +222,35 @@ void test_ev_hander( nt_event_t *ev )
 
 }
 
-
-
+//全局变量
+//nt_cycle_t *nt_cycle
 
 
 int main()
 {
-
     signal( SIGUSR1, do_write );
+    signal( SIGTERM,  tm_app_exit );
+    signal( SIGHUP,  tm_app_exit );
+    signal( SIGTSTP,  tm_app_exit );
+    signal( SIGINT,  tm_app_exit );
 
     nt_log_t *log ;
     nt_pool_t *pool;
     nt_cycle_t *cycle;
 
 
-    nt_time_init();
-    log = nt_log_init( NULL );
-    log->log_level = NT_LOG_DEBUG_ALL;
-
-    nt_log_debug1( NT_LOG_DEBUG_EVENT, log, 0,
-                   "timer delta: %M", nt_current_msec );
-
-
-
-    //初始化一个内存池
-    pool = nt_create_pool( NT_CYCLE_POOL_SIZE, log );
-    if( pool == NULL ) {
-        return NULL;
-    }
-    pool->log = log;
-
-    //从内存池中申请cycle
-    cycle = nt_pcalloc( pool, sizeof( nt_cycle_t ) );
-    if( cycle == NULL ) {
-        nt_destroy_pool( pool );
-        return NULL;
-    }
-
-
-    cycle->log = log;
+    if( tm_common_init() != NT_OK )
+        return 0;
+    cycle = nt_cycle;
+    log = nt_cycle->log;
+    pool = nt_cycle->pool;
 
     // event 初始化
     nt_event_init( cycle );
+
+
     nt_event_process_init( cycle );
+       
 
     nt_socket_t s = STDOUT_FILENO ;
 
@@ -290,10 +273,9 @@ int main()
     c_stdout->read->handler = NULL;
     c_stdout->write->handler = test_write;
 
+   
 
-
-
-    ev = ( nt_event_t * ) malloc( sizeof( nt_event_t ) );
+    ev = ( nt_event_t * ) nt_palloc( pool, sizeof( nt_event_t ) );
     ev->data = ( void * )c_stdin;
 
     ev->handler = test_ev_hander;
@@ -301,11 +283,21 @@ int main()
     ev->write = 0;
     ev->log = log;
 
+
+
     int ret =  nt_add_event( c_stdin->read,  NT_READ_EVENT,  0 );
+
+
+    while(1){
+        sleep(1);
+    }
+
 
     printf( "ret = %d\n", ret );
 
-    buffer = nt_pnalloc( pool, 1500 );
+    buffer = nt_palloc( pool, 1500 );
+
+ 
 
     for( ;; ) {
         nt_msec_t  timer, delta;

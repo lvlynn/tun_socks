@@ -153,8 +153,8 @@ char *nt_conf_merge_path_value(nt_conf_t *cf, nt_path_t **path,
 char *nt_conf_set_access_slot(nt_conf_t *cf, nt_command_t *cmd, void *conf);
 
 
-//extern nt_atomic_t      *nt_temp_number;
-//extern nt_atomic_int_t   nt_random_number;
+extern nt_atomic_t      *nt_temp_number;
+extern nt_atomic_int_t   nt_random_number;
 
 
 #endif /* _NT_FILE_H_INCLUDED_ */

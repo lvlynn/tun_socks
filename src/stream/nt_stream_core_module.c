@@ -160,6 +160,7 @@ nt_module_t  nt_stream_core_module = {
 void
 nt_stream_core_run_phases(nt_stream_session_t *s)
 {
+    debug( "start" );
     nt_int_t                     rc;
     nt_stream_phase_handler_t   *ph;
     nt_stream_core_main_conf_t  *cmcf;
@@ -637,7 +638,18 @@ nt_stream_core_server(nt_conf_t *cf, nt_command_t *cmd, void *conf)
     return rv;
 }
 
-
+/* 
+ *   ls->type 为 当前socket 监听类型
+ *   NT_SOCK_TUN = 0, 自定义类型
+ *   SOCK_STREAM = 1,	
+ *   SOCK_DGRAM = 2,		
+ *   SOCK_RAW = 3,			
+ *   SOCK_RDM = 4,			
+ *   SOCK_SEQPACKET = 5,	
+ *   SOCK_DCCP = 6,		
+ *   SOCK_PACKET = 10,		
+ *   解析stream模块中 listen 后面配置，比如so_keepalive=on
+ *     */
 static char *
 nt_stream_core_listen(nt_conf_t *cf, nt_command_t *cmd, void *conf)
 {
@@ -658,6 +670,7 @@ nt_stream_core_listen(nt_conf_t *cf, nt_command_t *cmd, void *conf)
     u.url = value[1];
     u.listen = 1;
 
+    //解析listen后面第一个参数。
     if (nt_parse_url(cf->pool, &u) != NT_OK) {
         if (u.err) {
             nt_conf_log_error(NT_LOG_EMERG, cf, 0,
@@ -686,6 +699,9 @@ nt_stream_core_listen(nt_conf_t *cf, nt_command_t *cmd, void *conf)
 #if (NT_HAVE_INET6)
     ls->ipv6only = 1;
 #endif
+
+    if( u.family == NT_AF_TUN )
+        ls->type = NT_AF_TUN;
 
     backlog = 0;
 
@@ -940,6 +956,7 @@ nt_stream_core_listen(nt_conf_t *cf, nt_command_t *cmd, void *conf)
 
     als = cmcf->listen.elts;
 
+    debug( "ls->type=%d, SOCK=%d", ls->type, SOCK_DGRAM );
     for (n = 0; n < u.naddrs; n++) {
         ls[n] = ls[0];
 

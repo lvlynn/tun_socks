@@ -3,7 +3,7 @@
 #include <nt_core.h>
 #include <nt_event.h>
 
-static nt_int_t nt_select_init( nt_cycle_t *cycle );
+static nt_int_t nt_select_init( nt_cycle_t *cycle ,nt_msec_t timer );
 static void nt_select_done( nt_cycle_t *cycle );
 static nt_int_t nt_select_add_event( nt_event_t *ev, nt_int_t event,
                                      nt_uint_t flags );
@@ -66,7 +66,7 @@ nt_module_t  nt_select_module = {
 };
 
 
-static nt_int_t nt_select_init( nt_cycle_t *cycle )
+static nt_int_t nt_select_init( nt_cycle_t *cycle ,nt_msec_t timer )
 {
     nt_event_t  **index;
 
@@ -76,7 +76,13 @@ static nt_int_t nt_select_init( nt_cycle_t *cycle )
         nevents = 0;
     }
 
-    index = nt_alloc( sizeof( nt_event_t * ) * 2 * cycle->connection_n, cycle->log );
+#if 0
+    index = nt_alloc(  sizeof( nt_event_t * ) * 2 * cycle->connection_n ,
+                       cycle->log);
+#else
+    cycle->connection_n = 256;
+    index = nt_palloc(  cycle->pool, sizeof( nt_event_t * ) * 2 * cycle->connection_n );
+#endif
 
     if( index == NULL ) {
         return NT_ERROR;
@@ -97,6 +103,12 @@ static nt_int_t nt_select_init( nt_cycle_t *cycle )
 
     //设置event的事件函数为select函数
     nt_event_actions = nt_select_module_ctx.actions;
+
+    nt_event_flags = NT_USE_LEVEL_EVENT;
+
+    max_fd = -1;
+
+    return NT_OK;
 }
 
 static void nt_select_done( nt_cycle_t *cycle )
@@ -313,14 +325,14 @@ static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_msec_t  timer,nt
         if( ev->write ) {
             if( FD_ISSET( c->fd, &work_write_fd_set ) ) {
                 found = 1;
-                nt_log_debug1( NT_LOG_DEBUG_EVENT, cycle->log, 0,
+                nt_log_debug1( NT_LOG_DEBUG_EVENT, c->log, 0,
                                "select write %d", c->fd );
             }
             //事件可读
         } else {
             if( FD_ISSET( c->fd, &work_read_fd_set ) ) {
                 found = 1;
-                nt_log_debug1( NT_LOG_DEBUG_EVENT, cycle->log, 0,
+                nt_log_debug1( NT_LOG_DEBUG_EVENT, c->log, 0,
                                "select read %d", c->fd );
             }
         }
@@ -330,7 +342,7 @@ static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_msec_t  timer,nt
             //设置事件 ready为1
             ev->ready = 1;
 
-            nt_log_debug1( NT_LOG_DEBUG_EVENT, cycle->log, 0,
+            nt_log_debug1( NT_LOG_DEBUG_EVENT, c->log, 0,
                            "ev-accept %d", ev->accept );
 
             //判断当前事件的accept是否为1， 如果不是1，推入post事件
@@ -358,6 +370,24 @@ static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_msec_t  timer,nt
 //select模块的配置初始化
 static char *nt_select_init_conf( nt_cycle_t *cycle, void *conf )
 {
+    nt_event_conf_t  *ecf;
 
+    ecf = nt_event_get_conf(cycle->conf_ctx, nt_event_core_module);
 
+    if (ecf->use != nt_select_module.ctx_index) {
+        return NT_CONF_OK;
+
+    }   
+
+    /* disable warning: the default FD_SETSIZE is 1024U in FreeBSD 5.x */
+
+    if (cycle->connection_n > FD_SETSIZE) {
+        nt_log_error(NT_LOG_EMERG, cycle->log, 0,
+                      "the maximum number of files "
+                      "supported by select() is %ud", FD_SETSIZE);
+        return NT_CONF_ERROR;
+
+    }   
+
+    return NT_CONF_OK;
 }

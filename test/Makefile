@@ -1,10 +1,9 @@
-#得到当前Makefile的路径
-mkfile_path=$(abspath $(lastword $(MAKEFILE_LIST)))
-#Makefile 绝对目录
-PWD_OBJS=$(shell dirname $(mkfile_path))
-#PWD=$(patsubst %/objs,%,$(PWD_OBJS))
-PWD=$(subst /test,,$(PWD_OBJS))
-
+mkfile_path=$(abspath $(firstword $(MAKEFILE_LIST)))
+MAKEFILE_DIR := $(dir $(mkfile_path))
+#获得Makefile当前目录
+MAKEFILE_DIR_PATSUBST := $(patsubst %/,%,$(MAKEFILE_DIR))
+LAST_MENU=$(notdir $(MAKEFILE_DIR_PATSUBST))
+PWD=$(subst /$(LAST_MENU),,$(MAKEFILE_DIR_PATSUBST))
 
 
 include $(PWD)/objs/include/nt.mk
@@ -36,7 +35,7 @@ all:$(BIN)
 #	@echo $(OBJS)
 #	@echo $(PWD)
 #	@echo $(app_srcs)
-	$(CC)  $(CFLAGS) $(ALL_INCS)   $(PWD)/test/$@.c -o $(PWD)/bin/$@  -g -L$(PWD)/bin -lnt
+	$(CC)  $(CFLAGS) $(NT_INCLUDE)   $(PWD)/test/$@.c -o $(PWD)/bin/$@  -g -L$(PWD)/bin -lnt
 
 clean:	
 		rm -f $(OBJS)

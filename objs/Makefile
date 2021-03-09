@@ -9,23 +9,29 @@ LINK =  $(CC)
 #cur_makefile_path := patsubst$(%/, %, dir $(mkfile_patch))  #获取当前正在执行的makefile的绝对目录
 
 #得到当前Makefile的路径
-mkfile_path=$(abspath $(lastword $(MAKEFILE_LIST)))
-#Makefile 绝对目录
-PWD_OBJS=$(shell dirname $(mkfile_path))
-#PWD=$(patsubst %/objs,%,$(PWD_OBJS))
-PWD=$(subst /objs,,$(PWD_OBJS))
+# mkfile_path=$(abspath $(lastword $(MAKEFILE_LIST)))
+# test_path=$(MAKEFILE_LIST)
+# mkfile_path=$(abspath $(firstword $(MAKEFILE_LIST)))
+# #Makefile 绝对目录
+# PWD_OBJS=$(shell dirname $(mkfile_path))
+# #PWD=$(patsubst %/objs,%,$(PWD_OBJS))
+# PWD=$(subst /objs,,$(PWD_OBJS))
+# TEST_PWD=$(PWD)
 
 
+mkfile_path=$(abspath $(firstword $(MAKEFILE_LIST)))
+MAKEFILE_DIR := $(dir $(mkfile_path))
+#获得Makefile当前目录
+MAKEFILE_DIR_PATSUBST := $(patsubst %/,%,$(MAKEFILE_DIR))
+CUR_MENU=$(notdir $(MAKEFILE_DIR_PATSUBST))
+PWD=$(subst /$(CUR_MENU),,$(MAKEFILE_DIR_PATSUBST))
+
+
+# include $(MAKEFILE_DIR)/test.mk
 include $(PWD)/objs/include/nt.mk
 
-CORE_INCS = -I $(PWD)/src/core \
-			-I $(PWD)/src/event \
-			-I $(PWD)/src/event/modules \
-			-I $(PWD)/src/os/unix \
-			-I $(PWD)/src/stream \
-			-I $(PWD)/config 
+# NT_INCLUDE = 
 
-ADDON_DEPS = $(CORE_DEPS) 
 
 BUILD_BIN = nt
 
@@ -50,7 +56,7 @@ modules:
 
 $(PWD)/objs/config/nt_modules.o: $(CORE_DEPS) \
 	$(PWD)/config/nt_modules.c
-	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+	$(CC) -c $(CFLAGS) $(NT_INCLUDE) \
 		-o $(PWD)/objs/config/nt_modules.o \
 		$(PWD)/config/nt_modules.c
 
@@ -61,6 +67,9 @@ include $(PWD)/objs/include/event.mk
 include $(PWD)/objs/include/os.mk
 
 include $(PWD)/objs/include/stream.mk
+
+include $(PWD)/objs/include/nt_module_c.mk
+
 
 manpage:
 	echo "end"

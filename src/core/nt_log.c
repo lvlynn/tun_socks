@@ -102,7 +102,8 @@ nt_uint_t              nt_use_stderr = 1;
 
     FILE *filp;
 
-    filp = stderr;
+    /* filp = stderr; */
+    filp = stdout;
 
     strftime( ts, sizeof( ts ), "[%Y-%m-%d %H:%M:%S] ", tm );
     fprintf( filp, "%s", ts );
@@ -721,8 +722,8 @@ nt_log_set_log( nt_conf_t *cf, nt_log_t **head )
         return NT_CONF_ERROR;
     }
 
-    printf( "*head = %lp\n", *head  );
-    printf( "new_log = %lp\n", new_log  );
+    /* printf( "*head = %lp\n", *head  );
+    printf( "new_log = %lp\n", new_log  ); */
 
     if( *head != new_log ) {
         printf( "nt_log_insert\n"  );

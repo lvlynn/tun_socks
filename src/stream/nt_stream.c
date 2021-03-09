@@ -657,6 +657,7 @@ found:
 static char *
 nt_stream_optimize_servers(nt_conf_t *cf, nt_array_t *ports)
 {
+    debug( "nt_stream_optimize_servers" );
     nt_uint_t                   i, p, last, bind_wildcard;
     nt_listening_t             *ls;
     nt_stream_port_t           *stport;
@@ -698,6 +699,7 @@ nt_stream_optimize_servers(nt_conf_t *cf, nt_array_t *ports)
                 continue;
             }
 
+            //产生一个ls 监听结构体
             ls = nt_create_listening(cf, addr[i].opt.sockaddr,
                                       addr[i].opt.socklen);
             if (ls == NULL) {

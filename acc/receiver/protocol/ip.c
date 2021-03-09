@@ -123,23 +123,6 @@ static int ipv4_input( nt_connection_t *c )
     b = c->buffer;  //存放read进来的数据包
     ih = ( struct iphdr * )b->start;
 
-
-    //如果是tcp udp, 取端口,用于查询是否是新链接
-    /* switch( ih->protocol ) {
-    case IPPROTO_TCP:
-        debug( "IPPROTO_TCP" );
-        sport = tcp_get_port( b->start, TCP_SRC );
-        break;
-    case IPPROTO_UDP:
-        debug( "IPPROTO_UDP" );
-        sport = tcp_get_port( b->start, TCP_SRC );
-        break;
-    }
-    debug( "sport=%d", sport );
-    */
-
-
-
     c->type = ih->protocol;
 
     debug( "ih->protocol=%d", ih->protocol ) ;
@@ -173,3 +156,19 @@ int ip_input( nt_connection_t *c )
 
     return  0;
 }
+
+
+int ip_protocol_dispatch( int protocol  ){
+    switch( protocol  ){
+
+    case IPPROTO_TCP:
+        return NT_TUN_ACC_PROXY;
+
+    case IPPROTO_UDP:
+        return NT_TUN_ACC_PROXY;
+
+    default:
+        return NT_TUN_ACC_LOCAL;
+    }
+}
+

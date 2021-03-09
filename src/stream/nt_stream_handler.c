@@ -14,6 +14,7 @@ static void nt_stream_proxy_protocol_handler(nt_event_t *rev);
 void
 nt_stream_init_connection(nt_connection_t *c)
 {
+    debug( "start" );
     u_char                        text[NT_SOCKADDR_STRLEN];
     size_t                        len;
     nt_uint_t                    i;
@@ -118,6 +119,7 @@ nt_stream_init_connection(nt_connection_t *c)
     s->signature = NT_STREAM_MODULE;
     s->main_conf = addr_conf->ctx->main_conf;
     s->srv_conf = addr_conf->ctx->srv_conf;
+    debug( "s->srv_conf=%p", s->srv_conf );
 
 #if (NT_STREAM_SNI)
     s->addr_conf = addr_conf;
@@ -193,6 +195,7 @@ nt_stream_init_connection(nt_connection_t *c)
         }
     }
 
+    //如果使用多连接
     if (nt_use_accept_mutex) {
         nt_post_event(rev, &nt_posted_events);
         return;
@@ -283,6 +286,7 @@ nt_stream_proxy_protocol_handler(nt_event_t *rev)
 void
 nt_stream_session_handler(nt_event_t *rev)
 {
+    debug( "start" );
     nt_connection_t      *c;
     nt_stream_session_t  *s;
 

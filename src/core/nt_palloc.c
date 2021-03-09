@@ -81,12 +81,16 @@ nt_destroy_pool( nt_pool_t *pool )
     #endif
 
     for( l = pool->large; l; l = l->next ) {
-        if( l->alloc ) {
+        /* debug("free, l = %p", l->next); */
+        /* debug("free, l = %p", l->alloc); */
+        if( l->alloc  ) {
             nt_free( l->alloc );
+            /* debug("free end, l = %p", l->alloc); */
         }
     }
 
     for( p = pool, n = pool->d.next; /* void */; p = n, n = n->d.next ) {
+        /* debug("free, p = %p", p); */
         nt_free( p );
 
         if( n == NULL ) {
@@ -118,11 +122,15 @@ nt_reset_pool( nt_pool_t *pool )
     pool->large = NULL;
 }
 
-
+/*
+ * size 不能等于0
+ *
+ * */
 void *
 nt_palloc( nt_pool_t *pool, size_t size )
 {
     #if !(NT_DEBUG_PALLOC)
+ //   debug( "size=%d, pool->max=%d", size, pool->max );
     if( size <= pool->max ) {
         return nt_palloc_small( pool, size, 1 );
     }
@@ -162,7 +170,6 @@ nt_palloc_small( nt_pool_t *pool, size_t size, nt_uint_t align )
 
         if( ( size_t )( p->d.end - m ) >= size ) {
             p->d.last = m + size;
-
             return m;
         }
 

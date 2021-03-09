@@ -1,23 +1,27 @@
 
-mkfile_path=$(abspath $(lastword $(MAKEFILE_LIST)))
-PWD_INCLUDE=$(shell dirname $(mkfile_path))
-#PWD=$(patsubst %/objs/include,%,$(PWD_INCLUDE))
-PWD=$(subst /objs/include,,$(PWD_INCLUDE))
+mkfile_path=$(abspath $(firstword $(MAKEFILE_LIST)))
+MAKEFILE_DIR := $(dir $(mkfile_path))
+#获得Makefile当前目录
+MAKEFILE_DIR_PATSUBST := $(patsubst %/,%,$(MAKEFILE_DIR))
+LAST_MENU=$(notdir $(MAKEFILE_DIR_PATSUBST))
+PWD=$(subst /$(LAST_MENU),,$(MAKEFILE_DIR_PATSUBST))
 
-
-NT_CORE_INC= $(PWD)/src/core/nt.h \
-		  $(PWD)/src/core/nt_def.h \
-		  $(PWD)/src/core/nt_core.h \
-		  $(PWD)/src/core/nt_connection.h \
-		  $(PWD)/src/core/nt_cycle.h \
-		  $(PWD)/src/core/nt_file.h \
-		  $(PWD)/src/core/nt_time.h \
-		  $(PWD)/src/core/nt_string.h \
-		  $(PWD)/src/core/nt_rbtree.h \
-		  $(PWD)/src/core/nt_log.h 
+NT_CORE_INC=-I $(PWD)/src/core
+# NT_CORE_INC= $(PWD)/src/core/nt.h \
+#           $(PWD)/src/core/nt_def.h \
+#           $(PWD)/src/core/nt_core.h \
+#           $(PWD)/src/core/nt_connection.h \
+#           $(PWD)/src/core/nt_cycle.h \
+#           $(PWD)/src/core/nt_file.h \
+#           $(PWD)/src/core/nt_time.h \
+#           $(PWD)/src/core/nt_string.h \
+#           $(PWD)/src/core/nt_rbtree.h \
+#           $(PWD)/src/core/nt_log.h 
 
 
 NT_CORE_OBJ=$(PWD)/objs/src/core/nt_log.o \
+			$(PWD)/objs/src/core/nt_core.o \
+		 $(PWD)/objs/src/core/nt_cpuinfo.o \
 			$(PWD)/objs/src/core/nt_module.o \
 			$(PWD)/objs/src/core/nt_syslog.o \
 			$(PWD)/objs/src/core/nt_time.o \
@@ -38,6 +42,9 @@ NT_CORE_OBJ=$(PWD)/objs/src/core/nt_log.o \
 			$(PWD)/objs/src/core/nt_static_hash.o \
 			$(PWD)/objs/src/core/nt_resolver.o \
 			$(PWD)/objs/src/core/nt_proxy_protocol.o \
-			$(PWD)/objs/src/core/nt_string.o 
+			$(PWD)/objs/src/core/nt_string.o \
+			$(PWD)/objs/src/core/nt_slab.o \
+			$(PWD)/objs/src/core/nt_open_file_cache.o \
+			$(PWD)/objs/src/core/nt_shmtx.o 
 
 

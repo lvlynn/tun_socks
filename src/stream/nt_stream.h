@@ -227,6 +227,9 @@ struct nt_stream_session_s {
 
     nt_connection_t              *connection;
 
+    //自己添加的变量，为了给socks5 用
+    void *data;
+
     off_t                          received;
     time_t                         start_sec;
     nt_msec_t                     start_msec;
@@ -266,6 +269,7 @@ struct nt_stream_session_s {
     nt_queue_t                    waiting_queue;
     nt_flag_t                     waiting;
 #endif
+
 };
 
 

@@ -2,6 +2,10 @@
 #define _NT_CORE_H_
 #include <nt_def.h>
 
+
+#define NGINX_VAR          "NGINX"
+#define NGINX_VER_BUILD          "NGINX"
+// extern nt_module_t  nt_core_module;
 typedef struct nt_module_s          nt_module_t;
 typedef struct nt_conf_s            nt_conf_t;
 typedef struct nt_cycle_s           nt_cycle_t;
@@ -60,14 +64,16 @@ typedef void ( *nt_connection_handler_pt )( nt_connection_t *c );
 #include <nt_array.h>
 #include <nt_list.h>
 #include <nt_static_hash.h>
-#include <nt_process.h>
+#include <nt_shmtx.h>
+#include <nt_slab.h>
+
 
 #include <nt_linux.h>
 #include <nt_file.h>
 #include <nt_inet.h>
-#include <nt_cycle.h>
 
 #include <nt_module.h>
+#include <nt_open_file_cache.h>
 #include <nt_connection.h>
 #include <nt_conf.h>
 #include <nt_time.h>
@@ -76,5 +82,22 @@ typedef void ( *nt_connection_handler_pt )( nt_connection_t *c );
 #include <nt_crc32.h>
 #include <nt_resolver.h>
 #include <nt_proxy_protocol.h>
+#include <nt_shmem.h>
+#include <nt_channel.h>
+#include <nt_process.h>
+#include <nt_process_cycle.h>
+#include <nt_pipe.h>
+
+#include <nt_sysinfo.h>
+
+#include <nt_cycle.h>
+
+
+#if (NT_HAVE_ACC_RCV)
+#include <nt_stream_acc_rcv_module.h>
+#endif
+
+nt_int_t nt_save_argv( nt_cycle_t *cycle, int argc, char *const *argv );
+nt_int_t nt_main_init( int argc, char *const *argv );
 
 #endif

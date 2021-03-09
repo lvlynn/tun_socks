@@ -6,9 +6,9 @@
 static nt_int_t nt_test_full_name(nt_str_t *name);
 
 
-//static nt_atomic_t   temp_number = 0;
-//nt_atomic_t         *nt_temp_number = &temp_number;
-//nt_atomic_int_t      nt_random_number = 123456;
+static nt_atomic_t   temp_number = 0;
+nt_atomic_t         *nt_temp_number = &temp_number;
+nt_atomic_int_t      nt_random_number = 123456;
 
 
 nt_int_t

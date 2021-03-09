@@ -1,9 +1,8 @@
 
+
 #include <nt_core.h>
 #include <nt_event.h>
 
-
-static void nt_close_posted_connection(nt_connection_t *c);
 
 static nt_int_t nt_disable_accept_events(nt_cycle_t *cycle, nt_uint_t all);
 #if (!T_NT_ACCEPT_FILTER)
@@ -11,50 +10,6 @@ static void nt_close_accepted_connection(nt_connection_t *c);
 #endif
 
 
-void nt_event_no_accept(nt_event_t *ev){
-
-    nt_event_t       *rev, *wev;
-    nt_connection_t *c, *lc;
-    nt_listening_t   *ls;
-    lc = ev->data;
-    ls = lc->listening;
-    nt_log_debug2(NT_LOG_DEBUG_EVENT, ev->log, 0,
-                  "accept fd %d, ready: %d", lc->fd,  lc->read->ready);
-
-
-
-    c->pool = nt_create_pool(ls->pool_size, ev->log);
-
-	ev->ready = 0;
-
-	//对新的连接进行初始化， 设置回调
-	c->recv = nt_recv;
-	c->send = nt_send;
-	/* c->recv_chain = nt_recv_chain; */
-	/* c->send_chain = nt_send_chain; */
-
-	c->log = ev->log;
-	c->pool->log = ev->log;
-
-//	c->socklen = socklen;
-	c->listening = ls;
-	/* c->local_sockaddr = ls->sockaddr; */
-	/* c->local_socklen = ls->socklen; */
-
-//	ls->handler(c);
-
-}
-
-
-
-void nt_event_accept(nt_event_t *ev){
-
-
-
-}
-
-
-#if 0
 void
 nt_event_accept(nt_event_t *ev)
 {
@@ -260,8 +215,8 @@ nt_event_accept(nt_event_t *ev)
          //对新的连接进行初始化， 设置回调
         c->recv = nt_recv;
         c->send = nt_send;
-//        c->recv_chain = nt_recv_chain;
-//        c->send_chain = nt_send_chain;
+        c->recv_chain = nt_recv_chain;
+        c->send_chain = nt_send_chain;
 
         c->log = log;
         c->pool->log = log;
@@ -603,219 +558,4 @@ nt_debug_accepted_connection(nt_event_conf_t *ecf, nt_connection_t *c)
     }
 }
 
-#endif
-
-
-void
-nt_event_acceptex(nt_event_t *rev)
-{
-    nt_listening_t   *ls;
-    nt_connection_t  *c;
-
-    c = rev->data;
-    ls = c->listening;
-
-    c->log->handler = nt_accept_log_error;
-
-    nt_log_debug1(NT_LOG_DEBUG_EVENT, c->log, 0, "AcceptEx: %d", c->fd);
-
-    if (rev->ovlp.error) {
-        nt_log_error(NT_LOG_CRIT, c->log, rev->ovlp.error,
-                      "AcceptEx() %V failed", &ls->addr_text);
-        return;
-    }
-
-    /* SO_UPDATE_ACCEPT_CONTEXT is required for shutdown() to work */
-
-    if (setsockopt(c->fd, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
-                   (char *) &ls->fd, sizeof(nt_socket_t))
-        == -1)
-    {
-        nt_log_error(NT_LOG_CRIT, c->log, nt_socket_errno,
-                      "setsockopt(SO_UPDATE_ACCEPT_CONTEXT) failed for %V",
-                      &c->addr_text);
-        /* TODO: close socket */
-        return;
-    }
-
-    nt_getacceptexsockaddrs(c->buffer->pos,
-                             ls->post_accept_buffer_size,
-                             ls->socklen + 16,
-                             ls->socklen + 16,
-                             &c->local_sockaddr, &c->local_socklen,
-                             &c->sockaddr, &c->socklen);
-
-    if (ls->post_accept_buffer_size) {
-        c->buffer->last += rev->available;
-        c->buffer->end = c->buffer->start + ls->post_accept_buffer_size;
-
-    } else {
-        c->buffer = NULL;
-    }
-
-    if (ls->addr_ntop) {
-        c->addr_text.data = nt_pnalloc(c->pool, ls->addr_text_max_len);
-        if (c->addr_text.data == NULL) {
-            /* TODO: close socket */
-            return;
-        }
-
-        c->addr_text.len = nt_sock_ntop(c->sockaddr, c->socklen,
-                                         c->addr_text.data,
-                                         ls->addr_text_max_len, 0);
-        if (c->addr_text.len == 0) {
-            /* TODO: close socket */
-            return;
-        }
-    }
-
-    nt_event_post_acceptex(ls, 1);
-
-    c->number = nt_atomic_fetch_add(nt_connection_counter, 1);
-
-    ls->handler(c);
-
-    return;
-
-}
-
-
-nt_int_t
-nt_event_post_acceptex(nt_listening_t *ls, nt_uint_t n)
-{
-    u_long             rcvd;
-    nt_err_t          err;
-    nt_log_t         *log;
-    nt_uint_t         i;
-    nt_event_t       *rev, *wev;
-    nt_socket_t       s;
-    nt_connection_t  *c;
-
-    for (i = 0; i < n; i++) {
-
-        /* TODO: look up reused sockets */
-
-        s = nt_socket(ls->sockaddr->sa_family, ls->type, 0);
-
-        nt_log_debug1(NT_LOG_DEBUG_EVENT, &ls->log, 0,
-                       nt_socket_n " s:%d", s);
-
-        if (s == (nt_socket_t) -1) {
-            nt_log_error(NT_LOG_ALERT, &ls->log, nt_socket_errno,
-                          nt_socket_n " failed");
-
-            return NT_ERROR;
-        }
-
-        c = nt_get_connection(s, &ls->log);
-
-        if (c == NULL) {
-            return NT_ERROR;
-        }
-
-        c->pool = nt_create_pool(ls->pool_size, &ls->log);
-        if (c->pool == NULL) {
-            nt_close_posted_connection(c);
-            return NT_ERROR;
-        }
-
-        log = nt_palloc(c->pool, sizeof(nt_log_t));
-        if (log == NULL) {
-            nt_close_posted_connection(c);
-            return NT_ERROR;
-        }
-
-        c->buffer = nt_create_temp_buf(c->pool, ls->post_accept_buffer_size
-                                                 + 2 * (ls->socklen + 16));
-        if (c->buffer == NULL) {
-            nt_close_posted_connection(c);
-            return NT_ERROR;
-        }
-
-        c->local_sockaddr = nt_palloc(c->pool, ls->socklen);
-        if (c->local_sockaddr == NULL) {
-            nt_close_posted_connection(c);
-            return NT_ERROR;
-        }
-
-        c->sockaddr = nt_palloc(c->pool, ls->socklen);
-        if (c->sockaddr == NULL) {
-            nt_close_posted_connection(c);
-            return NT_ERROR;
-        }
-
-        *log = ls->log;
-        c->log = log;
-
-        c->recv = nt_recv;
-        c->send = nt_send;
-//        c->recv_chain = nt_recv_chain;
- //       c->send_chain = nt_send_chain;
-
-        c->listening = ls;
-
-        rev = c->read;
-        wev = c->write;
-
-        rev->ovlp.event = rev;
-        wev->ovlp.event = wev;
-        rev->handler = nt_event_acceptex;
-
-        rev->ready = 1;
-        wev->ready = 1;
-
-        rev->log = c->log;
-        wev->log = c->log;
-
-        if (nt_add_event(rev, 0, NT_IOCP_IO) == NT_ERROR) {
-            nt_close_posted_connection(c);
-            return NT_ERROR;
-        }
-
-        if (nt_acceptex(ls->fd, s, c->buffer->pos, ls->post_accept_buffer_size,
-                         ls->socklen + 16, ls->socklen + 16,
-                         &rcvd, (LPOVERLAPPED) &rev->ovlp)
-            == 0)
-        {
-            err = nt_socket_errno;
-            if (err != WSA_IO_PENDING) {
-                nt_log_error(NT_LOG_ALERT, &ls->log, err,
-                              "AcceptEx() %V failed", &ls->addr_text);
-
-                nt_close_posted_connection(c);
-                return NT_ERROR;
-            }
-        }
-    }
-
-    return NT_OK;
-}
-
-
-static void
-nt_close_posted_connection(nt_connection_t *c)
-{
-    nt_socket_t  fd;
-
-    nt_free_connection(c);
-
-    fd = c->fd;
-    c->fd = (nt_socket_t) -1;
-
-    if (nt_close_socket(fd) == -1) {
-        nt_log_error(NT_LOG_ALERT, c->log, nt_socket_errno,
-                      nt_close_socket_n " failed");
-    }
-
-    if (c->pool) {
-        nt_destroy_pool(c->pool);
-    }
-}
-
-
-u_char *
-nt_acceptex_log_error(nt_log_t *log, u_char *buf, size_t len)
-{
-    return nt_snprintf(buf, len, " while posting AcceptEx() on %V", log->data);
-}
 #endif
