@@ -15,32 +15,38 @@ int nt_rbtree_insert_conn_handle( nt_flag_t flag, nt_rbtree_key_t tree_key, nt_r
         if( tree_key == 0  )
             return 1;
 
-        nt_acc_session_t *tcur = ( nt_acc_session_t * )cur_key;
-        /* debug( "tcur->port=%d", tcur->port ); */
+        //tree  new  
+        nt_connection_t *nc = ( nt_connection_t* )cur_key;
+        nt_acc_session_t *ns =  nc->data;
 
-        nt_acc_session_t *ttree = ( nt_acc_session_t * )tree_key;
-        /* debug( "ttree->port=%d", ttree->port ); */
-        if( tcur->port < ttree->port )
+        /* debug( "ns->port=%d", ns->port ); */
+
+        nt_connection_t *tc = ( nt_connection_t * )tree_key;
+        nt_acc_session_t *ts =  tc->data;
+        /* debug( "ts->port=%d", ts->port ); */
+        if( ns->port < ts->port )
             return 1;
-        else if( tcur->port > ttree->port )
+        else if( ns->port > ts->port )
             return -1;
-        else if( tcur->port == ttree->port ) {
+        else if( ns->port == ts->port ) {
             return 0;
         }
     }
 
     if( flag == RBTREE_SEARCH ) {
         /* debug( "RBTREE_SEARCH" ); */
-        nt_acc_session_t *ttree = ( nt_acc_session_t * )tree_key;
+//        nt_connection_t *ttree = ( nt_connection_t * )tree_key;
+        nt_connection_t *tc = ( nt_connection_t * )tree_key;
+        nt_acc_session_t *ts =  tc->data;
 
-        /* debug( "cur_key=%d", cur_key );
-        debug( "ttree->port=%d", ttree->port ); */
+        /* debug( "ts->port=%d", ts->port ); */
+        /* debug( "cur_key=%d", cur_key ); */
 
-        if( cur_key < ttree->port )
+        if( cur_key < ts->port )
             return 1;
-        else if( cur_key > ttree->port )
+        else if( cur_key > ts->port )
             return -1;
-        else if( cur_key == ttree->port ) {
+        else if( cur_key == ts->port ) {
             return 0;
         }
     }

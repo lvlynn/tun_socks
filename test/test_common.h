@@ -60,6 +60,7 @@ nt_int_t tm_common_init(){
     if( pool == NULL ) {
         return NT_ERROR;
     }
+
     pool->log = log;
 
     //从内存池中申请cycle

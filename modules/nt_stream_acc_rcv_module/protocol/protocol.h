@@ -3,8 +3,11 @@
 
 #include <nt_core.h>
 #include "debug.h"
+
+#include "forward.h"
 #include "tcp.h"
 #include "udp.h"
+#include "socks5.h"
 
 
 #include <sys/socket.h>
@@ -19,18 +22,18 @@
 #define UDP_CHK 3
 
 
-typedef struct{
+typedef struct {
     unsigned int saddr;
     unsigned int daddr;
-    unsigned char mbz; //mbz = 0;                                                                                                      
+    unsigned char mbz; //mbz = 0;
     unsigned char ptcl;//proto num; tcp = 6;
     unsigned short tcpl; //tcp头部及头层皮载荷长度; 为网络字节; htons(int);
 
-}pshead;
+} pshead;
 
 
 unsigned long chk( const unsigned  short * data, int size );
-unsigned short ip_chk( const unsigned short *data, int size  );
+unsigned short ip_chk( const unsigned short *data, int size );
 unsigned short tcp_chk( const unsigned short *data, int size );
 unsigned short udp_chk( const unsigned short *data, int size );
 void print_pkg( char *data );
@@ -38,22 +41,22 @@ void print_pkg( char *data );
 
 static unsigned short chksum( const char *data, int size, int type )
 {
-	unsigned short sum = 0;
-	unsigned short *udata = ( unsigned short * )data;
-	switch( type ) { 
-	case IP_CHK:
-		sum = ip_chk( udata, size );
-		break;
-	case TCP_CHK:
-		sum = tcp_chk( udata, size );
-		break;
-	case UDP_CHK:
-		sum = udp_chk( udata, size );
-		break;
-	default:
-		return ( unsigned short )( ~sum );
-	}   
-	return sum;
+    unsigned short sum = 0;
+    unsigned short *udata = ( unsigned short * )data;
+    switch( type ) {
+    case IP_CHK:
+        sum = ip_chk( udata, size );
+        break;
+    case TCP_CHK:
+        sum = tcp_chk( udata, size );
+        break;
+    case UDP_CHK:
+        sum = udp_chk( udata, size );
+        break;
+    default:
+        return ( unsigned short )( ~sum );
+    }
+    return sum;
 }
 
 //一个连接的数据包内容
@@ -66,14 +69,6 @@ typedef struct nt_skb_s {
     uint16_t buf_len;  //要回复的内容长度
     void *data;        //存储 tcp/udp 内容( nt_skb_tcp_t, nt_skb_udp_t )
 } nt_skb_t;
-
-//存储在红黑树中的连接
-typedef struct {
-    u_int16_t port;
-    nt_connection_t *conn;
-    nt_skb_t *skb;
-    int fd ; //连接中server的fd
-} nt_acc_session_t;
 
 
 typedef struct {
@@ -95,9 +90,31 @@ typedef struct {
 } nt_acc_socks5_auth_t;
 
 
+//存储在红黑树中的连接
+typedef struct {
+
+    nt_connection_t     *connection;
+    off_t               received;
+    time_t              start_sec;
+    nt_msec_t           start_msec;
+    nt_log_handler_pt   log_handler;
+
+    nt_upstream_socks_t *ss;
+
+    u_int16_t           port;
+    nt_connection_t     *conn;
+    nt_skb_t            *skb;
+    int fd ; 
+} nt_acc_session_t;
 
 
-int ip_create( nt_skb_t *skb , struct iphdr *ih);
+
+int acc_tcp_ip_create(   nt_buf_t *b, nt_skb_tcp_t *tcp );
+void acc_tcp_psh_create( nt_buf_t *b, nt_skb_tcp_t *tcp );
+
+
+int ip_create( nt_skb_t *skb, struct iphdr *ih );
 nt_connection_t*  ip_input( char *data );
+ nt_int_t nt_tun_socks5_handle_phase( nt_acc_session_t *s );
+void nt_tun_socks5_read_handler( nt_event_t *ev );
 #endif
-

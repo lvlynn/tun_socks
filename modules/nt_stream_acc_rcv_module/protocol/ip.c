@@ -1,5 +1,7 @@
 #include "protocol.h"
 
+//https://blog.csdn.net/KgdYsg/article/details/89106024
+
 unsigned long chk( const unsigned  short * data, int size )
 {
 
@@ -81,7 +83,7 @@ int ip_create( nt_skb_t *skb, struct iphdr *ih )
         break;
     }
 
-    /* debug( "skb->buf_len=%d", skb->buf_len ); */
+    debug( "skb->buf_len=%d", skb->buf_len );
 
     b = skb->buffer;
     /* b->last = b->start;
@@ -111,6 +113,45 @@ int ip_create( nt_skb_t *skb, struct iphdr *ih )
     pkg_ih->check = chksum( b->start, sizeof( struct iphdr ), IP_CHK );
     return 0;
 }
+
+
+int acc_tcp_ip_create(   nt_buf_t *b, nt_skb_tcp_t *tcp )
+{
+
+    tcp->tot_len = 20 + 20 +  tcp->data_len;
+
+    debug( "skb->buf_len=%d", tcp->tot_len );
+
+    /* b = skb->buffer; */
+    /* b->last = b->start;
+    b->pos = b->start; */
+
+//     memset( b->start, 0, skb->buf_len   );
+    struct iphdr *pkg_ih = ( struct iphdr * )b->start;
+    /* b->last += sizeof( struct iphdr ); */
+
+    pkg_ih->version = 0x4;
+    pkg_ih->ihl = sizeof( struct iphdr ) / 4;
+    pkg_ih->tos = 0x10;
+    pkg_ih->tot_len = htons( tcp->tot_len );
+    pkg_ih->id = 0;
+    pkg_ih->frag_off = 0;
+    pkg_ih->ttl = 64;
+    pkg_ih->protocol = 0x6;
+
+    pkg_ih->daddr = tcp->sip;
+    pkg_ih->saddr = tcp->dip;
+
+    /* pkg_ih->daddr = ih->daddr;
+    pkg_ih->saddr = ih->saddr;
+ */
+
+    pkg_ih->check = 0;
+    pkg_ih->check = chksum( b->start, sizeof( struct iphdr ), IP_CHK );
+    return 0;
+}
+
+
 
 
 

@@ -35,7 +35,8 @@ u_int16_t tcp_get_port( char *pkg, u_int8_t direction )
     else
         port = th->dest;
 
-    return ntohs( port ) ;
+    return  port  ;
+    /* return ntohs( port ) ; */
 }
 
 
@@ -253,7 +254,7 @@ void tcp_init( nt_connection_t *c )
 uint8_t tcp_phase( nt_skb_tcp_t *tcp, struct tcphdr *th )
 {
     uint8_t phase ;
-    debug( "tcp phase len=%d", tcp->data_len );
+    /* debug( "tcp phase len=%d", tcp->data_len ); */
 
     if( tcp->data_len == 0 ) {
 
@@ -266,7 +267,7 @@ uint8_t tcp_phase( nt_skb_tcp_t *tcp, struct tcphdr *th )
 
         //ack 第二包的ack或 FIN的ack
         if( th->ack == 1 && th->syn == 0 && th->fin == 0 ) {
-            debug( "tcp->phase ack %d", tcp->phase );
+            /* debug( "tcp->phase ack %d", tcp->phase ); */
             if( tcp->phase == TCP_PHASE_CONN_FREE ) {
                 return NT_DONE;
             }
@@ -303,6 +304,8 @@ void tcp_create( nt_skb_t *skb, struct iphdr *ih, struct tcphdr *th )
     b->last = b->start;
     b->pos = b->start;
 
+
+    /* memset( b->start , 0 , 1500 ); */
     //不知道为什么，不清空的话，会出现请求curl baidu.com 数据只有一半
     /* memset( b->start + 1329, 0, 1500 - 1329 ); */
     tcp = skb->data;
@@ -313,6 +316,7 @@ void tcp_create( nt_skb_t *skb, struct iphdr *ih, struct tcphdr *th )
 //    b->last += sizeof( struct iphdr );
     struct tcphdr * pkg_th = ( struct tcphdr * ) b->last;
 
+    memset( pkg_th, 0 ,  th->doff << 2 );
     b->last += sizeof( struct tcphdr );
     pkg_th->source  = th->dest;                            // tcp source port
     pkg_th->dest = th->source;                          // tcp dest port
@@ -406,7 +410,7 @@ void tcp_create( nt_skb_t *skb, struct iphdr *ih, struct tcphdr *th )
     pkg_th->urg_ptr   = 0;
 
     //保存当前 seq , ack 和载荷长度，给下一次使用
-    tcp->payload_len = tcp->data_len;
+    /* tcp->payload_len = tcp->data_len; */
 
     tcp->seq =  pkg_th->seq ;
     tcp->ack_seq =  pkg_th->ack_seq ;
@@ -468,9 +472,7 @@ int tcp_input( nt_connection_t *c )
 
 
     //执行回复动作
-    tcp_phase_handle( c );
-
-
+    tcp_phase_handle( c, tcp );
 }
 
 
@@ -597,6 +599,15 @@ int tcp_direct_server( nt_connection_t *c )
 
 }
 
+
+
+// socks connect
+int tcp_phase_socks_connect(  nt_connection_t *c ){
+
+    //先进行 上游 socks5的认证连接
+    nt_stream_init_socks5_upstream( c );
+}
+
 int tcp_phase_proxy_socks( nt_connection_t *c )
 {
     debug( "++++++++++++++tcp_phase_proxy_socks+++++++++++++" );
@@ -604,9 +615,31 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
     nt_skb_t *skb;
     nt_skb_tcp_t *tcp;
     int ret;
-    const char path[] = "/tmp/nt.socks5.sock";
     int fd;
+
+    tcp_phase_socks_connect(c);
+
+    s = c->data;
+
+    s->ss->phase = SOCKS5_VERSION_REQ ; 
+
+        
+    nt_tun_socks5_handle_phase( s );
+
+
+
+    return NT_OK;
+
+#if 0
+    const char path[] = "/tmp/nt.socks5.sock";
     struct sockaddr_un server_addr;
+#else
+    struct sockaddr_in server_addr;
+
+    server_addr.sin_family =AF_INET;
+    server_addr.sin_addr.s_addr = inet_addr( "172.16.254.157"  );
+    server_addr.sin_port =  htons( 1080  );
+#endif 
     ssize_t size ;
 
     s = c->data;
@@ -626,11 +659,9 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
     //未发起过连接
     if( s->fd == 0 ) {
 
-        fd = socket( AF_UNIX, SOCK_STREAM, 0 );
+        fd = socket( AF_INET, SOCK_STREAM, 0 );
 
         debug( "new fd = %d", fd );
-        server_addr.sun_family = AF_UNIX;
-        strcpy( server_addr.sun_path, path );
 
 
         if( connect( fd, ( struct sockaddr * )&server_addr, sizeof( server_addr ) ) == -1 ) {
@@ -654,7 +685,7 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
         asa.domain = 4;   //ipv4
         asa.protocol = 1; // 1 tcp
 
-#if 0
+#if 1
         asa.server_ip = inet_addr( "172.16.254.157" );
         asa.server_port = htons( 1080 );
         strcpy( asa.user, "test" );
@@ -722,109 +753,6 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
     if( ret < 0 )
         return TCP_PHASE_NULL;
 
-    #if 0
-    //填充发送内容
-    nt_tcp_socks_t  tcp_socks;
-    tcp_socks.type = 2;
-    tcp_socks.domain = 4;
-    tcp_socks.protocol = 1;
-
-    debug( "seq=%u", ntohl( tcp->seq ) );
-    debug( "ack=%u", ntohl( tcp->ack_seq ) );
-
-    tcp_socks.seq = tcp->seq;
-    tcp_socks.ack = tcp->ack_seq;
-
-    tcp_socks.server_ip = inet_addr( "172.16.254.157" );
-    tcp_socks.server_port = htons( "1080" );
-
-    strcpy( tcp_socks.user, "test" );
-    strcpy( tcp_socks.password, "test" );
-
-    //源码ip打印出来不对
-    struct sockaddr_in *addr;
-    addr = ( struct sockaddr_in * )tcp->src;
-    tcp_socks.sip = addr->sin_addr.s_addr;
-    //tcp_socks.sip = ih->saddr;
-    tcp_socks.sport =  addr->sin_port;
-
-
-    addr = ( struct sockaddr_in * )tcp->dst;
-    tcp_socks.dip = addr->sin_addr.s_addr;
-    tcp_socks.dport = addr->sin_port;
-
-
-    debug( "sip=%u.%u.%u.%u:%d", IP4_STR( tcp_socks.sip ), ntohs( tcp_socks.sport ) );
-
-    tcp_socks.data_len =  tcp->data_len ;
-    debug( " size  = %d",  tcp_socks.data_len );
-    tcp->data = c->buffer->start + skb->iphdr_len + tcp->hdr_len ;
-    memcpy( tcp_socks.data, tcp->data,  tcp_socks.data_len );
-    //  tcp_socks.data = tcp->data ;
-    //debug( " buf  = %s",  tcp_socks.data );
-
-
-    size = sizeof( nt_tcp_socks_t ) - 1500  + tcp_socks.data_len;
-    debug( " size  = %d", size );
-
-    //发送
-    ret = send( fd, ( void * )&tcp_socks, size, 0 );
-
-    debug( " ret  = %d", ret );
-    if( ret < 0 )
-        return TCP_PHASE_NULL;
-
-    #endif
-    return TCP_PHASE_NULL;
-
-//    char buf[1452] = {0};
-    char buf[568] = {0};
-    int len = 0;
-
-    int have_send_ack = 0;
-//    in.sin_family = AF_INET;
-
-    tcp->payload_len = 0;
-
-    do {
-        ret = recv( fd, buf, sizeof( buf ), 0 );
-        debug( "ret=%d, buf=%s", ret, buf );
-
-        //send playload
-        if( 0 >= ret ) {
-            if( ( 0 > ret ) && ( EAGAIN == errno ) )
-                return 0;
-            else
-                return -1;
-        } else {
-            tcp->data = buf ;
-            tcp->data_len = ret;
-
-            debug( "ret= %d, buf size=%d", ret, sizeof( buf ) );
-            if( ret != sizeof( buf ) ) {
-                tcp->phase = TCP_PHASE_SEND_PSH_END;
-            } else
-                tcp->phase = TCP_PHASE_SEND_PSH;
-
-            //tcp_phase_send_response( c  );
-            tcp_create( skb, ih, th );
-            ssize_t size = skb->buffer->last - skb->buffer->start;
-
-            debug( "size=%d",  size );
-            write( c->fd, skb->buffer->start, size );
-
-            if( ret != sizeof( buf ) )
-                break ;
-        }
-
-
-    } while( ret > 0 );
-
-    close( fd );
-    debug( "+++++++++++++++end+++++++++++++" );
-
-
-    return TCP_PHASE_NULL;
 }
 
 int tcp_phase_send_response( nt_connection_t *c )
@@ -863,7 +791,6 @@ int tcp_phase_send_response( nt_connection_t *c )
         ret = tcp_output( c );
     }
 
-
     if( ret < 0 )
         return TCP_PHASE_NULL;
 
@@ -882,28 +809,13 @@ int tcp_phase_send_response( nt_connection_t *c )
 
 
 
-int tcp_phase_handle( nt_connection_t *c )
+int tcp_phase_handle( nt_connection_t *c , nt_skb_tcp_t *tcp)
 {
-    nt_acc_session_t *s ;
-    nt_skb_t *skb;
-    nt_skb_tcp_t *tcp;
-    nt_buf_t *b;
-    struct iphdr *ih;
-    struct tcphdr *th;
     u_int8_t ret;
-
-    b = c->buffer;
-    s = c->data;
-    skb = s->skb;
-    tcp = skb->data;
-    ih = ( struct iphdr * )b->start;
-    th = ( struct tcphdr * )( ih + 1 );
-
-
 
     while( tcp->phase ) {
 
-//        debug( "tcp->phase=%d", tcp->phase );
+        debug( "tcp->phase=%d", tcp->phase );
 
         switch( tcp->phase ) {
         case TCP_PHASE_SYN:
@@ -997,11 +909,98 @@ int  tcp_output( nt_connection_t *c )
 //    debug( "phase=%d", tcp->phase );
 
     /* print_pkg( b->start ); */
+    //https://blog.csdn.net/zhang2010kang/article/details/47165801
+    
     ret = write( c->fd, b->start, size );
 
 
-//    debug( "ret=%d", ret );
+    debug( "ret=%d", ret );
 }
+
+
+/*
+ * 构造回应数据包
+ * tcp 下载后直接回复
+ *
+ * */
+void acc_tcp_psh_create( nt_buf_t *b, nt_skb_tcp_t *tcp )
+{
+    acc_tcp_ip_create(  b , tcp );
+
+    struct tcphdr * pkg_th = ( struct tcphdr * ) ( b->start + sizeof( struct iphdr ));
+
+    /* memset( pkg_th, 0 ,  20 ); */
+    /* b->last += sizeof( struct tcphdr ); */
+    pkg_th->source  = tcp->dport;                            // tcp source port
+    pkg_th->dest = tcp->sport;                          // tcp dest port
+
+    //标志位先置零
+    pkg_th->urg = 0;
+    pkg_th->ack = 0;
+    pkg_th->psh = 0;
+    pkg_th->rst = 0;
+    pkg_th->syn = 0;
+    pkg_th->fin = 0;
+
+
+
+    debug( "tcp->payload_len=%d", tcp->payload_len );
+    switch( tcp->phase ) {
+    case TCP_PHASE_SEND_PSH:
+        debug( "--ph--TCP_PHASE_SEND_PSH" );
+        //发送payload阶段，未结束
+        pkg_th->doff = 0x5;
+        pkg_th->ack  = 1;
+        pkg_th->seq = htonl( ntohl( tcp->seq ) + tcp->payload_len )  ;                           // tcp seq   number
+        pkg_th->ack_seq = tcp->ack_seq ;
+
+        /* pkg_th->ack_seq = htonl( ntohl( th->seq ) + payload_len );         // tcp ack number */
+        /* b->last = nt_cpymem( b->last, tcp->data, tcp->data_len ); */
+        break;
+    case TCP_PHASE_SEND_PSH_END:
+        debug( "--ph--TCP_PHASE_SEND_PSH_END" );
+        //发送payload阶段，结束
+        pkg_th->doff = 0x5;
+        pkg_th->ack  = 1;
+        pkg_th->psh  = 1;
+        pkg_th->seq = htonl( ntohl( tcp->seq ) + tcp->payload_len )  ;                          // tcp seq number
+        pkg_th->ack_seq = tcp->ack_seq ;
+        /* pkg_th->ack_seq = htonl( ntohl( th->seq ) + payload_len );       // tcp ack number */
+        /* b->last = nt_cpymem( b->last, tcp->data, tcp->data_len );
+        */
+            memset( b->last, 0, b->end - b->last ); 
+        break;
+    }
+
+
+    /* int i = 0;
+    for( i=20; i< 40;i++  ){
+        debug( "create addr=%p, i=%2x", b->start + i, *( b->start + i ));
+        [>*( b->start + i  ) = 1;<]
+    } */
+
+
+    pkg_th->window    = htons( -1 );
+    pkg_th->check     = 0;
+    pkg_th->urg_ptr   = 0;
+
+    //保存当前 seq , ack 和载荷长度，给下一次使用
+    tcp->payload_len = tcp->data_len;
+
+    tcp->seq =  pkg_th->seq ;
+    tcp->ack_seq =  pkg_th->ack_seq ;
+
+    pkg_th->check     = chksum( b->start, tcp->tot_len, TCP_CHK );
+
+    /* int i = 0; */
+    /* for( i=0; i< 40;i++  ){
+        debug( "create i=%2x", *( b->start + i ));
+    } */
+
+
+}
+
+
 
 
 nt_connection_t* acc_tcp_input( char *data ){
@@ -1013,6 +1012,8 @@ nt_connection_t* acc_tcp_input( char *data ){
     nt_acc_session_t *s;
     nt_skb_t *skb;
 
+    nt_connection_t *c;
+
     ih = ( struct iphdr *  )data;
 
     sport = tcp_get_port( data, TCP_SRC  );
@@ -1020,11 +1021,178 @@ nt_connection_t* acc_tcp_input( char *data ){
     node = rcv_conn_search( &acc_tcp_tree, sport  );
 
     if( node != NULL ){ //存在
-        s = ( nt_acc_session_t *  )node->key;
-        skb = s->skb;
-        return s->conn;
+        debug( "node exist" );
+        c = ( nt_acc_session_t *  )node->key;
+        return c;
     } else{//不存在
+        debug( "node null" );
         return NULL;
     }
 }
+
+
+//判断该tcp包处于哪个阶段
+uint8_t acc_tcp_phase( nt_skb_tcp_t *tcp, struct tcphdr *th )
+{
+	uint8_t phase ;
+	debug( "tcp phase len=%d", tcp->data_len );
+
+	if( tcp->data_len == 0 ) {
+
+        if( th->syn == 1 && th->ack == 0 ){
+            debug( "TCP_PHASE_SYN" );
+			tcp->phase = TCP_PHASE_SYN;
+        }
+
+		if( th->ack == 1 && th->syn == 1 ) {
+			tcp->phase = TCP_PHASE_SYN_ACK;
+		}
+
+		//ack 第二包的ack或 FIN的ack
+		if( th->ack == 1 && th->syn == 0 && th->fin == 0 ) {
+			debug( "tcp->phase ack %d", tcp->phase );
+			if( tcp->phase == TCP_PHASE_CONN_FREE ) {
+				return NT_DONE;
+			}
+
+			tcp->phase = TCP_PHASE_ACK;
+			return NT_ERROR;
+		}
+
+		if( th->fin == 1 )
+			tcp->phase = TCP_PHASE_FIN ;
+
+	} else {
+		debug( "th->psh=%d", th->psh );
+		if( th->psh == 1 ) {
+			tcp->phase = TCP_PHASE_PSH_END ;
+		} else {
+			tcp->phase = TCP_PHASE_PSH ;
+		}
+	}    
+
+	return NT_OK;
+}
+
+
+
+/* 
+	先进行tcp的3次握手
+*/
+nt_connection_t* acc_tcp_handshake( nt_acc_session_t *s ){
+
+	nt_buf_t *b;
+	nt_connection_t *c;
+	struct iphdr *ih;
+    struct tcphdr *th;
+	nt_skb_tcp_t tmp_tcp;
+	nt_skb_tcp_t *tcp;
+	nt_int_t ret;
+    nt_skb_t *skb;
+
+	c =s->connection ;
+	b = c->buffer ;
+
+	ih = ( struct iphdr *) b->start;
+	th = ( struct tcphdr * )( ih + 1 );
+
+    debug( "tcp_len=%d" , b->last - b->start );
+    u_int16_t tcp_len = (b->last - b->start)  - (ih->ihl << 2);
+
+    debug( "tcp_len=%d" ,tcp_len );
+
+    tmp_tcp.data_len = tcp_len - (th->doff << 2);
+
+    debug( "tcp_len=%d" , tmp_tcp.data_len );
+
+    tmp_tcp.phase = 0;
+    ret = acc_tcp_phase( &tmp_tcp, th);
+    if( ret == NT_ERROR ){
+        return NT_ERROR;
+    }
+
+
+
+    //进行首次的初始化
+    if( s->skb == NULL ){
+        
+        skb = nt_palloc( c->pool, sizeof( nt_skb_t ) );
+
+        debug( "skb size=%d", sizeof( nt_skb_t  ) );
+        s->skb = skb;
+        skb->buffer = nt_create_temp_buf( c->pool, 1500  );
+
+        tcp = ( nt_skb_tcp_t *) nt_palloc( c->pool, sizeof( nt_skb_tcp_t ) );
+        skb->data = tcp;
+
+        struct sockaddr *src = ( struct sockaddr *  ) nt_pcalloc( c->pool, sizeof( struct sockaddr  )  );
+        struct sockaddr *dst = ( struct sockaddr *  ) nt_pcalloc( c->pool, sizeof( struct sockaddr  )  );
+        tcp->src = src;
+        tcp->dst = dst;
+
+        tcp->sip = ih->saddr;
+        tcp->dip = ih->daddr;
+
+        tcp->sport = th->source ;
+        tcp->dport = th->dest ;
+
+        struct sockaddr_in *addr ;
+        addr =( struct sockaddr_in * ) src; 
+        addr->sin_family = AF_INET;
+        addr->sin_addr.s_addr = ih->saddr;
+        addr->sin_port = th->source;
+
+        addr =( struct sockaddr_in * ) dst; 
+        addr->sin_family = AF_INET;
+        addr->sin_addr.s_addr = ih->daddr;
+        addr->sin_port = th->dest;
+        
+        tcp->hdr_len = th->doff << 2;
+        tcp->data = NULL;
+        tcp->data_len = 0;
+        tcp->payload_len = 0;
+        tcp->seq = ntohl( 1  );
+        tcp->ack_seq = ntohl( 1  );
+        skb->protocol = ih->protocol ;
+        skb->skb_len = b->last - b->start;
+        skb->iphdr_len = ih->ihl << 2;
+
+        s->port = th->source;
+        nt_connection_rbtree_add( c );
+        s->fd = c->fd;
+
+    } else {
+        tcp = s->skb->data;
+        tcp->data_len = tmp_tcp.data_len;
+        skb = s->skb;
+        skb->skb_len = b->last - b->start;
+        skb->iphdr_len = ih->ihl << 2;
+
+
+        tcp->seq = th->seq;
+        tcp->ack_seq = th->ack_seq;
+
+    }
+
+    tcp->phase = tmp_tcp.phase;
+
+    if(  tcp->phase == TCP_PHASE_PSH_END ){
+        /* debug( " payload=%s", b->start + ( skb->skb_len - tmp_tcp.data_len)) ; */
+    }
+
+	tcp_phase_handle( c , tcp );
+
+    /* debug( "end" ); */
+	/* //从tun 流入的握手阶段的 syn
+	if( th->syn == 1 && th->ack == 0 ){
+		[>tcp->phase = TCP_PHASE_SYN;<]
+		// 需回复 
+	}
+
+	//从tun 流入的握手阶段的 syn 后的ack
+	if( th->ack == 1 && th->syn == 1 ) {
+		[>tcp->phase = TCP_PHASE_SYN_ACK;<]
+	} */
+}
+
 

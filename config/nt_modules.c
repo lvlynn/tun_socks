@@ -11,7 +11,7 @@ extern nt_module_t  nt_stream_module;
 extern nt_module_t  nt_stream_core_module;
 extern nt_module_t  nt_stream_log_module;
 extern nt_module_t  nt_stream_proxy_module;
-extern nt_module_t  nt_stream_socks5_module;
+/* extern nt_module_t  nt_stream_socks5_module; */
 extern nt_module_t  nt_stream_upstream_module;
 
 nt_module_t *nt_modules[] = {
@@ -25,7 +25,7 @@ nt_module_t *nt_modules[] = {
     &nt_stream_core_module,
     &nt_stream_log_module,
     &nt_stream_proxy_module,
-    &nt_stream_socks5_module,
+    /* &nt_stream_socks5_module, */
     &nt_stream_upstream_module,
     NULL
 };
@@ -41,7 +41,7 @@ char *nt_module_names[] = {
     "nt_stream_core_module",
     "nt_stream_log_module",
     "nt_stream_proxy_module",
-    "nt_stream_socks5_module",
+    /* "nt_stream_socks5_module", */
     "nt_stream_upstream_module",
 };
 

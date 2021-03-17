@@ -103,8 +103,34 @@
 
 #define TCP_PHASE_PROXY_SOCKS 32
 
-
+//tcp v4类型
 typedef struct nt_skb_tcp_s {
+    struct sockaddr *src;  //源信息
+    struct sockaddr *dst;  //目的信息
+
+    uint32_t sip;   //源端口
+    uint16_t sport; //源ip
+    uint32_t dip;   //目的端口
+    uint16_t dport; //目的ip
+
+    nt_int_t    tot_len;
+
+    u_int8_t phase; //tcp处于哪个阶段
+    uint16_t hdr_len; //数据包的头部长度
+
+    uint16_t data_len; //数据包的载荷长度
+    char *data ;
+
+
+    uint16_t payload_len; //上一个数据包的载荷长度
+    uint32_t seq ;   //存主机字节序
+    uint32_t ack_seq ;  //存主机字节序
+
+} nt_skb_tcp_t;
+
+
+//tcp v6类型
+typedef struct nt_skb_tcp6_s {
     struct sockaddr *src;  //源信息
     struct sockaddr *dst;  //目的信息
 
@@ -119,8 +145,8 @@ typedef struct nt_skb_tcp_s {
     uint32_t seq ;   //存主机字节序
     uint32_t ack_seq ;  //存主机字节序
 
-   
-} nt_skb_tcp_t;
+} nt_skb_tcp6_t;
+
 
 
 typedef struct{
@@ -164,7 +190,7 @@ void tcp_rbtree( nt_connection_t *c );
 
 int tcp_input( nt_connection_t *c );
 int  tcp_output( nt_connection_t *c );
-int tcp_phase_handle( nt_connection_t *c  );
+int tcp_phase_handle( nt_connection_t *c , nt_skb_tcp_t *tcp);
 
 
 

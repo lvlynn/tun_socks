@@ -899,10 +899,7 @@ int tcp_phase_handle( nt_connection_t *c )
     ih = ( struct iphdr * )b->start;
     th = ( struct tcphdr * )( ih + 1 );
 
-
-
     while( tcp->phase ) {
-
 //        debug( "tcp->phase=%d", tcp->phase );
 
         switch( tcp->phase ) {

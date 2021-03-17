@@ -15,6 +15,13 @@ $(PWD)/objs/modules/nt_stream_acc_rcv_module/nt_stream_acc_rcv_module.o:  $(CORE
 		-o $(PWD)/objs/modules/nt_stream_acc_rcv_module/nt_stream_acc_rcv_module.o \
 		$(PWD)/modules/nt_stream_acc_rcv_module/nt_stream_acc_rcv_module.c
 
+$(PWD)/objs/modules/nt_stream_acc_rcv_module/nt_tun_acc_handler.o:  $(CORE_DEPS) \
+	$(PWD)/modules/nt_stream_acc_rcv_module/nt_tun_acc_handler.c
+	$(CC) -c $(CFLAGS) $(NT_INCLUDE) \
+		-o $(PWD)/objs/modules/nt_stream_acc_rcv_module/nt_tun_acc_handler.o \
+		$(PWD)/modules/nt_stream_acc_rcv_module/nt_tun_acc_handler.c
+
+
 $(PWD)/objs/modules/nt_stream_acc_rcv_module/tun.o:  $(CORE_DEPS) \
 	$(PWD)/modules/nt_stream_acc_rcv_module/tun.c
 	$(CC) -c $(CFLAGS) $(NT_INCLUDE) \
@@ -38,6 +45,20 @@ $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/tcp.o:  $(CORE_DEPS) \
 	$(CC) -c $(CFLAGS) $(NT_INCLUDE) \
 		-o $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/tcp.o \
 		$(PWD)/modules/nt_stream_acc_rcv_module/protocol/tcp.c
+
+$(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/socks5.o:  $(CORE_DEPS) \
+	$(PWD)/modules/nt_stream_acc_rcv_module/protocol/socks5.c
+	$(CC) -c $(CFLAGS) $(NT_INCLUDE) \
+		-o $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/socks5.o \
+		$(PWD)/modules/nt_stream_acc_rcv_module/protocol/socks5.c
+
+$(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/forward.o:  $(CORE_DEPS) \
+	$(PWD)/modules/nt_stream_acc_rcv_module/protocol/forward.c
+	$(CC) -c $(CFLAGS) $(NT_INCLUDE) \
+		-o $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/forward.o \
+		$(PWD)/modules/nt_stream_acc_rcv_module/protocol/forward.c
+
+
 
 endif
 

@@ -16,10 +16,13 @@ ifeq ($(NT_HAVE_MODULE_ACC_RCV),y)
 
 NT_MODULES_INC += -I $(PWD)/modules/nt_stream_acc_rcv_module 
 NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/nt_stream_acc_rcv_module.o
+NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/nt_tun_acc_handler.o 
 NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/tun.o 
 NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/rbtree.o 
 NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/ip.o 
 NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/tcp.o 
+NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/socks5.o 
+NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/forward.o 
 
 endif
 

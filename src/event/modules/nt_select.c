@@ -288,6 +288,7 @@ static nt_int_t nt_select_process_events( nt_cycle_t *cycle, nt_msec_t  timer,nt
     work_write_fd_set = master_write_fd_set;
 
     ready = select( max_fd + 1, &work_read_fd_set, &work_write_fd_set, NULL, tp );
+    debug( "come in select" );
 
     err = ( ready == -1 ) ? nt_errno : 0;
 

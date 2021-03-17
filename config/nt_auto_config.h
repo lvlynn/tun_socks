@@ -147,6 +147,11 @@
     #define NT_HAVE_ACC_RCV 1
 #endif
 
+//允许设置socket 阻塞，非阻塞
+/* #ifndef NT_HAVE_FIONBIO
+    #define NT_HAVE_FIONBIO 1
+#endif
+ */
 
 
 #endif

@@ -413,10 +413,6 @@ nt_int_t nt_event_process_init( nt_cycle_t *cycle )
 #endif
 
 
-
-
-
-
     nt_queue_init( &nt_posted_accept_events );
     nt_queue_init( &nt_posted_events );
     //初始化计数器，此处将会创建一颗红黑树，来维护计时器，之后会详细讲解

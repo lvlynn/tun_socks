@@ -30,6 +30,7 @@ nt_create_pool( size_t size, nt_log_t *log )
     p->d.next = NULL;
     p->d.failed = 0;
 
+    /* debug( "size=%d", size ); */
     size = size - sizeof( nt_pool_t );
     p->max = ( size < NT_MAX_ALLOC_FROM_POOL ) ? size : NT_MAX_ALLOC_FROM_POOL;
 

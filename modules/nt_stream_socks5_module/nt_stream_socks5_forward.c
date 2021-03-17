@@ -4,8 +4,8 @@
 #include "nt_stream_socks5_module.h"
 #include "nt_stream_socks5_raw.h"
 
-//重做 inet_ntoa， 可直接打印 uint32_t 的ip，而不用重新构造 struct sin_addr
-#define nt_inet_ntoa( a )  inet_ntoa( *( struct in_addr *)(&a))
+// 重做 inet_ntoa， 可直接打印 uint32_t 的ip，而不用重新构造 struct sin_addr
+// #define nt_inet_ntoa( a )  inet_ntoa( *( struct in_addr *)(&a))
 
 /*
 //            c->read->ready = 1;
