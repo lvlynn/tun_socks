@@ -509,7 +509,7 @@ nt_int_t nt_event_process_init( nt_cycle_t *cycle )
 
 
     //创建与连接同个数的一个读事件数组
-#if 0
+#if 1
     cycle->read_events = nt_palloc( cycle->pool, sizeof( nt_event_t ) * cycle->connection_n );
 #else
     cycle->read_events = nt_alloc(  sizeof( nt_event_t ) * cycle->connection_n , cycle->log);
@@ -525,7 +525,7 @@ nt_int_t nt_event_process_init( nt_cycle_t *cycle )
     }
 
     //创建创建与连接同个数的一个写事件数组
-#if 0
+#if 1
     cycle->write_events = nt_palloc( cycle->pool, sizeof( nt_event_t ) * cycle->connection_n );
 #else
     cycle->write_events = nt_alloc(  sizeof( nt_event_t ) * cycle->connection_n , cycle->log);
@@ -543,7 +543,7 @@ nt_int_t nt_event_process_init( nt_cycle_t *cycle )
 
     #if (NT_SSL && NT_SSL_ASYNC)
     //创建创建与连接同个数的一个异步事件数组
-#if 0
+#if 1
     cycle->async_events = nt_palloc( cycle->pool, sizeof( nt_event_t ) * cycle->connection_n );
 #else
     cycle->async_events = nt_alloc(  sizeof( nt_event_t ) * cycle->connection_n , cycle->log);

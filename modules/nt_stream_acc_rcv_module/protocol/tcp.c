@@ -132,6 +132,7 @@ void tcp_free( nt_connection_t *c )
 
 }
 
+#if 0
 void tcp_init( nt_connection_t *c )
 {
     u_int16_t sport ;
@@ -290,135 +291,9 @@ uint8_t tcp_phase( nt_skb_tcp_t *tcp, struct tcphdr *th )
 
     return NT_OK;
 }
+#endif
 
-/*
- * 构造回应数据包
- * */
-void tcp_create( nt_skb_t *skb, struct iphdr *ih, struct tcphdr *th )
-{
-    nt_skb_tcp_t *tcp;
-    nt_buf_t *b;
-
-    //初始化
-    b = skb->buffer;  //
-    b->last = b->start;
-    b->pos = b->start;
-
-
-    /* memset( b->start , 0 , 1500 ); */
-    //不知道为什么，不清空的话，会出现请求curl baidu.com 数据只有一半
-    /* memset( b->start + 1329, 0, 1500 - 1329 ); */
-    tcp = skb->data;
-
-    ip_create( skb, ih );
-
-//    struct iphdr * pkg_ih  = ( struct iphdr * ) b->start ;
-//    b->last += sizeof( struct iphdr );
-    struct tcphdr * pkg_th = ( struct tcphdr * ) b->last;
-
-    memset( pkg_th, 0 ,  th->doff << 2 );
-    b->last += sizeof( struct tcphdr );
-    pkg_th->source  = th->dest;                            // tcp source port
-    pkg_th->dest = th->source;                          // tcp dest port
-
-    //标志位先置零
-    pkg_th->urg = 0;
-    pkg_th->ack = 0;
-    pkg_th->psh = 0;
-    pkg_th->rst = 0;
-    pkg_th->syn = 0;
-    pkg_th->fin = 0;
-
-    uint8_t iphdr_len = ih->ihl << 2;
-    uint8_t tcphdr_len = th->doff << 2;
-
-    uint16_t payload_len = skb->skb_len - iphdr_len - tcphdr_len ;
-
-    switch( tcp->phase ) {
-    case TCP_PHASE_SYN:
-    case TCP_PHASE_SEND_SYN_ACK:
-        debug( "--ph--TCP_PHASE_SEND_SYN_ACK" );
-        //SYN 回复 SYN ACK
-        pkg_th->doff = ( skb->skb_len - iphdr_len ) / 4;
-        pkg_th->syn  = 1;
-        pkg_th->ack  = 1;
-        pkg_th->seq = th->ack_seq;
-        pkg_th->ack_seq = htonl( ntohl( th->seq ) + 1 );
-        //memcpy( pkg_th + 1, th + 1, tcp->hdr_len - 20   );  //syn 回应需要带上option
-        memcpy( pkg_th + 1, th + 1, tcphdr_len  - 20 );   //syn 回应需要带上option
-        b->last += ( tcphdr_len  - 20 );
-        break;
-    case TCP_PHASE_PSH:
-    //接收payload阶段，未结束
-    case TCP_PHASE_PSH_END:
-    case TCP_PHASE_SEND_PSH_ACK:
-        debug( "--ph--TCP_PHASE_SEND_PSH_ACK" );
-        //接收payload阶段，结束
-        pkg_th->doff = 0x5;
-        pkg_th->ack  = 1;
-        pkg_th->seq = th->ack_seq;
-        pkg_th->ack_seq = htonl( ntohl( th->seq ) + payload_len );
-        break;
-
-    case TCP_PHASE_SEND_PSH:
-        debug( "--ph--TCP_PHASE_SEND_PSH" );
-        //发送payload阶段，未结束
-        pkg_th->doff = 0x5;
-        pkg_th->ack  = 1;
-        /* debug( "TCP_SEND_PAYLOAD seq=%u", ntohl( tcp->seq ) ); */
-        pkg_th->seq = htonl( ntohl( tcp->seq ) + tcp->payload_len )  ;                           // tcp seq   number
-        /* debug( "TCP_SEND_PAYLOAD seq=%u", ntohl( tcp->seq ) ); */
-        /* debug( "TCP_SEND_PAYLOAD conn->odt->payload_len=%d", tcp->payload_len ); */
-        pkg_th->ack_seq = htonl( ntohl( th->seq ) + payload_len );         // tcp ack number
-        //memcpy( pkg_th + 1, tcp->data, tcp->data_len   ); //发送payload
-        b->last = nt_cpymem( b->last, tcp->data, tcp->data_len );
-        //        b->last += tcp->data_len;
-        break;
-    case TCP_PHASE_SEND_PSH_END:
-        debug( "--ph--TCP_PHASE_SEND_PSH_END" );
-        //发送payload阶段，结束
-        pkg_th->doff = 0x5;
-        pkg_th->ack  = 1;
-        pkg_th->psh  = 1;
-        pkg_th->seq = htonl( ntohl( tcp->seq ) + tcp->payload_len )  ;                          // tcp seq number
-        /* debug( "TCP_SEND_PAYLOAD_END seq=%u", ntohl( tcp->seq ) ); */
-        /* debug( "TCP_SEND_PAYLOAD_END conn->odt->payload_len=%d", tcp->payload_len ); */
-        pkg_th->ack_seq = htonl( ntohl( th->seq ) + payload_len );       // tcp ack number
-        // memcpy( pkg_th + 1, tcp->data, tcp->data_len  ); //发送payload
-        //  b->last += tcp->data_len;
-        b->last = nt_cpymem( b->last, tcp->data, tcp->data_len );
-        memset( b->last, 0, b->end - b->last ); 
-        break;
-    case TCP_PHASE_SEND_FIN: //主动回 FIN
-    case TCP_PHASE_SEND_FIN_ACK:  //收到FIN ACK, 回应 ACK
-        debug( "--ph--TCP_PHASE_SEND_FIN_ACK" );
-        pkg_th->doff = 0x5;
-        pkg_th->ack  = 1;                                   // ack标识位
-        if( tcp->phase == TCP_PHASE_SEND_FIN )
-            pkg_th->fin  = 1;
-        pkg_th->seq = th->ack_seq;                             // tcp seq number
-
-        /* debug( "before-->pkg_th->seq=%u", ntohl( pkg_th->seq ) ); */
-        /* debug( "before-->th->seq=%u", ntohl( th->seq ) ); */
-        pkg_th->ack_seq = htonl( ntohl( th->seq ) + 1 );       // tcp ack number
-        break;
-
-    }
-
-    pkg_th->window    = htons( -1 );
-    pkg_th->check     = 0;
-    pkg_th->urg_ptr   = 0;
-
-    //保存当前 seq , ack 和载荷长度，给下一次使用
-    /* tcp->payload_len = tcp->data_len; */
-
-    tcp->seq =  pkg_th->seq ;
-    tcp->ack_seq =  pkg_th->ack_seq ;
-
-    pkg_th->check     = chksum( b->start, skb->buf_len, TCP_CHK );
-
-}
-
+#if 0 
 //对进入的tcp数据做处理。
 //需进行三次握手的欺骗
 int tcp_input( nt_connection_t *c )
@@ -474,7 +349,7 @@ int tcp_input( nt_connection_t *c )
     //执行回复动作
     tcp_phase_handle( c, tcp );
 }
-
+#endif
 
 int tcp_direct_server( nt_connection_t *c )
 {
@@ -534,7 +409,7 @@ int tcp_direct_server( nt_connection_t *c )
     int have_send_ack = 0;
 //    in.sin_family = AF_INET;
 
-    tcp->payload_len = 0;
+    tcp->last_len = 0;
 
 /* #define SEND_USE_TUN_FD 1 */
 
@@ -617,11 +492,13 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
     int ret;
     int fd;
 
-    tcp_phase_socks_connect(c);
-
     s = c->data;
+    if( s->ss == NULL ){
+        tcp_phase_socks_connect(c);
+        s->ss->phase = SOCKS5_VERSION_REQ ; 
+    }
 
-    s->ss->phase = SOCKS5_VERSION_REQ ; 
+
 
         
     nt_tun_socks5_handle_phase( s );
@@ -721,8 +598,8 @@ int tcp_phase_proxy_socks( nt_connection_t *c )
     /* sleep(1); */
     //构造tcp 的seq ack 和载荷， 并进行发送
     nt_acc_tcp_t at;
-    at.seq = tcp->seq;
-    at.ack = tcp->ack_seq;
+    at.seq = tcp->last_seq;
+    at.ack = tcp->last_ack;
     debug( "seq=%u, ack=%u", ntohl( at.seq ), ntohl( at.ack ) );
 
     at.data_len =  tcp->data_len ;
@@ -781,22 +658,35 @@ int tcp_phase_send_response( nt_connection_t *c )
     tcp_create( skb, ih, th );
 
     addr = ( struct sockaddr_in * )tcp->src;
-    /* debug( "sip=%u.%u.%u.%u:%d", IP4_STR( addr->sin_addr.s_addr ), ntohs( addr->sin_port ) ); */
+    debug( "sip=%u.%u.%u.%u:%d", IP4_STR( addr->sin_addr.s_addr ), ntohs( addr->sin_port ) );
 
 
-    ret = tcp_output( c );
+    ret = tcp_output( s );
 
     if( ret < 0 ) {
         debug( "tcp_phase_send_response ret =%d \n", ret );
-        ret = tcp_output( c );
+        ret = tcp_output( s );
     }
 
     if( ret < 0 )
         return TCP_PHASE_NULL;
 
+
+    debug( "tcp->close=%d", tcp->close );
+    if( (tcp->close == 1) && (tcp->phase == TCP_PHASE_SEND_FIN )){
+        return TCP_PHASE_NULL ;
+    }
+
+    if( (tcp->close == 1) && (tcp->phase == TCP_PHASE_SEND_FIN_ACK )){
+        return TCP_PHASE_CONN_FREE ;
+    }
+
+
+
     if( tcp->phase == TCP_PHASE_SEND_PSH_ACK )
         /* return TCP_PHASE_PROXY_DIRECT; */
     return TCP_PHASE_PROXY_SOCKS;
+
     else if( tcp->phase == TCP_PHASE_SEND_FIN_ACK )
         return TCP_PHASE_SEND_FIN;
     else if( tcp->phase == TCP_PHASE_SEND_FIN ) {
@@ -808,14 +698,29 @@ int tcp_phase_send_response( nt_connection_t *c )
 }
 
 
+int tcp_close_client( nt_acc_session_t *s ){
+
+    nt_connection_t *c;
+    nt_skb_tcp_t *tcp;
+
+    c = s->connection ;
+    tcp = s->skb->data;
+
+    //主动关闭， 所以需要设置为1
+    tcp->close = 1;
+    tcp->phase = TCP_PHASE_SEND_FIN ;
+    
+    tcp_phase_handle( c, tcp );
+} 
 
 int tcp_phase_handle( nt_connection_t *c , nt_skb_tcp_t *tcp)
 {
     u_int8_t ret;
+    nt_acc_session_t *s;
 
     while( tcp->phase ) {
 
-        debug( "tcp->phase=%d", tcp->phase );
+        /* debug( "tcp->phase=%d", tcp->phase ); */
 
         switch( tcp->phase ) {
         case TCP_PHASE_SYN:
@@ -875,10 +780,19 @@ int tcp_phase_handle( nt_connection_t *c , nt_skb_tcp_t *tcp)
             debug( "TCP_PHASE_CONN_FREE" );
             //tcp_free( c );
             //tcp->phase = TCP_PHASE_NULL;
+            
+            nt_tun_close_session( c ); 
             return tcp->phase;
             break;
+        case TCP_PHASE_RST:
+
+            /* s =c->data; */
+            /* nt_acc_session_finalize( s ); */
+            nt_tun_close_session( c ); 
+
+            return TCP_PHASE_CONN_FREE;
         default:
-            debug( "TCP_PHASE_NULL" );
+            /* debug( "TCP_PHASE_NULL" ); */
             tcp->phase = TCP_PHASE_NULL;
             break;
         }
@@ -891,31 +805,169 @@ int tcp_phase_handle( nt_connection_t *c , nt_skb_tcp_t *tcp)
 
 
 
-int  tcp_output( nt_connection_t *c )
+int  tcp_output( nt_acc_session_t *s )
 {
-    nt_acc_session_t *s ;
-    nt_skb_t *skb;
-    nt_skb_tcp_t *tcp;
+    /* nt_acc_session_t *s ; */
+    /* nt_skb_t *skb; */
+    /* nt_skb_tcp_t *tcp; */
     int ret;
 
-    s = c->data;
-    skb = s->skb;
-    tcp = skb->data;
+    /* s = c->data; */
+    /* skb = s->skb; */
+    /* tcp = skb->data; */
 
     nt_buf_t *b;
-    b = skb->buffer;
+    b = s->skb->buffer;
     ssize_t size = b->last - b->start;
     debug( "send size=%d", size );
 //    debug( "phase=%d", tcp->phase );
 
     /* print_pkg( b->start ); */
     //https://blog.csdn.net/zhang2010kang/article/details/47165801
-    
-    ret = write( c->fd, b->start, size );
+
+    /* debug( "c->fd=%d",  c->fd ); */
+    ret = write( s->fd, b->start, size );
+
+/* #if SEND_USE_TUN_FD 
+    ret = write( s->fd, b->start, size );
+#else
+    ret = sendto( tcp->fd, b->start,  size, 0, tcp->src, sizeof( struct sockaddr ) );
+#endif */
 
 
     debug( "ret=%d", ret );
 }
+
+/*
+ * 构造回应数据包
+ * */
+void tcp_create( nt_skb_t *skb, struct iphdr *ih, struct tcphdr *th )
+{
+    nt_skb_tcp_t *tcp;
+    nt_buf_t *b;
+
+    //初始化
+    b = skb->buffer;  //
+    b->last = b->start;
+    b->pos = b->start;
+
+
+    /* memset( b->start , 0 , 1500 ); */
+    //不知道为什么，不清空的话，会出现请求curl baidu.com 数据只有一半
+    /* memset( b->start + 1329, 0, 1500 - 1329 ); */
+    tcp = skb->data;
+
+    ip_create( skb, ih );
+
+//    struct iphdr * pkg_ih  = ( struct iphdr * ) b->start ;
+//    b->last += sizeof( struct iphdr );
+    struct tcphdr * pkg_th = ( struct tcphdr * ) b->last;
+
+    memset( pkg_th, 0 ,  th->doff << 2 );
+    b->last += sizeof( struct tcphdr );
+    pkg_th->source  = th->dest;                            // tcp source port
+    pkg_th->dest = th->source;                          // tcp dest port
+
+    //标志位先置零
+    pkg_th->urg = 0;
+    pkg_th->ack = 0;
+    pkg_th->psh = 0;
+    pkg_th->rst = 0;
+    pkg_th->syn = 0;
+    pkg_th->fin = 0;
+
+    uint8_t iphdr_len = ih->ihl << 2;
+    uint8_t tcphdr_len = th->doff << 2;
+
+    uint16_t payload_len = skb->skb_len - iphdr_len - tcphdr_len ;
+
+    switch( tcp->phase ) {
+    case TCP_PHASE_SYN:
+    case TCP_PHASE_SEND_SYN_ACK:
+        debug( "--ph--TCP_PHASE_SEND_SYN_ACK" );
+        //SYN 回复 SYN ACK
+        pkg_th->doff = ( skb->skb_len - iphdr_len ) / 4;
+        pkg_th->syn  = 1;
+        pkg_th->ack  = 1;
+        pkg_th->seq = th->ack_seq;
+        pkg_th->ack_seq = htonl( ntohl( th->seq ) + 1 );
+        //memcpy( pkg_th + 1, th + 1, tcp->hdr_len - 20   );  //syn 回应需要带上option
+        memcpy( pkg_th + 1, th + 1, tcphdr_len  - 20 );   //syn 回应需要带上option
+        b->last += ( tcphdr_len  - 20 );
+        break;
+    case TCP_PHASE_PSH:
+    //接收payload阶段，未结束
+    case TCP_PHASE_PSH_END:
+    case TCP_PHASE_SEND_PSH_ACK:
+        debug( "--ph--TCP_PHASE_SEND_PSH_ACK" );
+        //接收payload阶段，结束
+        pkg_th->doff = 0x5;
+        pkg_th->ack  = 1;
+        pkg_th->seq = th->ack_seq;
+        pkg_th->ack_seq = htonl( ntohl( th->seq ) + payload_len );
+        break;
+
+    case TCP_PHASE_SEND_PSH:
+        debug( "--ph--TCP_PHASE_SEND_PSH" );
+        //发送payload阶段，未结束
+        pkg_th->doff = 0x5;
+        pkg_th->ack  = 1;
+        /* debug( "TCP_SEND_PAYLOAD seq=%u", ntohl( tcp->seq ) ); */
+        pkg_th->seq = htonl( ntohl( tcp->last_seq ) + tcp->last_len )  ;                           // tcp seq   number
+        /* debug( "TCP_SEND_PAYLOAD seq=%u", ntohl( tcp->seq ) ); */
+        /* debug( "TCP_SEND_PAYLOAD conn->odt->payload_len=%d", tcp->payload_len ); */
+        pkg_th->ack_seq = htonl( ntohl( th->seq ) + payload_len );         // tcp ack number
+        //memcpy( pkg_th + 1, tcp->data, tcp->data_len   ); //发送payload
+        b->last = nt_cpymem( b->last, tcp->data, tcp->data_len );
+        //        b->last += tcp->data_len;
+        break;
+    case TCP_PHASE_SEND_PSH_END:
+        debug( "--ph--TCP_PHASE_SEND_PSH_END" );
+        //发送payload阶段，结束
+        pkg_th->doff = 0x5;
+        pkg_th->ack  = 1;
+        pkg_th->psh  = 1;
+        pkg_th->seq = htonl( ntohl( tcp->last_seq ) + tcp->last_len )  ;                          // tcp seq number
+        /* debug( "TCP_SEND_PAYLOAD_END seq=%u", ntohl( tcp->seq ) ); */
+        /* debug( "TCP_SEND_PAYLOAD_END conn->odt->payload_len=%d", tcp->payload_len ); */
+        pkg_th->ack_seq = htonl( ntohl( th->seq ) + payload_len );       // tcp ack number
+        // memcpy( pkg_th + 1, tcp->data, tcp->data_len  ); //发送payload
+        //  b->last += tcp->data_len;
+        b->last = nt_cpymem( b->last, tcp->data, tcp->data_len );
+        memset( b->last, 0, b->end - b->last ); 
+        break;
+    case TCP_PHASE_SEND_FIN: //主动回 FIN
+    case TCP_PHASE_SEND_FIN_ACK:  //收到FIN ACK, 回应 ACK
+        debug( "--ph--TCP_PHASE_SEND_FIN_ACK" );
+        pkg_th->doff = 0x5;
+        pkg_th->ack  = 1;                                   // ack标识位
+        if( tcp->phase == TCP_PHASE_SEND_FIN )
+            pkg_th->fin  = 1;
+        pkg_th->seq = th->ack_seq;                             // tcp seq number
+
+        debug( "before-->pkg_th->seq=%u", ntohl( pkg_th->seq ) );
+        debug( "before-->th->seq=%u", ntohl( th->seq ) );
+        pkg_th->ack_seq = htonl( ntohl( th->seq ) + 1 );       // tcp ack number
+        break;
+
+    }
+
+    pkg_th->window    = htons( -1 );
+    pkg_th->check     = 0;
+    pkg_th->urg_ptr   = 0;
+
+    //保存当前 seq , ack 和载荷长度，给下一次使用
+    /* tcp->payload_len = tcp->data_len; */
+
+    tcp->last_len = 0;
+    tcp->last_seq =  pkg_th->seq ;
+    tcp->last_ack =  pkg_th->ack_seq ;
+
+    pkg_th->check     = chksum( b->start, skb->buf_len, TCP_CHK );
+
+}
+
+
 
 
 /*
@@ -943,28 +995,28 @@ void acc_tcp_psh_create( nt_buf_t *b, nt_skb_tcp_t *tcp )
     pkg_th->fin = 0;
 
 
+    /* debug( "seq=%d , tcp->payload_len=%d,  ack=%d" ,  ntohl( tcp->last_seq ) , tcp->last_len,  ntohl( tcp->last_ack )); */
 
-    debug( "tcp->payload_len=%d", tcp->payload_len );
     switch( tcp->phase ) {
     case TCP_PHASE_SEND_PSH:
-        debug( "--ph--TCP_PHASE_SEND_PSH" );
+        /* debug( "--ph--TCP_PHASE_SEND_PSH" ); */
         //发送payload阶段，未结束
         pkg_th->doff = 0x5;
         pkg_th->ack  = 1;
-        pkg_th->seq = htonl( ntohl( tcp->seq ) + tcp->payload_len )  ;                           // tcp seq   number
-        pkg_th->ack_seq = tcp->ack_seq ;
+        pkg_th->seq = htonl( ntohl( tcp->last_seq ) + tcp->last_len )  ;                           // tcp seq   number
+        pkg_th->ack_seq = tcp->last_ack ;
 
         /* pkg_th->ack_seq = htonl( ntohl( th->seq ) + payload_len );         // tcp ack number */
         /* b->last = nt_cpymem( b->last, tcp->data, tcp->data_len ); */
         break;
     case TCP_PHASE_SEND_PSH_END:
-        debug( "--ph--TCP_PHASE_SEND_PSH_END" );
+        /* debug( "--ph--TCP_PHASE_SEND_PSH_END" ); */
         //发送payload阶段，结束
         pkg_th->doff = 0x5;
         pkg_th->ack  = 1;
         pkg_th->psh  = 1;
-        pkg_th->seq = htonl( ntohl( tcp->seq ) + tcp->payload_len )  ;                          // tcp seq number
-        pkg_th->ack_seq = tcp->ack_seq ;
+        pkg_th->seq = htonl( ntohl( tcp->last_seq ) + tcp->last_len )  ;                           // tcp seq   number
+        pkg_th->ack_seq = tcp->last_ack ;
         /* pkg_th->ack_seq = htonl( ntohl( th->seq ) + payload_len );       // tcp ack number */
         /* b->last = nt_cpymem( b->last, tcp->data, tcp->data_len );
         */
@@ -972,31 +1024,17 @@ void acc_tcp_psh_create( nt_buf_t *b, nt_skb_tcp_t *tcp )
         break;
     }
 
-
-    /* int i = 0;
-    for( i=20; i< 40;i++  ){
-        debug( "create addr=%p, i=%2x", b->start + i, *( b->start + i ));
-        [>*( b->start + i  ) = 1;<]
-    } */
-
-
     pkg_th->window    = htons( -1 );
     pkg_th->check     = 0;
     pkg_th->urg_ptr   = 0;
 
     //保存当前 seq , ack 和载荷长度，给下一次使用
-    tcp->payload_len = tcp->data_len;
+    tcp->last_len = tcp->data_len;
 
-    tcp->seq =  pkg_th->seq ;
-    tcp->ack_seq =  pkg_th->ack_seq ;
+    tcp->last_seq =  pkg_th->seq ;
+    tcp->last_ack =  pkg_th->ack_seq ;
 
     pkg_th->check     = chksum( b->start, tcp->tot_len, TCP_CHK );
-
-    /* int i = 0; */
-    /* for( i=0; i< 40;i++  ){
-        debug( "create i=%2x", *( b->start + i ));
-    } */
-
 
 }
 
@@ -1021,7 +1059,7 @@ nt_connection_t* acc_tcp_input( char *data ){
     node = rcv_conn_search( &acc_tcp_tree, sport  );
 
     if( node != NULL ){ //存在
-        debug( "node exist" );
+        /* debug( "node exist" ); */
         c = ( nt_acc_session_t *  )node->key;
         return c;
     } else{//不存在
@@ -1035,9 +1073,18 @@ nt_connection_t* acc_tcp_input( char *data ){
 uint8_t acc_tcp_phase( nt_skb_tcp_t *tcp, struct tcphdr *th )
 {
 	uint8_t phase ;
-	debug( "tcp phase len=%d", tcp->data_len );
+    debug( "tcp phase len=%d", tcp->data_len );
 
 	if( tcp->data_len == 0 ) {
+
+        debug( "ack=%d,fin=%d, window=%d", th->ack, th->fin, th->window );
+        /* printf( "ack=%d,fin=%d, window=%d\n", th->ack, th->fin, th->window ); */
+
+        //客户端 read 处理不过来
+        //curl 下载大数据会出现
+        // 可以发窗口探测包, 其中数据为0
+        if( th->window == 0 ){
+        }
 
         if( th->syn == 1 && th->ack == 0 ){
             debug( "TCP_PHASE_SYN" );
@@ -1050,7 +1097,7 @@ uint8_t acc_tcp_phase( nt_skb_tcp_t *tcp, struct tcphdr *th )
 
 		//ack 第二包的ack或 FIN的ack
 		if( th->ack == 1 && th->syn == 0 && th->fin == 0 ) {
-			debug( "tcp->phase ack %d", tcp->phase );
+			/* debug( "tcp->phase ack %d", tcp->phase ); */
 			if( tcp->phase == TCP_PHASE_CONN_FREE ) {
 				return NT_DONE;
 			}
@@ -1059,8 +1106,17 @@ uint8_t acc_tcp_phase( nt_skb_tcp_t *tcp, struct tcphdr *th )
 			return NT_ERROR;
 		}
 
-		if( th->fin == 1 )
+        if( th->fin == 1 ){
+            debug( "client FIN close" );
 			tcp->phase = TCP_PHASE_FIN ;
+        }
+
+        if( th->rst == 1 ){
+            debug( "client RST close" );
+            tcp->phase = TCP_PHASE_RST;
+            return NT_DONE;
+        }
+
 
 	} else {
 		debug( "th->psh=%d", th->psh );
@@ -1096,14 +1152,10 @@ nt_connection_t* acc_tcp_handshake( nt_acc_session_t *s ){
 	ih = ( struct iphdr *) b->start;
 	th = ( struct tcphdr * )( ih + 1 );
 
-    debug( "tcp_len=%d" , b->last - b->start );
     u_int16_t tcp_len = (b->last - b->start)  - (ih->ihl << 2);
-
-    debug( "tcp_len=%d" ,tcp_len );
-
     tmp_tcp.data_len = tcp_len - (th->doff << 2);
 
-    debug( "tcp_len=%d" , tmp_tcp.data_len );
+    /* debug( "tcp data len=%d" , tmp_tcp.data_len ); */
 
     tmp_tcp.phase = 0;
     ret = acc_tcp_phase( &tmp_tcp, th);
@@ -1118,11 +1170,10 @@ nt_connection_t* acc_tcp_handshake( nt_acc_session_t *s ){
         
         skb = nt_palloc( c->pool, sizeof( nt_skb_t ) );
 
-        debug( "skb size=%d", sizeof( nt_skb_t  ) );
         s->skb = skb;
         skb->buffer = nt_create_temp_buf( c->pool, 1500  );
 
-        tcp = ( nt_skb_tcp_t *) nt_palloc( c->pool, sizeof( nt_skb_tcp_t ) );
+        tcp = ( nt_skb_tcp_t *) nt_pcalloc( c->pool, sizeof( nt_skb_tcp_t ) );
         skb->data = tcp;
 
         struct sockaddr *src = ( struct sockaddr *  ) nt_pcalloc( c->pool, sizeof( struct sockaddr  )  );
@@ -1150,9 +1201,9 @@ nt_connection_t* acc_tcp_handshake( nt_acc_session_t *s ){
         tcp->hdr_len = th->doff << 2;
         tcp->data = NULL;
         tcp->data_len = 0;
-        tcp->payload_len = 0;
-        tcp->seq = ntohl( 1  );
-        tcp->ack_seq = ntohl( 1  );
+        tcp->last_len = 0;
+        tcp->last_seq = ntohl( 1  );
+        tcp->last_ack = ntohl( 1  );
         skb->protocol = ih->protocol ;
         skb->skb_len = b->last - b->start;
         skb->iphdr_len = ih->ihl << 2;
@@ -1160,7 +1211,7 @@ nt_connection_t* acc_tcp_handshake( nt_acc_session_t *s ){
         s->port = th->source;
         nt_connection_rbtree_add( c );
         s->fd = c->fd;
-
+        c->type = IPPROTO_TCP ;
     } else {
         tcp = s->skb->data;
         tcp->data_len = tmp_tcp.data_len;
@@ -1169,17 +1220,26 @@ nt_connection_t* acc_tcp_handshake( nt_acc_session_t *s ){
         skb->iphdr_len = ih->ihl << 2;
 
 
-        tcp->seq = th->seq;
-        tcp->ack_seq = th->ack_seq;
-
+        /* 
+         * tcp->seq = th->seq;
+         * tcp->ack_seq = th->ack_seq;
+         */
     }
 
     tcp->phase = tmp_tcp.phase;
 
-    if(  tcp->phase == TCP_PHASE_PSH_END ){
+    if( tcp->phase == TCP_PHASE_PSH ||  tcp->phase == TCP_PHASE_PSH_END ){
+
+        /* if(  tcp->phase == TCP_PHASE_PSH ){
+            tcp->last_len = 0;
+        } */
+
+        tcp->last_seq = th->seq;
+        tcp->last_ack = th->ack_seq;
         /* debug( " payload=%s", b->start + ( skb->skb_len - tmp_tcp.data_len)) ; */
     }
 
+    /* debug( "c->fd=%d", c->fd ); */
 	tcp_phase_handle( c , tcp );
 
     /* debug( "end" ); */

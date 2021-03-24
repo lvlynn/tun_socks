@@ -165,9 +165,8 @@ int rcv_conn_add( nt_rbtree_t *tree,  void *key , nt_rbtree_node_t *node )
 
 
 //连接删除
-int rcv_conn_del( nt_rbtree_t *tree, nt_connection_t  *conn )
+int rcv_conn_del( nt_rbtree_t *tree, uint16_t port )
 {
-    int port ;
     nt_rbtree_delete_key( tree, port  );
 }
 

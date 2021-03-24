@@ -6,18 +6,18 @@
 
 
 int socks5_method_request( nt_buf_t *buf )
-  //int socks5_method_request( int fd )
-  {
+//int socks5_method_request( int fd )
+{
     buf->last = buf->start;
     buf->pos = buf->start;
 
-      *buf->last++ = 0x05;   //ver
-      *buf->last++ = 0x02;   //methods
-      *buf->last++ = 0;      //method[0]
-      *buf->last++ = 2;      //method[1]
-    
-      return 0;
-  }
+    *buf->last++ = 0x05;   //ver
+    *buf->last++ = 0x02;   //methods
+    *buf->last++ = 0;      //method[0]
+    *buf->last++ = 2;      //method[1]
+
+    return 0;
+}
 
 
 /* Build authentication packet in buf,
@@ -151,6 +151,22 @@ int socks5_dest_request( nt_buf_t *buf, uint32_t dest_ip, uint16_t dest_port, ui
 }
 
 
+/*释放上游连接*/
+nt_int_t nt_sock5_tcp_upstream_free( nt_connection_t *c )
+{
+    if( c )
+        nt_close_connection( c );
+}
+
+
+nt_int_t nt_acc_session_finalize( nt_acc_session_t *s ){
+    
+    nt_upstream_socks_t *ss;
+
+    nt_sock5_tcp_upstream_free( s->ss->tcp_conn );
+
+}
+
 nt_int_t nt_stream_init_socks5_upstream( nt_connection_t *c )
 {
     nt_int_t ret;
@@ -163,7 +179,7 @@ nt_int_t nt_stream_init_socks5_upstream( nt_connection_t *c )
     s = c->data;
 
     ss = nt_palloc( c->pool, sizeof( nt_upstream_socks_t ) );
-    
+
     s->ss = ss;
 //先根据节点类型从服务器获取ip和端口。
 
@@ -181,13 +197,13 @@ nt_int_t nt_stream_init_socks5_upstream( nt_connection_t *c )
         return NT_ERROR;
     }
 
-//生成一个新的connection
+    //生成一个新的connection
     tcp_conn = nt_get_connection( fd, c->log );
     if( tcp_conn == NULL ) {
         return NT_ERROR;
     }
 
-    c->fd = fd;
+    /* c->fd = fd; */
     tcp_conn->data = s;
 
     ss->tcp_conn = tcp_conn;
@@ -197,6 +213,7 @@ nt_int_t nt_stream_init_socks5_upstream( nt_connection_t *c )
 
     tcp_conn->log = c->log;
     tcp_conn->buffer = nt_create_temp_buf( c->pool, 1500 );
+    /* tcp_conn->buffer = nt_create_temp_buf( c->pool, 8192 ); */
 
     if( tcp_conn->buffer == NULL )
         return NT_ERROR;
@@ -208,7 +225,7 @@ nt_int_t nt_stream_init_socks5_upstream( nt_connection_t *c )
 
     rev = tcp_conn->read;
     wev = tcp_conn->write;
-    
+
     rev->active = 0;
     rev->ready = 0;
     wev->ready = 1;
@@ -219,11 +236,41 @@ nt_int_t nt_stream_init_socks5_upstream( nt_connection_t *c )
     wev->log = c->log;
 
     tcp_conn->read->handler = nt_tun_socks5_read_handler;
-    tcp_conn->write->handler = nt_tun_tcp_download_handler;
+    tcp_conn->write->handler = nt_tun_socks5_read_handler;
 
     nt_add_timer( tcp_conn->write, 60 );
 
-    nt_add_event( tcp_conn->read, NT_READ_EVENT,  0  );
+    nt_add_event( tcp_conn->read, NT_READ_EVENT,  0 );
+
+    #if 1
+    nt_skb_tcp_t *tcp;
+    tcp = s->skb->data;
+
+    #ifdef SEND_USE_TUN_FD
+        tcp->fd = c->fd;
+    #else
+    /* struct sockaddr_in *a; */
+    /* a = ( struct sockaddr_in * )tcp->src ; */
+
+    int sock = socket( AF_INET, SOCK_RAW, IPPROTO_TCP );
+    int on = 1;
+    if( setsockopt( sock, IPPROTO_IP, IP_HDRINCL, &on, sizeof( on ) ) == -1 ) {
+        debug( "setsockopt() failed" );
+        return -1;
+    } else {
+        /*printf( "setsockopt() ok\n"  );*/
+    }
+    debug( "new tcp raw fd=%d", sock );
+    //size_t size ;
+    /* struct sockaddr_in to;
+    to.sin_family = AF_INET;
+    to.sin_addr.s_addr = addr->sin_addr.s_addr;
+    to.sin_port = addr->sin_port; */
+
+        tcp->fd = sock;
+    #endif
+    #endif
+
 
     return NT_OK;
 }
@@ -237,8 +284,8 @@ nt_int_t nt_tun_socks5_handle_phase( nt_acc_session_t *s )
     c = s->connection ;
 
     nt_buf_t *bb;
-    bb = c->buffer ; 
-    debug( "s =%d",  ( bb->last - bb->start ));
+    bb = c->buffer ;
+    debug( "s =%d", ( bb->last - bb->start ) );
 
     #if 1
     nt_upstream_socks_t *ss;
@@ -246,123 +293,136 @@ nt_int_t nt_tun_socks5_handle_phase( nt_acc_session_t *s )
     ss = s->ss;
 
     b = ss->tcp_conn->buffer ;
+    nt_skb_tcp_t *tcp;
+    tcp = s->skb->data ;
+
+    /* restart: */
+
     debug( "ss->phase=%d", ss->phase );
-    nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "ss->phase=%d", "[socks5 auth]  ss->phase" );
+    debug( "tcp->data_len=%d", tcp->data_len );
+    nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "ss->phase=%d", ss->phase );
 
-restart:
+    int exit = 1;
+    while( exit ) {
 
-    switch( ss->phase ) {
-    case SOCKS5_VERSION_REQ: //ver send size 4
-        nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [1] request" );
-        b->last = b->start;
-        b->pos = b->start;
-
-        socks5_method_request( b ) ;
-        ret = nt_upstream_socks_send( s->ss->tcp_conn );
-        if( ret == NT_OK ){
-            ss->phase = SOCKS5_VERSION_RESP ;
-        } else {
-            ss->phase = SOCKS5_ERROR;
-        }
-
-        break;
-    case SOCKS5_USER_REQ: //user/passwd send
-        nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [2] request" );
-        if( socks5_auth_request( b, "test", "test" ) < 0 ) {
-            nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [2] request fail" );
-        }
-
-        ret = nt_upstream_socks_send( s->ss->tcp_conn );
-        if( ret == NT_OK ){
-            ss->phase = SOCKS5_USER_RESP ;
-        } else {
-            ss->phase = SOCKS5_ERROR;
-        }
-        break;
-    case SOCKS5_SERVER_REQ: //dip/dport send
-        nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [3] request " );
-
-        socks5_dest_request( b, inet_addr( "14.215.177.39" ), htons( 80 ) , 1) ;
-        /* if( ss->type == 2 )
-            socks5_dest_request( b, INADDR_ANY, 0,  ss->type ) ;
-        else {
-            nt_tcp_raw_socket_t *raw;
-            raw = ss->raw;
-            socks5_dest_request( b, raw->dip, raw->dport, ss->type ) ;
-        } */
-        ret = nt_upstream_socks_send( s->ss->tcp_conn );
-        if( ret == NT_OK ){
-            ss->phase = SOCKS5_SERVER_RESP ;
-        } else {
-            ss->phase = SOCKS5_ERROR;
-        }
-
-        break;
-
-    case SOCKS5_VERSION_RESP: //ver send ack size 2
-        if( ( b->last - b->pos  ) == 0  ) {
-            return NT_ERROR;
-
-        }
-
-        nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [1] response"  );
-        if( *b->start == 0x05 && *( b->start + 1  ) == 0x02  ) {
-            ss->phase = SOCKS5_USER_REQ;
-            goto restart;
-        } else {
-            ss->phase = SOCKS5_ERROR;
-
-        }                                                                                                                         
-        break;
-
-    case SOCKS5_USER_RESP: //user/passwd send ack size 2
-        nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> [socks5 auth]  [2] response b.size=%d", b->last - b->pos  );
-        if( ( b->last - b->pos  ) == 0  ) {
-            return NT_ERROR;
-
-        }
-
-        if( *b->start == 0x01 && *( b->start + 1  ) == 0x00  ) {
-            
-            ss->phase = SOCKS5_SERVER_REQ;
-            goto restart;
-
-        } else {
-            nt_log_debug2( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> [socks5 auth]  [2] response , b[1]=%d, b[2]=%d", *b->start, *  ( b->start + 1  )  );
-            ss->phase = SOCKS5_ERROR;
-
-        }
-
-		break;
-
-	case SOCKS5_SERVER_RESP: //dip/dport send ack size 2
-		nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [3] response" );
-		if( ( b->last - b->pos ) == 0 ) {
-			return NT_ERROR;
-		}
-
-        if( *b->start == 0x05 && *( b->start + 1  ) == 0x00  ) {
-            ss->phase = SOCKS5_DATA_FORWARD;
-
+        switch( ss->phase ) {
+        case SOCKS5_VERSION_REQ: //ver send size 4
+            nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [1] request" );
             b->last = b->start;
             b->pos = b->start;
 
-            goto restart;
-        } else {
-            ss->phase = SOCKS5_ERROR;
+            socks5_method_request( b ) ;
+            ret = nt_upstream_socks_send( s->ss->tcp_conn, b );
+            if( ret == NT_OK ) {
+                ss->phase = SOCKS5_VERSION_RESP ;
+            } else {
+                ss->phase = SOCKS5_ERROR;
+            }
+            exit = 0;
+            break;
+        case SOCKS5_USER_REQ: //user/passwd send
+            nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [2] request" );
+            if( socks5_auth_request( b, "test", "test" ) < 0 ) {
+                nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [2] request fail" );
+            }
+
+            ret = nt_upstream_socks_send( s->ss->tcp_conn, b );
+            if( ret == NT_OK ) {
+                ss->phase = SOCKS5_USER_RESP ;
+            } else {
+                ss->phase = SOCKS5_ERROR;
+            }
+            exit = 0;
+            break;
+        case SOCKS5_SERVER_REQ: //dip/dport send
+            nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [3] request " );
+
+            /* tcp = s->skb->data ; */
+
+            /* socks5_dest_request( b, inet_addr( "14.215.177.39" ), htons( 80 ) , 1) ; */
+            socks5_dest_request( b,  tcp->dip, tcp->dport, 1 ) ;
+            /* if( ss->type == 2 )
+                socks5_dest_request( b, INADDR_ANY, 0,  ss->type ) ;
+            else {
+                nt_tcp_raw_socket_t *raw;
+                raw = ss->raw;
+                socks5_dest_request( b, raw->dip, raw->dport, ss->type ) ;
+            } */
+            ret = nt_upstream_socks_send( s->ss->tcp_conn, b );
+            if( ret == NT_OK ) {
+                ss->phase = SOCKS5_SERVER_RESP ;
+            } else {
+                ss->phase = SOCKS5_ERROR;
+            }
+
+            exit = 0;
+            break;
+
+        case SOCKS5_VERSION_RESP: //ver send ack size 2
+            if( ( b->last - b->pos ) == 0 ) {
+                return NT_ERROR;
+
+            }
+
+            nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [1] response" );
+            if( *b->start == 0x05 && *( b->start + 1 ) == 0x02 ) {
+                ss->phase = SOCKS5_USER_REQ;
+            } else {
+                ss->phase = SOCKS5_ERROR;
+                exit = 0;
+            }
+            break;
+
+        case SOCKS5_USER_RESP: //user/passwd send ack size 2
+            nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> [socks5 auth]  [2] response b.size=%d", b->last - b->pos );
+            if( ( b->last - b->pos ) == 0 ) {
+                return NT_ERROR;
+
+            }
+
+            if( *b->start == 0x01 && *( b->start + 1 ) == 0x00 ) {
+                ss->phase = SOCKS5_SERVER_REQ;
+            } else {
+                nt_log_debug2( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> [socks5 auth]  [2] response , b[1]=%d, b[2]=%d", *b->start, *  ( b->start + 1 ) );
+                ss->phase = SOCKS5_ERROR;
+                exit = 0;
+            }
+
+            break;
+
+        case SOCKS5_SERVER_RESP: //dip/dport send ack size 2
+            nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [3] response" );
+            if( ( b->last - b->pos ) == 0 ) {
+                return NT_ERROR;
+            }
+
+            if( *b->start == 0x05 && *( b->start + 1 ) == 0x00 ) {
+                ss->phase = SOCKS5_DATA_FORWARD;
+
+                b->last = b->start;
+                b->pos = b->start;
+
+            } else {
+                ss->phase = SOCKS5_ERROR;
+                exit = 0;
+            }
+
+            break;
+        case SOCKS5_DATA_FORWARD:
+
+            nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [4] data forward" );
+
+            ss->tcp_conn->read->handler = nt_tun_tcp_download_handler;
+            /* nt_tun_tcp_data_upload_handler( ss->tcp_conn ); */
+
+            debug( "tcp %p", tcp );
+            debug( "tcp->data_len=%d", tcp->data_len );
+            nt_tun_tcp_data_upload_handler( c );
+
+            exit = 0;
+            break;
         }
 
-		break;
-    case SOCKS5_DATA_FORWARD:
-
-		nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "----> %s", "[socks5 auth]  [4] data forward" );
-
-        /* b = c->buffer ; */
-    
-        ss->tcp_conn->read->handler = nt_tun_tcp_download_handler;
-        nt_tun_tcp_data_upload_handler( c );
-
-        break;
     }
     #endif
 

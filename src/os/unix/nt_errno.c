@@ -31,7 +31,11 @@ nt_strerror_init( void )
 
     len = NT_SYS_NERR * sizeof( nt_str_t );
 
+#if 1
+    nt_sys_errlist = nt_palloc(  process_pool, len );
+#else
     nt_sys_errlist = malloc( len );
+#endif
     if( nt_sys_errlist == NULL ) {
         goto failed;
 
@@ -41,7 +45,11 @@ nt_strerror_init( void )
         msg = strerror( err );
         len = nt_strlen( msg );
 
+#if 1
+        p = nt_palloc(  process_pool, len  );
+#else
         p = malloc( len );
+#endif
         if( p == NULL ) {
             goto failed;
 

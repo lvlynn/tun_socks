@@ -98,6 +98,7 @@
 //回应fin   ack标志位都为1
 #define TCP_PHASE_SEND_FIN_ACK 24
 
+#define TCP_PHASE_RST 25
 
 #define TCP_PHASE_PROXY_DIRECT 31
 
@@ -105,6 +106,8 @@
 
 //tcp v4类型
 typedef struct nt_skb_tcp_s {
+     int fd;   //用原始套接字回复到客户端的fd
+
     struct sockaddr *src;  //源信息
     struct sockaddr *dst;  //目的信息
 
@@ -112,6 +115,9 @@ typedef struct nt_skb_tcp_s {
     uint16_t sport; //源ip
     uint32_t dip;   //目的端口
     uint16_t dport; //目的ip
+
+
+    uint8_t close ;
 
     nt_int_t    tot_len;
 
@@ -122,9 +128,10 @@ typedef struct nt_skb_tcp_s {
     char *data ;
 
 
-    uint16_t payload_len; //上一个数据包的载荷长度
-    uint32_t seq ;   //存主机字节序
-    uint32_t ack_seq ;  //存主机字节序
+    uint16_t last_len;    //上一个数据包的载荷长度
+    uint32_t last_seq ;   //上一次的psh包的seq  存主机字节序
+    uint32_t last_ack ;   //上一次的psh包的ack_seq 存主机字节序
+
 
 } nt_skb_tcp_t;
 
@@ -189,10 +196,11 @@ u_int16_t tcp_get_port( char *pkg , u_int8_t direction );
 void tcp_rbtree( nt_connection_t *c );
 
 int tcp_input( nt_connection_t *c );
-int  tcp_output( nt_connection_t *c );
+// int  tcp_output( nt_acc_session_t *s );
 int tcp_phase_handle( nt_connection_t *c , nt_skb_tcp_t *tcp);
 
 
+int tcp_close_client( nt_acc_session_t *s );
 
 
 

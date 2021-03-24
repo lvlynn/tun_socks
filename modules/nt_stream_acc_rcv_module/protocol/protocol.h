@@ -4,6 +4,53 @@
 #include <nt_core.h>
 #include "debug.h"
 
+
+typedef struct {
+   
+   //socks 阶段
+   int8_t phase;
+   int8_t type;
+
+   nt_connection_t *tcp_conn;    
+
+   nt_connection_t *udp_conn;
+
+} nt_upstream_socks_t;
+
+
+
+//一个连接的数据包内容
+typedef struct nt_skb_s {
+    uint16_t skb_len;  //进来的数据包总长
+    uint8_t iphdr_len; //ip层头长
+
+    int protocol;      //数据包协议
+    nt_buf_t *buffer;  //用来存储当前回复内容
+    uint16_t buf_len;  //要回复的内容长度
+    void *data;        //存储 tcp/udp 内容( nt_skb_tcp_t, nt_skb_udp_t )
+} nt_skb_t;
+
+
+//存储在红黑树中的连接
+typedef struct {
+
+    nt_connection_t     *connection;
+    off_t               received;
+    time_t              start_sec;
+    nt_msec_t           start_msec;
+    nt_log_handler_pt   log_handler;
+
+    nt_upstream_socks_t *ss;
+
+    u_int16_t           port;
+    nt_connection_t     *conn;
+    nt_skb_t            *skb;
+    int fd ; 
+} nt_acc_session_t;
+
+
+
+
 #include "forward.h"
 #include "tcp.h"
 #include "udp.h"
@@ -21,6 +68,7 @@
 #define TCP_CHK 2
 #define UDP_CHK 3
 
+#define SEND_USE_TUN_FD 1
 
 typedef struct {
     unsigned int saddr;
@@ -59,16 +107,6 @@ static unsigned short chksum( const char *data, int size, int type )
     return sum;
 }
 
-//一个连接的数据包内容
-typedef struct nt_skb_s {
-    uint16_t skb_len;  //进来的数据包总长
-    uint8_t iphdr_len; //ip层头长
-
-    int protocol;      //数据包协议
-    nt_buf_t *buffer;  //用来存储当前回复内容
-    uint16_t buf_len;  //要回复的内容长度
-    void *data;        //存储 tcp/udp 内容( nt_skb_tcp_t, nt_skb_udp_t )
-} nt_skb_t;
 
 
 typedef struct {
@@ -89,23 +127,6 @@ typedef struct {
 
 } nt_acc_socks5_auth_t;
 
-
-//存储在红黑树中的连接
-typedef struct {
-
-    nt_connection_t     *connection;
-    off_t               received;
-    time_t              start_sec;
-    nt_msec_t           start_msec;
-    nt_log_handler_pt   log_handler;
-
-    nt_upstream_socks_t *ss;
-
-    u_int16_t           port;
-    nt_connection_t     *conn;
-    nt_skb_t            *skb;
-    int fd ; 
-} nt_acc_session_t;
 
 
 

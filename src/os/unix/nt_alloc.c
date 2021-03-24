@@ -24,6 +24,7 @@ nt_alloc(size_t size, nt_log_t *log)
                       "malloc(%uz) failed", size);
     }
 
+    debug( "malloc size=%d" , size);
     nt_log_debug2(NT_LOG_DEBUG_ALLOC, log, 0, "malloc: %p:%uz", p, size);
 
     return p;

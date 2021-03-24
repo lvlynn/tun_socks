@@ -1024,6 +1024,8 @@ nt_master_process_exit(  nt_cycle_t *cycle )
     check_dl_rule( NULL , 0);
 #endif
 
+    debug( "start " );
+
     nt_uint_t  i;
 
     nt_delete_pidfile(cycle);
@@ -1069,6 +1071,9 @@ nt_master_process_exit(  nt_cycle_t *cycle )
 #ifdef NT_HAVE_FUNJSQ
     hash_free( &tab);
 #endif
+
+    nt_destroy_pool( process_pool );
+
     exit(0);
 }
 

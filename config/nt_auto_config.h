@@ -2,7 +2,8 @@
 #define _NT_AUTO_CONFIG_H_
 
 #ifndef NT_DEBUG
-    #define NT_DEBUG 1
+   #define NT_DEBUG 1
+// debug函数中的localtime函数 会触发一次malloc 跟free， 因此正式版需要关闭，否则影响性能
 #endif
 
 //功能开启

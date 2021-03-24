@@ -17,19 +17,9 @@ enum SOCKS5_PHASE {
 
 
 
-typedef struct {
-   
-   //socks 阶段
-   int8_t phase;
-   int8_t type;
 
-   nt_connection_t *tcp_conn;    
-
-   nt_connection_t *udp_conn;
-
-} nt_upstream_socks_t;
-
-
+nt_int_t nt_acc_session_finalize( nt_acc_session_t *s );
+nt_int_t nt_sock5_tcp_upstream_free( nt_connection_t *c );
 nt_int_t nt_stream_init_socks5_upstream( nt_connection_t *c );
  // nt_int_t nt_tun_socks5_handle_phase( nt_acc_session_t *s );
 #endif

@@ -15,5 +15,6 @@ extern nt_rbtree_t acc_udp_tree;
 extern nt_rbtree_t acc_udp_id_tree;
 
 nt_rbtree_node_t *rcv_conn_search( nt_rbtree_t *tree, u_int16_t key );
+int rcv_conn_del( nt_rbtree_t *tree, uint16_t port );
 #endif
 

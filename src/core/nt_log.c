@@ -94,7 +94,7 @@ nt_uint_t              nt_use_stderr = 1;
 
  void _debug( const char *f,   char *fmt, ... )
 {
-
+    /* return; */
     va_list ap; 
     char ts[128];
     time_t t = time( NULL );
@@ -385,6 +385,7 @@ nt_log_init( u_char *prefix )
         }
 
         if( plen ) {
+            debug( "log init malloc" );
             name = malloc( plen + nlen + 2 );
             if( name == NULL ) {
                 return NULL;

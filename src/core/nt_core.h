@@ -97,6 +97,7 @@ typedef void ( *nt_connection_handler_pt )( nt_connection_t *c );
 #include <nt_stream_acc_rcv_module.h>
 #endif
 
+extern nt_pool_t *process_pool;
 nt_int_t nt_save_argv( nt_cycle_t *cycle, int argc, char *const *argv );
 nt_int_t nt_main_init( int argc, char *const *argv );
 

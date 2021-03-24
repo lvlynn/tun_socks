@@ -25,6 +25,7 @@ extern char **environ;
 static char *nt_os_argv_last;
 
 
+extern nt_pool_t *process_pool;
 
 nt_int_t
 nt_init_setproctitle( nt_log_t *log )
@@ -39,7 +40,11 @@ nt_init_setproctitle( nt_log_t *log )
 		size += nt_strlen( environ[i] ) + 1;
 	}
 
+#if 1
+	p = nt_pcalloc( process_pool,  size );
+#else
 	p = nt_alloc( size, log );
+#endif
 	if ( p == NULL ) {
 		return NT_ERROR;
 	}

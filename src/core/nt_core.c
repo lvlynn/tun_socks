@@ -353,7 +353,11 @@ tz_found:
     }
 
     if( last ) {
+#if 1
+        env = nt_palloc( cycle->pool,  ( *last + n + 1 ) * sizeof( char * ) );
+#else
         env = nt_alloc( ( *last + n + 1 ) * sizeof( char * ), cycle->log );
+#endif
         if( env == NULL ) {
             return NULL;
         }
@@ -366,7 +370,11 @@ tz_found:
             return NULL;
         }
 
+#if 1
+        env = nt_pcalloc( cycle->pool, ( n + 1 ) * sizeof( char * ) );
+#else
         env = nt_alloc( ( n + 1 ) * sizeof( char * ), cycle->log );
+#endif
         if( env == NULL ) {
             return NULL;
         }
@@ -702,7 +710,12 @@ nt_save_argv( nt_cycle_t *cycle, int argc, char *const *argv )
     nt_os_argv = ( char ** ) argv;
     nt_argc = argc;
 
+#if 1
+    nt_argv = nt_pcalloc( cycle->pool,  ( argc + 1 ) * sizeof( char * ) );
+#else
     nt_argv = nt_alloc( ( argc + 1 ) * sizeof( char * ), cycle->log );
+#endif
+
     if( nt_argv == NULL ) {
         return NT_ERROR;
     }
@@ -710,7 +723,11 @@ nt_save_argv( nt_cycle_t *cycle, int argc, char *const *argv )
     for( i = 0; i < argc; i++ ) {
         len = nt_strlen( argv[i] ) + 1;
 
+#if 1
+        nt_argv[i] = nt_palloc(  cycle->pool, len );
+#else
         nt_argv[i] = nt_alloc( len, cycle->log );
+#endif
         if( nt_argv[i] == NULL ) {
             return NT_ERROR;
         }
@@ -1466,6 +1483,7 @@ nt_master_set_env( nt_conf_t *cf, nt_command_t *cmd, void *conf )
 #endif
 
 
+nt_pool_t *process_pool;
 nt_int_t nt_main_init( int argc, char *const *argv )
 {
 
@@ -1477,21 +1495,14 @@ nt_int_t nt_main_init( int argc, char *const *argv )
     nt_conf_dump_t  *cd;
     nt_core_conf_t  *ccf;
 
+    
+
     /*
      * 这个函数主要是作为初始化debug用的，nginx中的debug，主要是对内存池分配管理方面的debug，
      * 因为作为一个应用程序，最容易出现bug的地方也是内存管理这块
      * */
     nt_debug_init();
 
-    /*
-     *     我们来到程序的第208行，nt_strerror_init()，该函数的定义在文件src/os/unix/nt_errno.c中。
-     *     该函数主要初始化系统中错误编号对应的含义，这样初始化中进行对应的好处是，当出现错误，
-     *     不用再去调用strerror()函数来获取错误原因，而直接可以根据错误编号找到对应的错误原因，
-     *     可以提高运行时的执行效率。从这里可以看到，nginx开发者的别有用心，对于微小的性能提升也毫不放过。
-     *  */
-    if( nt_strerror_init() != NT_OK ) {
-        return 1;
-    }
 
     //获得运行时选项
     if( nt_get_options( argc, argv ) != NT_OK ) {
@@ -1525,6 +1536,22 @@ nt_int_t nt_main_init( int argc, char *const *argv )
     if( log == NULL ) {
         return 1;
     }
+
+
+    process_pool = nt_create_pool( 1024, log );
+    if( process_pool == NULL )
+        return 1;
+
+    /*
+     *     我们来到程序的第208行，nt_strerror_init()，该函数的定义在文件src/os/unix/nt_errno.c中。
+     *     该函数主要初始化系统中错误编号对应的含义，这样初始化中进行对应的好处是，当出现错误，
+     *     不用再去调用strerror()函数来获取错误原因，而直接可以根据错误编号找到对应的错误原因，
+     *     可以提高运行时的执行效率。从这里可以看到，nginx开发者的别有用心，对于微小的性能提升也毫不放过。
+     *  */
+    if( nt_strerror_init() != NT_OK ) {
+        return 1;
+    }
+
 
     /* STUB */
     #if (NT_OPENSSL)
@@ -1612,6 +1639,7 @@ nt_int_t nt_main_init( int argc, char *const *argv )
     /*
      * 对nt_cycle结构进行初始化,这里是nginx启动核心之处！
      * 以及配置文件的读取初始化等
+     * 这里面会把init_cycle 作为old_cycle, 并释放掉，重新生成一个新的cycle
      * */
     cycle = nt_init_cycle( &init_cycle );
     if( cycle == NULL ) {
@@ -1658,10 +1686,12 @@ nt_int_t nt_main_init( int argc, char *const *argv )
     }
 
 
+    debug( "run nt_os_status" );
+    nt_cycle = cycle;
     //nginx编译信息
     nt_os_status( cycle->log );
+    debug( "run nt_os_status end" );
 
-    nt_cycle = cycle;
 
     //获取全局配置中的core配置
     ccf = ( nt_core_conf_t * ) nt_get_conf( cycle->conf_ctx, nt_core_module );

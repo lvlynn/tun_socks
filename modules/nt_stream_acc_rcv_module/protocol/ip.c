@@ -67,6 +67,7 @@ int ip_create( nt_skb_t *skb, struct iphdr *ih )
 
     tcp = skb->data;
 
+    debug( "tcp phase=%d", tcp->phase );
     switch( tcp->phase ) {
     case TCP_PHASE_SEND_SYN_ACK:
         skb->buf_len = skb->iphdr_len + tcp->hdr_len;
@@ -120,7 +121,7 @@ int acc_tcp_ip_create(   nt_buf_t *b, nt_skb_tcp_t *tcp )
 
     tcp->tot_len = 20 + 20 +  tcp->data_len;
 
-    debug( "skb->buf_len=%d", tcp->tot_len );
+    /* debug( "skb->buf_len=%d", tcp->tot_len ); */
 
     /* b = skb->buffer; */
     /* b->last = b->start;
@@ -163,7 +164,7 @@ nt_connection_t* ipv4_input( char *data )
 
     ih = ( struct iphdr * )data;
 
-    debug( "ih->protocol=%d", ih->protocol ) ;
+    /* debug( "ih->protocol=%d", ih->protocol ) ; */
     switch( ih->protocol ) {
     case IPPROTO_TCP:
         c = acc_tcp_input( data );
@@ -185,7 +186,8 @@ nt_connection_t*  ip_input( char *data )
         debug( "ipv6 pkg" );
         return NULL;
     }
-
+    struct tcphdr *th = ( struct tcphdr *)(ih + 1);
+    debug( "ack=%d,fin=%d", th->ack, th->fin  );
     return ipv4_input( data );
 
 }

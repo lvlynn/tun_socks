@@ -19,7 +19,8 @@ nt_udp_shared_recv( nt_connection_t *c, u_char *buf, size_t size );
 static nt_int_t
 nt_insert_tun_connection( nt_connection_t *c );
 static void
-nt_close_accepted_udp_connection( nt_connection_t *c );
+nt_tun_close_accepted_connection( nt_connection_t *c );
+void nt_tun_delete_rbtee_node(void *data);
 
 void
 nt_tun_session_handler( nt_event_t *rev )
@@ -316,25 +317,6 @@ nt_tun_init_connection( nt_connection_t *c )
     rev = c->read;
     rev->handler = nt_tun_session_handler;
 
-    #if 0
-    if( addr_conf->proxy_protocol ) {
-        c->log->action = "reading PROXY protocol";
-
-        rev->handler = nt_stream_proxy_protocol_handler;
-
-        if( !rev->ready ) {
-            nt_add_timer( rev, cscf->proxy_protocol_timeout );
-
-            if( nt_handle_read_event( rev, 0 ) != NT_OK ) {
-                nt_stream_finalize_session( s,
-                                            NT_STREAM_INTERNAL_SERVER_ERROR );
-            }
-
-            return;
-        }
-    }
-    #endif
-
     //如果使用多连接
     if( nt_use_accept_mutex ) {
         nt_post_event( rev, &nt_posted_events );
@@ -425,6 +407,7 @@ int nt_tun_data_dispatch( const char* data )
     return ret;
 }
 
+
 //处理tun数据流入 入口，参考udp 的accept回调 nt_event_recvmsg
 /*
  * tun fd本身占用一个 conn,
@@ -447,6 +430,7 @@ void nt_event_accept_tun( nt_event_t *ev )
     nt_log_t         *log;
     socklen_t          socklen, local_socklen;
     ssize_t size;
+    nt_pool_cleanup_t    *cln;
 
     //取数据
     static u_char      buffer[65535];
@@ -464,10 +448,11 @@ void nt_event_accept_tun( nt_event_t *ev )
     ecf = nt_event_get_conf( nt_cycle->conf_ctx, nt_event_core_module );
 
     // nt_event_flags 不为NT_USE_KQUEUE_EVENT的时候需要赋值
-    if( !( nt_event_flags & NT_USE_KQUEUE_EVENT ) ) {
+    /* if( !( nt_event_flags & NT_USE_KQUEUE_EVENT ) ) {
         debug( "ecf->multi_accept=%d", ecf->multi_accept );
         ev->available = ecf->multi_accept;
-    }
+    } */
+    ev->available = ecf->multi_accept;
 
     lc = ev->data;
     ls = lc->listening;
@@ -490,12 +475,12 @@ void nt_event_accept_tun( nt_event_t *ev )
 
             if( err == NT_EAGAIN ) {
                 nt_log_debug0( NT_LOG_DEBUG_EVENT, ev->log, err,
-                               "recvmsg() not ready" );
+                               "tun read not ready" );
                 return;
 
             }
 
-            nt_log_error( NT_LOG_ALERT, ev->log, err, "recvmsg() failed" );
+            nt_log_error( NT_LOG_ALERT, ev->log, err, "read() failed" );
             return;
         }
 
@@ -513,7 +498,10 @@ void nt_event_accept_tun( nt_event_t *ev )
             /* c->buffer->last = c->buffer->start; */
             c->buffer->pos = c->buffer->start ;
             c->buffer->last = nt_cpymem( c->buffer->start, buffer, n );
-            nt_tun_data_forward( s );
+
+            /* nt_tun_data_forward( s ); */
+
+            c->read->handler( c->read );
 
         } else {
             debug( "该连接为新连接" );
@@ -535,6 +523,7 @@ void nt_event_accept_tun( nt_event_t *ev )
             }
 
             //设置参数
+            //shared表示该连接是共享的fd , 一半是继承自监听的fd。 设置为1后，在调用nt_close_connection函数不会直接close(fd)
             c->shared = 1;
             //这个类型决定 upstream 的连接类型
             c->type = SOCK_STREAM;
@@ -548,10 +537,10 @@ void nt_event_accept_tun( nt_event_t *ev )
             /* debug( "ls->pool_size=%d", ls->pool_size ); */
 
             /* c->pool = nt_create_pool( ls->pool_size, ev->log ); */
-            c->pool = nt_create_pool( 2048, ev->log );
+            c->pool = nt_create_pool( 8192, ev->log );
             if( c->pool == NULL ) {
                 //申请失败，释放连接
-                nt_close_accepted_udp_connection( c );
+                nt_tun_close_accepted_connection( c );
                 return NT_ERROR;
             }
 
@@ -559,7 +548,7 @@ void nt_event_accept_tun( nt_event_t *ev )
             //该变量指向连接的目的地址
             c->sockaddr = nt_palloc( c->pool, socklen );
             if( c->sockaddr == NULL ) {
-                nt_close_accepted_udp_connection( c );
+                nt_tun_close_accepted_connection( c );
                 return;
 
             }
@@ -569,7 +558,7 @@ void nt_event_accept_tun( nt_event_t *ev )
             //申请一个log 用的空间
             log = nt_palloc( c->pool, sizeof( nt_log_t ) );
             if( log == NULL ) {
-                nt_close_accepted_udp_connection( c );
+                nt_tun_close_accepted_connection( c );
                 return;
 
             }
@@ -589,7 +578,7 @@ void nt_event_accept_tun( nt_event_t *ev )
             //申请一个buffer空间
             c->buffer = nt_create_temp_buf( c->pool, 1500 );
             if( c->buffer == NULL ) {
-                nt_close_accepted_udp_connection( c );
+                nt_tun_close_accepted_connection( c );
                 return NT_ERROR;
             }
 
@@ -616,7 +605,7 @@ void nt_event_accept_tun( nt_event_t *ev )
 
             //把新连接插入红黑树中
             /* if( nt_insert_tun_connection( c ) != NT_OK ) {
-                nt_close_accepted_udp_connection( c );
+                nt_tun_close_accepted_connection( c );
                 return NT_ERROR;
             } */
 
@@ -629,8 +618,17 @@ void nt_event_accept_tun( nt_event_t *ev )
             debug( " ls->handler 调用nt_stream_init_connection" );
             /* ls->handler( c ); */
             /* nt_tun_init_connection( c ); */
-            nt_tun_init_session( c );
 
+            //添加内存回收后触发的回调 ( nt_destroy_pool )
+            cln = nt_pool_cleanup_add(c->pool, 0);
+            if (cln == NULL) {
+                return NT_ERROR;
+            }
+
+            cln->data = c;
+            cln->handler = nt_tun_delete_rbtee_node;
+
+            nt_tun_init_session( c );
 
 
         }
@@ -639,18 +637,18 @@ void nt_event_accept_tun( nt_event_t *ev )
         if( ret ==  NT_ERROR ){
             return;
         } */
-next:
+/* next: */
 
         //只有 是 NT_USE_KQUEUE_EVENT 类型的时候才需要减掉
-        if( nt_event_flags & NT_USE_KQUEUE_EVENT ) {
+        /* if( nt_event_flags & NT_USE_KQUEUE_EVENT ) {
             ev->available -= n;
-        }
+        } */
 
-        debug( "ev->available=%d", ev->available );
+        /* debug( "ev->available=%d", ev->available ); */
         //启用了 一个worker可以同时接受多个连接， 问题在于如何退出， 因为ev->available 一直是1
     } while( ev->available );
 
-    debug( "end" );
+    /* debug( "end" ); */
 }
 
 
@@ -678,22 +676,21 @@ nt_udp_shared_recv( nt_connection_t *c, u_char *buf, size_t size )
     return n;
 }
 
-/*
- *     void
- * nt_delete_udp_connection(void *data)
- * {
- *     nt_connection_t  *c = data;
- *
- *     if (c->udp == NULL) {
- *         return;
- *
- *     }
- *
- *     nt_rbtree_delete(&c->listening->rbtree, &c->udp->node);
- *
- *     c->udp = NULL;
- *
- * } */
+
+void nt_tun_delete_rbtee_node(void *data)
+{
+    /* nt_connection_t  *c = data;
+
+    if (c->udp == NULL) {
+        return;
+
+    }
+
+    nt_rbtree_delete(&c->listening->rbtree, &c->udp->node);
+
+    c->udp = NULL; */
+
+} 
 
 static nt_int_t
 nt_insert_tun_connection( nt_connection_t *c )
@@ -743,8 +740,9 @@ nt_insert_tun_connection( nt_connection_t *c )
 
 
 static void
-nt_close_accepted_udp_connection( nt_connection_t *c )
+nt_tun_close_accepted_connection( nt_connection_t *c )
 {
+    debug( "start" );
     nt_free_connection( c );
 
     c->fd = ( nt_socket_t ) -1;
