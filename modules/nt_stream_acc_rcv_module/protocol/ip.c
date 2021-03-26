@@ -152,6 +152,30 @@ int acc_tcp_ip_create(   nt_buf_t *b, nt_skb_tcp_t *tcp )
     return 0;
 }
 
+int acc_udp_ip_create(   nt_buf_t *b, nt_skb_udp_t *udp )
+{
+    udp->tot_len = 28 + udp->data_len;
+
+    debug(  "skb->buf_len=%d", udp->tot_len  );
+
+    struct iphdr *pkg_ih = ( struct iphdr *  )b->start;
+    /* b->last += sizeof( struct iphdr  ); */
+
+    pkg_ih->version = 0x4;
+    pkg_ih->ihl = sizeof( struct iphdr  ) / 4;
+    pkg_ih->tos = 0x10;
+    pkg_ih->tot_len = htons( udp->tot_len  );
+    pkg_ih->id = 0;
+    pkg_ih->frag_off = 0;
+    pkg_ih->ttl = 64; 
+    pkg_ih->protocol = 0x11;
+    pkg_ih->daddr = udp->sip;
+    pkg_ih->saddr = udp->dip;
+    pkg_ih->check = 0;
+    pkg_ih->check = chksum( b->start, sizeof( struct iphdr  ), IP_CHK  );
+    return 0;
+}
+
 
 
 
@@ -170,6 +194,7 @@ nt_connection_t* ipv4_input( char *data )
         c = acc_tcp_input( data );
         break;
     case IPPROTO_UDP:
+        c = acc_udp_input( data );
         /* udp_input( c ); */
         break;
     }
@@ -198,5 +223,14 @@ nt_connection_t *ip_lookup_connection( char *data ){
     nt_connection_t *c;
     return ip_input( data ); 
 
+}
+
+
+void nt_tun_set_connection_type( nt_connection_t *c, char *data ){
+    
+    struct iphdr *ih;
+    ih = ( struct iphdr *  )data;
+
+    c->type = ih->protocol ;
 }
 

@@ -21,6 +21,7 @@ NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/tun.o
 NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/rbtree.o 
 NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/ip.o 
 NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/tcp.o 
+NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/udp.o 
 NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/socks5.o 
 NT_MODULES_OBJ += $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/forward.o 
 

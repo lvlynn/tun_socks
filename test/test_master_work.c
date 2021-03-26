@@ -14,7 +14,7 @@ int main( int argc, char *const *argv )
     nt_cycle_t *cycle;
 
 
-    debug( "nt_stream_socks5_module=%p" , nt_stream_socks5_module);
+    /* debug( "nt_stream_socks5_module=%p" , nt_stream_socks5_module); */
 
     if( nt_main_init( argc, argv ) != NT_OK )
         return 1;

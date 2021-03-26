@@ -159,14 +159,19 @@ nt_int_t nt_sock5_tcp_upstream_free( nt_connection_t *c )
 }
 
 
-nt_int_t nt_acc_session_finalize( nt_acc_session_t *s ){
-    
+nt_int_t nt_acc_session_finalize( nt_acc_session_t *s )
+{
+
     nt_upstream_socks_t *ss;
 
     nt_sock5_tcp_upstream_free( s->ss->tcp_conn );
 
 }
 
+/*
+ *  不管加速的是tcp 还是udp。 都需要先建立tcp连接
+ *
+ * */
 nt_int_t nt_stream_init_socks5_upstream( nt_connection_t *c )
 {
     nt_int_t ret;
@@ -188,7 +193,7 @@ nt_int_t nt_stream_init_socks5_upstream( nt_connection_t *c )
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr( "172.16.254.157" );
     addr.sin_port =  htons( 1080 );
-//生成一个新的fd;
+    //生成一个新的fd;
     int fd = socket( AF_INET, SOCK_STREAM, 0 );
 
     debug( "init new socks5 connection fd:%d", fd );
@@ -230,47 +235,50 @@ nt_int_t nt_stream_init_socks5_upstream( nt_connection_t *c )
     rev->ready = 0;
     wev->ready = 1;
 
-
-
     rev->log = c->log;
     wev->log = c->log;
 
     tcp_conn->read->handler = nt_tun_socks5_read_handler;
-    tcp_conn->write->handler = nt_tun_socks5_read_handler;
-
-    nt_add_timer( tcp_conn->write, 60 );
-
+    tcp_conn->write->handler = nt_tun_upsteam_tcp_write_handler;
+    nt_add_timer( tcp_conn->write, 60 * 1000 );
     nt_add_event( tcp_conn->read, NT_READ_EVENT,  0 );
 
-    #if 1
-    nt_skb_tcp_t *tcp;
-    tcp = s->skb->data;
+    if( c->type == IPPROTO_TCP ) {
+        nt_skb_tcp_t *tcp;
+        tcp = s->skb->data;
 
-    #ifdef SEND_USE_TUN_FD
+        #ifdef SEND_USE_TUN_FD
         tcp->fd = c->fd;
-    #else
-    /* struct sockaddr_in *a; */
-    /* a = ( struct sockaddr_in * )tcp->src ; */
-
-    int sock = socket( AF_INET, SOCK_RAW, IPPROTO_TCP );
-    int on = 1;
-    if( setsockopt( sock, IPPROTO_IP, IP_HDRINCL, &on, sizeof( on ) ) == -1 ) {
-        debug( "setsockopt() failed" );
-        return -1;
-    } else {
-        /*printf( "setsockopt() ok\n"  );*/
-    }
-    debug( "new tcp raw fd=%d", sock );
-    //size_t size ;
-    /* struct sockaddr_in to;
-    to.sin_family = AF_INET;
-    to.sin_addr.s_addr = addr->sin_addr.s_addr;
-    to.sin_port = addr->sin_port; */
+        #else
+        int sock = socket( AF_INET, SOCK_RAW, IPPROTO_TCP );
+        int on = 1;
+        if( setsockopt( sock, IPPROTO_IP, IP_HDRINCL, &on, sizeof( on ) ) == -1 ) {
+            debug( "setsockopt() failed" );
+            return -1;
+        } else {
+            /*printf( "setsockopt() ok\n"  );*/
+        }
+        debug( "new tcp raw fd=%d", sock );
 
         tcp->fd = sock;
-    #endif
-    #endif
+        #endif
+    } else if( c->type == IPPROTO_UDP ) {
 
+        nt_connection_t *udp_conn ;
+        //生成一个新的connection
+        udp_conn = nt_get_connection( fd, c->log );
+        if( udp_conn == NULL ) {
+            return NT_ERROR;
+        }
+
+        /* c->fd = fd; */
+        udp_conn->data = s;
+
+        ss->udp_conn = udp_conn;
+
+        udp_conn->pool = c->pool;
+
+    }
 
     return NT_OK;
 }
@@ -280,6 +288,7 @@ nt_int_t nt_tun_socks5_handle_phase( nt_acc_session_t *s )
 {
     nt_int_t ret;
     nt_connection_t *c;
+    nt_skb_tcp_t *tcp;
 
     c = s->connection ;
 
@@ -293,13 +302,13 @@ nt_int_t nt_tun_socks5_handle_phase( nt_acc_session_t *s )
     ss = s->ss;
 
     b = ss->tcp_conn->buffer ;
-    nt_skb_tcp_t *tcp;
-    tcp = s->skb->data ;
 
-    /* restart: */
+    if( c->type == IPPROTO_TCP ) {
+        tcp = s->skb->data ;
+        debug( "tcp->data_len=%d", tcp->data_len );
+    }
 
     debug( "ss->phase=%d", ss->phase );
-    debug( "tcp->data_len=%d", tcp->data_len );
     nt_log_debug1( NT_LOG_DEBUG_STREAM,  c->log, 0, "ss->phase=%d", ss->phase );
 
     int exit = 1;
@@ -340,14 +349,11 @@ nt_int_t nt_tun_socks5_handle_phase( nt_acc_session_t *s )
             /* tcp = s->skb->data ; */
 
             /* socks5_dest_request( b, inet_addr( "14.215.177.39" ), htons( 80 ) , 1) ; */
-            socks5_dest_request( b,  tcp->dip, tcp->dport, 1 ) ;
-            /* if( ss->type == 2 )
-                socks5_dest_request( b, INADDR_ANY, 0,  ss->type ) ;
-            else {
-                nt_tcp_raw_socket_t *raw;
-                raw = ss->raw;
-                socks5_dest_request( b, raw->dip, raw->dport, ss->type ) ;
-            } */
+            if( c->type == IPPROTO_TCP )
+                socks5_dest_request( b,  tcp->dip, tcp->dport, 1 ) ;
+            else if( c->type == IPPROTO_UDP )
+                socks5_dest_request( b, INADDR_ANY, 0,  2 ) ;
+
             ret = nt_upstream_socks_send( s->ss->tcp_conn, b );
             if( ret == NT_OK ) {
                 ss->phase = SOCKS5_SERVER_RESP ;
@@ -397,7 +403,14 @@ nt_int_t nt_tun_socks5_handle_phase( nt_acc_session_t *s )
             }
 
             if( *b->start == 0x05 && *( b->start + 1 ) == 0x00 ) {
-                ss->phase = SOCKS5_DATA_FORWARD;
+                if( c->type == IPPROTO_TCP )
+                    ss->phase = SOCKS5_DATA_FORWARD;
+                else {
+                    if( nt_tun_udp_upstream_connect( c ) != NT_OK ) {
+                        ss->phase = SOCKS5_ERROR;
+                    } else
+                        ss->phase = SOCKS5_UDP_DATA_FORWARD;
+                }
 
                 b->last = b->start;
                 b->pos = b->start;
@@ -407,6 +420,10 @@ nt_int_t nt_tun_socks5_handle_phase( nt_acc_session_t *s )
                 exit = 0;
             }
 
+            break;
+        case SOCKS5_UDP_DATA_FORWARD:
+            nt_tun_udp_data_send( c );
+            exit = 0;
             break;
         case SOCKS5_DATA_FORWARD:
 

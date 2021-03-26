@@ -248,8 +248,12 @@ int udp_init( nt_connection_t *c ){
     u_int16_t sport ;
     nt_rbtree_node_t *node;
 
+    // MF表示more fragment即还有分片, MF=1即表示后面"还有分片"的数据报。MF=0表示这已是若干数据报片中的最后一个。
+    // DF表示don't fragment即不能分片。 DF == 0 才能分片
+    
     debug( "IP_MF=%d", ntohs(ih->frag_off )& IP_MF  );
 
+    //这个可以判断出数据包是否是第一个连接包
     debug( "IP_off=%d", ntohs(ih->frag_off )& IP_OFFMASK  );
 
     //如果是第一个包，ip的分片偏移为0;

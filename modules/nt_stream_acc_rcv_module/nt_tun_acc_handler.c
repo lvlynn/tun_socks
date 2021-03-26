@@ -1,5 +1,10 @@
 #include <nt_core.h>
 #include "rbtree.h"
+#include "nt_tun_acc_handler.h"
+#include <nt_stream.h>
+/* #include "protocol/protocol.h" */
+
+
 /*本文件用来写所有的session回调*/
 
 
@@ -12,7 +17,7 @@ int nt_connection_rbtree_add( nt_connection_t *c ){
         rcv_conn_add( &acc_tcp_tree, c, node  );
 
     } else {
-        rcv_conn_add( &acc_tcp_tree, c, node  );
+        rcv_conn_add( &acc_udp_tree, c, node  );
     }
 
     return NT_OK;
@@ -85,14 +90,27 @@ int nt_tun_close_session( nt_connection_t *c ){
 
 
 //tun 数据流入回调
-int nt_tun_accept_new( nt_acc_session_t *s ){
+/* int nt_tun_accept_new( nt_acc_session_t *s ){ */
+void nt_tun_accept_new_handler( nt_event_t *rev )
+{
+    nt_connection_t      *c;
+    nt_acc_session_t  *s;
+
+    c = rev->data;
+    s = c->data;
+
+    debug( "start"  );
+
+    if( c->type == IPPROTO_TCP )
+        acc_tcp_handshake( s );
+    else
+        nt_tun_udp_accept_new( c );
 
     //设置 s 参数
 
     //如果是tcp ,先进行三次握手。
     //再进行数据中转，
     
-    acc_tcp_handshake( s );
 
     //如果是udp，直接进行中转
 
@@ -109,6 +127,29 @@ int nt_tun_data_forward_handler( nt_event_t *ev ){
     acc_tcp_handshake( s );
 }
 
+/*
+ * 进行发起3proxy的连接过程
+ *
+ * */
+void nt_tun_upstream_connect_handler( nt_event_t *ev ){
+    debug( "start" );
+    nt_acc_session_t *s ;
+    nt_connection_t *c;
+
+    c = ev->data;
+    s = c->data;
+
+    if( s->ss == NULL  ){
+        //初始化一个ss
+        nt_stream_init_socks5_upstream( c );
+
+        //当前应该为 认证第一阶段
+        s->ss->phase = SOCKS5_VERSION_REQ ;
+    }
+
+    //进入阶段的认证
+    nt_tun_socks5_handle_phase( s  );
+}
 
 //tun 数据流出到local回调
 int nt_tun_local_handler(){

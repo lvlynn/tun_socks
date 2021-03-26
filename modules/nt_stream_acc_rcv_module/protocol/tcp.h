@@ -119,7 +119,7 @@ typedef struct nt_skb_tcp_s {
 
     uint8_t close ;
 
-    nt_int_t    tot_len;
+    uint16_t    tot_len;
 
     u_int8_t phase; //tcp处于哪个阶段
     uint16_t hdr_len; //数据包的头部长度

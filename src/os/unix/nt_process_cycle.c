@@ -256,7 +256,7 @@ nt_master_process_cycle(nt_cycle_t *cycle)
 
 	nt_restart = 1;  
 	for ( ;; ) {
-		//	debug(2, "master process cycle delay=%d", delay);
+		debug( "master process cycle delay=%d", delay);
 
 		/*
 		 * delay用来设置等待worker推出的时间，master接受了退出信号后，
@@ -293,10 +293,10 @@ nt_master_process_cycle(nt_cycle_t *cycle)
 		   阻塞信号，当信号进来才触发
 		   如果在等待信号发生时希望去休眠，则使用sigsuspend函数是非常合适的，
 		   */
-		// sigsuspend(&set);  //add by lvlai,取消阻塞
+		sigsuspend(&set);  //add by lvlai,取消阻塞
 
 		//	debug(2, "master process cycle sigio %i", sigio);
-		//	debug(2, "reap=%d,term=%d,quit=%d, reconf=%d, reopen=%d, restart=%d,  change_binary=%d, noaccept=%d", nt_reap, nt_terminate, nt_quit, nt_reconfigure , nt_reopen, nt_restart, nt_change_binary , nt_noaccept);
+			debug( "reap=%d,term=%d,quit=%d, reconf=%d, reopen=%d, restart=%d,  change_binary=%d, noaccept=%d", nt_reap, nt_terminate, nt_quit, nt_reconfigure , nt_reopen, nt_restart, nt_change_binary , nt_noaccept);
 
 		//更新时间缓存
 		nt_time_update();

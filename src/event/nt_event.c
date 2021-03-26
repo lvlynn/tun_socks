@@ -252,9 +252,9 @@ nt_process_events_and_timers( nt_cycle_t *cycle )
     nt_uint_t  flags;
     nt_msec_t  timer, delta;
 
+    debug( "start" );
+
     if( nt_timer_resolution ) {
-
-
         /*  开启了时间精度  给epoll_wait的超时参数为-1  阻塞等待
          *  epoll_wait返回有两种情况：
          *  1、有网络事件发生
@@ -341,6 +341,7 @@ nt_process_events_and_timers( nt_cycle_t *cycle )
     nt_log_debug1( NT_LOG_DEBUG_EVENT, cycle->log, 0,
                    "timer delta: %M", delta );
 
+    debug( "timer delta:%d", delta );
     /*
      *  nt_posted_accept_events是一个事件队列，暂存epoll从监听套接口wait到的accept事件。
      *  前文提到的NT_POST_EVENTS标志被使用后，会将所有的accept事件暂存到这个队列

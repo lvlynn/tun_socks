@@ -142,4 +142,8 @@ typedef intptr_t        nt_flag_t;
     #define NT_AF_TUN 55 
 #endif
 
+//重做 inet_ntoa， 可直接打印 uint32_t 的ip，而不用重新构造 struct sin_addr
+#define nt_inet_ntoa( a  )  inet_ntoa( *( struct in_addr * )(&a) )
+
+
 #endif /* _NT_CONFIG_H_INCLUDED_ */

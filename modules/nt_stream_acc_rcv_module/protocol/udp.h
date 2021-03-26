@@ -3,13 +3,30 @@
 
 #include "protocol.h"
 
+
+
+#define UDP_PHASE_SOCKS_CONNECT 1
+
+#define UDP_PHASE_DATA_FORWARD 2
+
+#define UDP_PHASE_SOCKS_DOWN 3
+
+
+
+
 int udp_input( nt_connection_t *c );
 
 int udp_output( nt_connection_t *c );
 
+
 typedef struct nt_skb_udp_s {
     struct sockaddr *src;  //源信息
     struct sockaddr *dst;  //目的信息
+    uint32_t sip;   //源端口
+    uint16_t sport; //源ip
+    uint32_t dip;   //目的端口
+    uint16_t dport; //目的ip
+
 
     u_int8_t phase; //tcp处于哪个阶段
     uint16_t hdr_len; //数据包的头部长度
@@ -17,6 +34,8 @@ typedef struct nt_skb_udp_s {
 
     uint16_t data_len; //数据包的载荷长度
     u_char *data ;
+
+    uint16_t    tot_len;
      
 } nt_skb_udp_t;
 
@@ -49,6 +68,8 @@ typedef struct{
     char data[1500];
 } nt_acc_udp_t;
 
+nt_connection_t* acc_udp_input( char *data );
+void acc_udp_create( nt_buf_t *b, nt_skb_udp_t *udp );
 
 #endif
 

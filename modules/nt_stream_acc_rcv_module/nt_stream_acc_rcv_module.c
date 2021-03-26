@@ -31,8 +31,6 @@ nt_tun_session_handler( nt_event_t *rev )
 
     c = rev->data;
     s = c->data;
-
-    nt_tun_accept_new( s );
 }
 
 
@@ -118,6 +116,7 @@ nt_tun_init_session( nt_connection_t *c )
     s->connection = c;
     c->data = s;
 
+    /* s->fd = c->fd; */
     #if 0
     s->signature = NT_STREAM_MODULE;
     s->main_conf = addr_conf->ctx->main_conf;
@@ -138,7 +137,7 @@ nt_tun_init_session( nt_connection_t *c )
     s->start_msec = tp->msec;
 
     rev = c->read;
-    rev->handler = nt_tun_session_handler;
+    rev->handler = nt_tun_accept_new_handler;
 
     //如果使用多连接
     if( nt_use_accept_mutex ) {
@@ -488,20 +487,12 @@ void nt_event_accept_tun( nt_event_t *ev )
         //分析数据是哪种协议，进行中转处理
         c =  ip_input( buffer );
         if( c ) {
-            nt_acc_session_t  *s;
-            s = c->data;
-
-            /* debug( "c->fd=%d", c->fd );
-            debug( "c->type=%d", c->type );
-            debug( "c->buffer=%p", c->buffer ); */
-            //把当前读取到的内容拷贝到当前连接下；
-            /* c->buffer->last = c->buffer->start; */
-            c->buffer->pos = c->buffer->start ;
+            /* c->buffer->pos = c->buffer->start ;
             c->buffer->last = nt_cpymem( c->buffer->start, buffer, n );
 
-            /* nt_tun_data_forward( s ); */
+            c->read->handler( c->read ); */
 
-            c->read->handler( c->read );
+            nt_tun_data_forward( c, buffer, n );
 
         } else {
             debug( "该连接为新连接" );
@@ -526,8 +517,10 @@ void nt_event_accept_tun( nt_event_t *ev )
             //shared表示该连接是共享的fd , 一半是继承自监听的fd。 设置为1后，在调用nt_close_connection函数不会直接close(fd)
             c->shared = 1;
             //这个类型决定 upstream 的连接类型
-            c->type = SOCK_STREAM;
+            /* c->type = SOCK_STREAM; */
             c->socklen = socklen;
+            nt_tun_set_connection_type( c , buffer );
+
 
             #if (NT_STAT_STUB)
             ( void ) nt_atomic_fetch_add( nt_stat_active, 1 );
@@ -560,7 +553,6 @@ void nt_event_accept_tun( nt_event_t *ev )
             if( log == NULL ) {
                 nt_tun_close_accepted_connection( c );
                 return;
-
             }
 
             *log = ls->log;
@@ -583,7 +575,12 @@ void nt_event_accept_tun( nt_event_t *ev )
             }
 
             //把当前读取到的内容拷贝到当前连接下；
-            c->buffer->last = nt_cpymem( c->buffer->last, buffer, n );
+            if( c->type == IPPROTO_TCP ){
+                c->buffer->last = nt_cpymem( c->buffer->last, buffer, n );
+            } else{
+                /* c->buffer->last += 10; */
+                c->buffer->last = nt_cpymem( c->buffer->last, buffer, n  );
+            }
 
             //设置参数
             rev = c->read;
@@ -629,7 +626,6 @@ void nt_event_accept_tun( nt_event_t *ev )
             cln->handler = nt_tun_delete_rbtee_node;
 
             nt_tun_init_session( c );
-
 
         }
 

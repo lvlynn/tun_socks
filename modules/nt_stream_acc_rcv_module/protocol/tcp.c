@@ -1146,6 +1146,7 @@ nt_connection_t* acc_tcp_handshake( nt_acc_session_t *s ){
 	nt_int_t ret;
     nt_skb_t *skb;
 
+    debug( "start" );
 	c =s->connection ;
 	b = c->buffer ;
 
@@ -1212,6 +1213,8 @@ nt_connection_t* acc_tcp_handshake( nt_acc_session_t *s ){
         nt_connection_rbtree_add( c );
         s->fd = c->fd;
         c->type = IPPROTO_TCP ;
+
+        c->read->handler = nt_tun_data_forward_handler; 
     } else {
         tcp = s->skb->data;
         tcp->data_len = tmp_tcp.data_len;

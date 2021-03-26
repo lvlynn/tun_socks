@@ -140,7 +140,7 @@
 
 //允许socket 复用
 #ifndef NT_HAVE_REUSEPORT
-    #define NT_HAVE_REUSEPORT 1
+    // #define NT_HAVE_REUSEPORT 1
 #endif
 
 // 拥有加速器 接收器功能

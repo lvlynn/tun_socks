@@ -17,6 +17,11 @@ typedef struct {
 
 } nt_upstream_socks_t;
 
+//用于存储tcp udp 发送快于 认证时段的数据
+typedef struct nt_skb_buf_s{
+    nt_buf_t *b;    
+    struct nt_skb_buf_s *next;
+} nt_skb_buf_t;
 
 
 //一个连接的数据包内容
@@ -28,6 +33,10 @@ typedef struct nt_skb_s {
     nt_buf_t *buffer;  //用来存储当前回复内容
     uint16_t buf_len;  //要回复的内容长度
     void *data;        //存储 tcp/udp 内容( nt_skb_tcp_t, nt_skb_udp_t )
+
+    nt_skb_buf_t *buffer_chain;
+    nt_skb_buf_t *chain_tail; //buffer 链的结尾
+
 } nt_skb_t;
 
 
@@ -45,6 +54,7 @@ typedef struct {
     u_int16_t           port;
     nt_connection_t     *conn;
     nt_skb_t            *skb;
+    nt_rbtree_node_t *node;
     int fd ; 
 } nt_acc_session_t;
 
@@ -55,6 +65,7 @@ typedef struct {
 #include "tcp.h"
 #include "udp.h"
 #include "socks5.h"
+#include "../nt_tun_acc_handler.h"
 
 
 #include <sys/socket.h>
@@ -128,10 +139,12 @@ typedef struct {
 } nt_acc_socks5_auth_t;
 
 
+void nt_tun_set_connection_type( nt_connection_t *c, char *data );
 
 
 int acc_tcp_ip_create(   nt_buf_t *b, nt_skb_tcp_t *tcp );
 void acc_tcp_psh_create( nt_buf_t *b, nt_skb_tcp_t *tcp );
+int acc_udp_ip_create(   nt_buf_t *b, nt_skb_udp_t *udp );
 
 
 int ip_create( nt_skb_t *skb, struct iphdr *ih );

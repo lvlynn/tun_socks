@@ -46,6 +46,13 @@ $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/tcp.o:  $(CORE_DEPS) \
 		-o $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/tcp.o \
 		$(PWD)/modules/nt_stream_acc_rcv_module/protocol/tcp.c
 
+$(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/udp.o:  $(CORE_DEPS) \
+	$(PWD)/modules/nt_stream_acc_rcv_module/protocol/udp.c
+	$(CC) -c $(CFLAGS) $(NT_INCLUDE) \
+		-o $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/udp.o \
+		$(PWD)/modules/nt_stream_acc_rcv_module/protocol/udp.c
+
+
 $(PWD)/objs/modules/nt_stream_acc_rcv_module/protocol/socks5.o:  $(CORE_DEPS) \
 	$(PWD)/modules/nt_stream_acc_rcv_module/protocol/socks5.c
 	$(CC) -c $(CFLAGS) $(NT_INCLUDE) \

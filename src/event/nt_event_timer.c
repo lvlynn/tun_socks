@@ -25,6 +25,7 @@ nt_event_timer_init(nt_log_t *log)
 nt_msec_t
 nt_event_find_timer(void)
 {
+
     nt_msec_int_t      timer;
     nt_rbtree_node_t  *node, *root, *sentinel;
 
@@ -60,6 +61,7 @@ nt_event_expire_timers(void)
         root = nt_event_timer_rbtree.root;
 
         if (root == sentinel) {
+            /* debug( "no timer" ); */
             return;
         }
 
@@ -68,6 +70,7 @@ nt_event_expire_timers(void)
         /* node->key > nt_current_msec */
 
         if ((nt_msec_int_t) (node->key - nt_current_msec) > 0) {
+            /* debug( "时间未到， node->key=%d, nt_current_msec=%d", node->key, nt_current_msec ); */
             return;
         }
 
